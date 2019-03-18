@@ -28,9 +28,8 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.utils.OneDriveUtil;
-import site.alice.liveman.web.dataobject.ActionResult;
+import site.alice.liveman.model.ActionResult;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;

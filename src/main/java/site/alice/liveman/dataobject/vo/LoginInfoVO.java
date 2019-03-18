@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.web.dataobject.vo;
+package site.alice.liveman.dataobject.vo;
 
 public class LoginInfoVO {
     private String accountSite;

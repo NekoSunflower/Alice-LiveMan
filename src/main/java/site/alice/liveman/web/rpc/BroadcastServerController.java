@@ -19,7 +19,6 @@
 package site.alice.liveman.web.rpc;
 
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +29,8 @@ import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ServerInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.BroadcastServerService;
-import site.alice.liveman.web.dataobject.ActionResult;
-import site.alice.liveman.web.dataobject.vo.ServerVO;
+import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.dataobject.vo.ServerVO;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;

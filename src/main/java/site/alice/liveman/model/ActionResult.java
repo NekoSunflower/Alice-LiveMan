@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.web.dataobject;
+package site.alice.liveman.model;
 
 public class ActionResult<T> {
 

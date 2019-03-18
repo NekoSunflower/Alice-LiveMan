@@ -28,8 +28,8 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
-import site.alice.liveman.web.dataobject.ActionResult;
-import site.alice.liveman.web.dataobject.vo.AccountInfoVO;
+import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.dataobject.vo.AccountInfoVO;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;

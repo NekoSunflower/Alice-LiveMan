@@ -18,11 +18,9 @@
 
 package site.alice.liveman.web.rpc;
 
-import com.hiczp.bilibili.api.BilibiliAPI;
 import com.hiczp.bilibili.api.passport.exception.CaptchaMismatchException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,9 +31,9 @@ import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.service.broadcast.BroadcastService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
-import site.alice.liveman.web.dataobject.ActionResult;
-import site.alice.liveman.web.dataobject.vo.AccountInfoVO;
-import site.alice.liveman.web.dataobject.vo.LoginInfoVO;
+import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.dataobject.vo.AccountInfoVO;
+import site.alice.liveman.dataobject.vo.LoginInfoVO;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;

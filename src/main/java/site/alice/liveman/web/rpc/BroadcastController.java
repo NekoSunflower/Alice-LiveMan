@@ -21,7 +21,6 @@ package site.alice.liveman.web.rpc;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,8 +38,8 @@ import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTas
 import site.alice.liveman.service.live.LiveServiceFactory;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.ProcessUtil;
-import site.alice.liveman.web.dataobject.ActionResult;
-import site.alice.liveman.web.dataobject.vo.BroadcastTaskVO;
+import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.dataobject.vo.BroadcastTaskVO;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;

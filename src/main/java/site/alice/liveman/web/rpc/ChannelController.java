@@ -31,8 +31,8 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.web.dataobject.ActionResult;
-import site.alice.liveman.web.dataobject.vo.ChannelInfoVO;
+import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.dataobject.vo.ChannelInfoVO;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;

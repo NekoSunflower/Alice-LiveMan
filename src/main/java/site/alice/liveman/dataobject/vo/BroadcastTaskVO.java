@@ -16,14 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.web.dataobject.vo;
+package site.alice.liveman.dataobject.vo;
 
-import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.model.VideoCropConf;
-
-import java.util.List;
-import java.util.NavigableSet;
-import java.util.TreeSet;
 
 public class BroadcastTaskVO {
     private String        nickname;
