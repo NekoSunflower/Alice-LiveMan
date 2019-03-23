@@ -18,6 +18,7 @@
 package site.alice.liveman;
 
 import org.apache.commons.io.IOUtils;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -35,7 +36,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}, scanBasePackages = {"site.alice.liveman"})
+@SpringBootApplication(scanBasePackages = {"site.alice.liveman"})
+@MapperScan("me.myloli.bilibili.dataviewer.mapper")
 @Configuration
 @PropertySource("classpath:application.properties")
 @EnableScheduling
