@@ -20,32 +20,7 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class ChannelDO {
-    /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
+public class ChannelDO extends BaseDO {
     /**
      * 默认推流账户ID
      */
@@ -80,51 +55,6 @@ public class ChannelDO {
      * 需要录像
      */
     private Boolean needRecord;
-
-    /**
-     * 租户ID
-     */
-    private Long tenantId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
 
     public String getDefaultAccountId() {
         return defaultAccountId;
@@ -180,13 +110,5 @@ public class ChannelDO {
 
     public void setNeedRecord(Boolean needRecord) {
         this.needRecord = needRecord;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 }

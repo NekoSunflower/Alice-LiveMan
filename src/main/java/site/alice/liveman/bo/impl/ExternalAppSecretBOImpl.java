@@ -48,20 +48,20 @@ public class ExternalAppSecretBOImpl implements ExternalAppSecretBO {
     @Override
     public ExternalAppSecretDO getAppSecret(ExternalServiceType type) {
         try {
-            List<ExternalAppSecretDO> externalAppSecretDOS = liveManSetting.getExternalAppSecretDOS().stream().filter(ocrAppSecretDO -> type.getCode().equals(ocrAppSecretDO.getType())).peek(ocrAppSecretDO -> {
-                Date nextResumeTime = ocrAppSecretDO.getNextResumeTime();
-                if (nextResumeTime != null && nextResumeTime.getTime() <= System.currentTimeMillis()) {
-                    ocrAppSecretDO.getLimit().set(ocrAppSecretDO.getTotalLimit());
-                    ocrAppSecretDO.setNextResumeTime(new Date(nextResumeTime.getYear(), nextResumeTime.getMonth(), nextResumeTime.getDate() + 1));
-                }
-            }).sorted((o1, o2) -> o2.getLimit().get() - o1.getLimit().get()).collect(Collectors.toList());
-            if (!externalAppSecretDOS.isEmpty()) {
-                ExternalAppSecretDO externalAppSecretDO = externalAppSecretDOS.get(0);
-                externalAppSecretDO.getLimit().decrementAndGet();
-                log.info("返回OcrAppSecret：" + ToStringBuilder.reflectionToString(externalAppSecretDO));
-                return externalAppSecretDO;
-            }
-            log.info("没有找到可用的AppSecret，请求的Type:" + type.getCode());
+//            List<ExternalAppSecretDO> externalAppSecretDOS = liveManSetting.getExternalAppSecretDOS().stream().filter(ocrAppSecretDO -> type.getCode().equals(ocrAppSecretDO.getType())).peek(ocrAppSecretDO -> {
+//                Date nextResumeTime = ocrAppSecretDO.getNextResumeTime();
+//                if (nextResumeTime != null && nextResumeTime.getTime() <= System.currentTimeMillis()) {
+//                    ocrAppSecretDO.getLimit().set(ocrAppSecretDO.getTotalLimit());
+//                    ocrAppSecretDO.setNextResumeTime(new Date(nextResumeTime.getYear(), nextResumeTime.getMonth(), nextResumeTime.getDate() + 1));
+//                }
+//            }).sorted((o1, o2) -> o2.getLimit().get() - o1.getLimit().get()).collect(Collectors.toList());
+//            if (!externalAppSecretDOS.isEmpty()) {
+//                ExternalAppSecretDO externalAppSecretDO = externalAppSecretDOS.get(0);
+//                externalAppSecretDO.getLimit().decrementAndGet();
+//                log.info("返回OcrAppSecret：" + ToStringBuilder.reflectionToString(externalAppSecretDO));
+//                return externalAppSecretDO;
+//            }
+//            log.info("没有找到可用的AppSecret，请求的Type:" + type.getCode());
             return null;
         } finally {
             settingConfig.saveSetting(liveManSetting);

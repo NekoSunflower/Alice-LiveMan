@@ -20,36 +20,7 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class DynamicServerDO {
-    /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
-    /**
-     * 
-     */
-    private Boolean isDeleted;
+public class DynamicServerDO extends BaseDO {
 
     /**
      * 端口
@@ -87,11 +58,6 @@ public class DynamicServerDO {
     private String serverName;
 
     /**
-     * 租户id
-     */
-    private Long tenantId;
-
-    /**
      * 状态
      */
     private String status;
@@ -105,54 +71,6 @@ public class DynamicServerDO {
      * 正在被使用的账户ID
      */
     private Long currentAccountId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
-
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 
     public Integer getPort() {
         return port;
@@ -208,14 +126,6 @@ public class DynamicServerDO {
 
     public void setServerName(String serverName) {
         this.serverName = serverName == null ? null : serverName.trim();
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getStatus() {

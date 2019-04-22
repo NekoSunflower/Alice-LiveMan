@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.bo.ExternalAppSecretBO;
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
 import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.web.dataobject.ActionResult;
+import site.alice.liveman.model.ActionResult;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;

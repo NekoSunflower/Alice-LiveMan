@@ -20,99 +20,16 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class VideoConfHistoryDO {
+public class VideoConfHistoryDO extends BaseDO {
     /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
-    /**
-     * 
-     */
-    private Boolean isDeleted;
-
-    /**
-     * 
+     *
      */
     private Long accountId;
 
     /**
-     * 
+     *
      */
     private String videoConfig;
-
-    /**
-     * 
-     */
-    private Long tenantId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
-
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 
     public Long getAccountId() {
         return accountId;
@@ -128,13 +45,5 @@ public class VideoConfHistoryDO {
 
     public void setVideoConfig(String videoConfig) {
         this.videoConfig = videoConfig == null ? null : videoConfig.trim();
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 }

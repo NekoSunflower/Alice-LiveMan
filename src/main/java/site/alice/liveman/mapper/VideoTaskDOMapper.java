@@ -19,18 +19,13 @@
 package site.alice.liveman.mapper;
 
 import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
-import site.alice.liveman.dataobject.*;
+import site.alice.liveman.dataobject.VideoConfHistoryDO;
+import site.alice.liveman.dataobject.VideoConfHistoryDOExample;
+import site.alice.liveman.dataobject.VideoTaskDO;
+import site.alice.liveman.dataobject.VideoTaskDOExample;
 
-public interface VideoTaskDOMapper extends BaseDOMapper<VideoTaskDOWithBLOBs, VideoTaskDOExample>  {
+public interface VideoTaskDOMapper extends BaseDOMapper<VideoTaskDO, VideoTaskDOExample> {
 
-    List<VideoTaskDOWithBLOBs> selectByExampleWithBLOBs(VideoTaskDOExample example);
-
-    int updateByExampleWithBLOBs(@Param("record") VideoTaskDOWithBLOBs record, @Param("example") VideoTaskDOExample example);
-
-    int updateByExample(@Param("record") VideoTaskDO record, @Param("example") VideoTaskDOExample example);
-
-    int updateByPrimaryKeyWithBLOBs(VideoTaskDOWithBLOBs record);
-
-    int updateByPrimaryKey(VideoTaskDO record);
 }

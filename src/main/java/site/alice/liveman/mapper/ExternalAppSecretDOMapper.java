@@ -16,32 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.dataobject;
+package site.alice.liveman.mapper;
 
-public class VideoTaskDOWithBLOBs extends VideoTaskDO {
-    /**
-     * 加密秘钥
-     */
-    private byte[] encodeKey;
+import site.alice.liveman.dataobject.ExternalAppSecretDO;
+import site.alice.liveman.dataobject.ExternalAppSecretDOExample;
 
-    /**
-     * 加密秘钥向量
-     */
-    private byte[] encodeIv;
+public interface ExternalAppSecretDOMapper extends BaseDOMapper<ExternalAppSecretDO, ExternalAppSecretDOExample> {
 
-    public byte[] getEncodeKey() {
-        return encodeKey;
-    }
-
-    public void setEncodeKey(byte[] encodeKey) {
-        this.encodeKey = encodeKey;
-    }
-
-    public byte[] getEncodeIv() {
-        return encodeIv;
-    }
-
-    public void setEncodeIv(byte[] encodeIv) {
-        this.encodeIv = encodeIv;
-    }
 }

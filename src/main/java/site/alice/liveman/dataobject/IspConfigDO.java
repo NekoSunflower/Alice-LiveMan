@@ -20,37 +20,7 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class IspConfigDO {
-    /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
-    /**
-     * 
-     */
-    private Boolean isDeleted;
-
+public class IspConfigDO extends BaseDO {
     /**
      * 主机提供商编号
      */
@@ -70,59 +40,6 @@ public class IspConfigDO {
      * 优先级
      */
     private Integer order;
-
-    /**
-     * 租户ID
-     */
-    private Long tenantId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
-
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 
     public String getIspCode() {
         return ispCode;
@@ -154,13 +71,5 @@ public class IspConfigDO {
 
     public void setOrder(Integer order) {
         this.order = order;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 }

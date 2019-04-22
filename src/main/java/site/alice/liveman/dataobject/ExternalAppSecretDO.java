@@ -18,29 +18,51 @@
 
 package site.alice.liveman.dataobject;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class ExternalAppSecretDO {
-    private String        type;
-    private String        appId;
-    private String        appKey;
-    private String        secretKey;
-    private AtomicInteger limit;
-    private int           totalLimit;
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    private Date          nextResumeTime;
+public class ExternalAppSecretDO extends BaseDO {
+
+    /**
+     * 外部服务类型
+     */
+    private String type;
+
+    /**
+     * 应用编号
+     */
+    private String appId;
+
+    /**
+     * 应用秘钥
+     */
+    private String appKey;
+
+    /**
+     * 安全秘钥
+     */
+    private String secretKey;
+
+    /**
+     * 剩余次数
+     */
+    private Integer limit;
+
+    /**
+     * 总次数
+     */
+    private Integer totalLimit;
+
+    /**
+     * 下一次恢复计数的时间
+     */
+    private Date nextResumeTime;
 
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.type = type == null ? null : type.trim();
     }
 
     public String getAppId() {
@@ -48,7 +70,7 @@ public class ExternalAppSecretDO {
     }
 
     public void setAppId(String appId) {
-        this.appId = appId;
+        this.appId = appId == null ? null : appId.trim();
     }
 
     public String getAppKey() {
@@ -56,7 +78,7 @@ public class ExternalAppSecretDO {
     }
 
     public void setAppKey(String appKey) {
-        this.appKey = appKey;
+        this.appKey = appKey == null ? null : appKey.trim();
     }
 
     public String getSecretKey() {
@@ -64,22 +86,22 @@ public class ExternalAppSecretDO {
     }
 
     public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
+        this.secretKey = secretKey == null ? null : secretKey.trim();
     }
 
-    public AtomicInteger getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
-        this.limit = new AtomicInteger(limit);
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
 
-    public int getTotalLimit() {
+    public Integer getTotalLimit() {
         return totalLimit;
     }
 
-    public void setTotalLimit(int totalLimit) {
+    public void setTotalLimit(Integer totalLimit) {
         this.totalLimit = totalLimit;
     }
 
@@ -89,19 +111,5 @@ public class ExternalAppSecretDO {
 
     public void setNextResumeTime(Date nextResumeTime) {
         this.nextResumeTime = nextResumeTime;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ExternalAppSecretDO that = (ExternalAppSecretDO) o;
-        return Objects.equals(type, that.type) &&
-                Objects.equals(appId, that.appId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, appId);
     }
 }

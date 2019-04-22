@@ -20,42 +20,7 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class SystemSettingDO {
-    /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
-    /**
-     * 
-     */
-    private Boolean isDeleted;
-
-    /**
-     * 
-     */
-    private Long tenantId;
-
+public class SystemSettingDO extends BaseDO {
     /**
      * 需要屏蔽的油管频道
      */
@@ -95,62 +60,6 @@ public class SystemSettingDO {
      * 网站根地址
      */
     private String baseUrl;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
-
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
 
     public String getBannedYoutubeChannel() {
         return bannedYoutubeChannel;

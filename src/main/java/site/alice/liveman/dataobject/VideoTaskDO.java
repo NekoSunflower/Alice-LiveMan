@@ -20,42 +20,7 @@ package site.alice.liveman.dataobject;
 
 import java.util.Date;
 
-public class VideoTaskDO {
-    /**
-     * 
-     */
-    private Long id;
-
-    /**
-     * 
-     */
-    private Date gmtCreated;
-
-    /**
-     * 
-     */
-    private Date gmtModified;
-
-    /**
-     * 
-     */
-    private String modifier;
-
-    /**
-     * 
-     */
-    private String creator;
-
-    /**
-     * 
-     */
-    private Boolean isDeleted;
-
-    /**
-     * 
-     */
-    private Long tenantId;
-
+public class VideoTaskDO extends BaseDO {
     /**
      * 频道ID
      */
@@ -141,61 +106,15 @@ public class VideoTaskDO {
      */
     private String status;
 
-    public Long getId() {
-        return id;
-    }
+    /**
+     * 加密秘钥
+     */
+    private byte[] encodeKey;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreated() {
-        return gmtCreated;
-    }
-
-    public void setGmtCreated(Date gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier == null ? null : modifier.trim();
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator == null ? null : creator.trim();
-    }
-
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
+    /**
+     * 加密秘钥向量
+     */
+    private byte[] encodeIv;
 
     public Long getChannelId() {
         return channelId;
@@ -331,5 +250,21 @@ public class VideoTaskDO {
 
     public void setStatus(String status) {
         this.status = status == null ? null : status.trim();
+    }
+
+    public byte[] getEncodeKey() {
+        return encodeKey;
+    }
+
+    public void setEncodeKey(byte[] encodeKey) {
+        this.encodeKey = encodeKey;
+    }
+
+    public byte[] getEncodeIv() {
+        return encodeIv;
+    }
+
+    public void setEncodeIv(byte[] encodeIv) {
+        this.encodeIv = encodeIv;
     }
 }
