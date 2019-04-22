@@ -16,12 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.videofilter.h264;
+package site.alice.liveman.bo;
 
-public enum NaluPriority {
-    NALU_PRIORITY_DISPOSABLE,
-    NALU_PRIRITY_LOW,
-    NALU_PRIORITY_HIGH,
-    NALU_PRIORITY_HIGHEST,
-    OTHER
+import site.alice.liveman.dataobject.ExternalAppSecretDO;
+import site.alice.liveman.service.external.ExternalServiceType;
+
+import java.util.List;
+
+public interface ExternalAppSecretBO {
+
+    ExternalAppSecretDO getAppSecret(ExternalServiceType type);
+
+    void insert(ExternalAppSecretDO externalAppSecretDO);
+
+    List<ExternalAppSecretDO> selectForList();
+
+    int update(ExternalAppSecretDO externalAppSecretDO);
+
+    int remove(ExternalAppSecretDO externalAppSecretDO);
 }

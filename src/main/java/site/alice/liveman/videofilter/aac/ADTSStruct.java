@@ -16,22 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.utils;
+package site.alice.liveman.videofilter.aac;
 
+import site.alice.liveman.videofilter.PayloadStruct;
 
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.Arrays;
 
-public class ThreadPoolUtil {
+public class ADTSStruct extends PayloadStruct {
 
-    private static final ThreadPoolExecutor          cachedThreadPool    = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    private static final ScheduledThreadPoolExecutor scheduledThreadPool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(50);
+    public ProfileEnum   profile;
+    public FrequenceEnum frequence;
 
-    public static void execute(Runnable runnable) {
-        cachedThreadPool.execute(runnable);
+    public ADTSStruct(byte[] startCode) {
+        this.startCode = startCode;
     }
 
-    public static ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return scheduledThreadPool.schedule(command, delay, unit);
+    @Override
+    public String toString() {
+        return "ADTSStruct{" +
+                "profile=" + profile +
+                ", frequence=" + frequence +
+                ", len=" + len +
+                ", startPos=" + startPos +
+                ", startCode=" + Arrays.toString(startCode) +
+                '}';
     }
 }

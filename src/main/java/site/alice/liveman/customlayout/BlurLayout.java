@@ -15,17 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package site.alice.liveman.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import site.alice.liveman.mediaproxy.MediaProxyManager;
+package site.alice.liveman.customlayout;
 
-@Configuration
-public class MediaProxyConfig {
-
-    @Bean
-    public MediaProxyManager getMediaProxyManager() {
-        return new MediaProxyManager();
-    }
+public abstract class BlurLayout extends CustomLayout {
 }

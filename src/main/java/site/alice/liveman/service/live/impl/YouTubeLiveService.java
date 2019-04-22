@@ -17,74 +17,37 @@
  */
 package site.alice.liveman.service.live.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.M3u8Util;
 import site.alice.liveman.utils.M3u8Util.StreamInfo;
 
-import java.net.*;
+import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class YouTubeLiveService extends LiveService {
 
-    @Autowired
-    private              LiveManSetting liveManSetting;
-    private static final String         LIVE_VIDEO_SUFFIX   = "/videos?view=2&flow=grid";
-    private static final String         GET_VIDEO_INFO_URL  = "https://www.youtube.com/watch?v=";
-    private static final Pattern        initDataJsonPattern = Pattern.compile("window\\[\"ytInitialData\"] = (.+?);\n");
-    private static final Pattern        hlsvpPattern        = Pattern.compile("\\\\\\\"hlsManifestUrl\\\\\\\":\\\\\\\"(.+?)\\\\\\\"");
-    private static final Pattern        videoTitlePattern   = Pattern.compile("\"title\":\"(.+?)\"");
-    private static final Pattern        videoIdPattern      = Pattern.compile("/id/(.+?)/");
-    private static final Pattern        browseIdPattern     = Pattern.compile("RICH_METADATA_RENDERER_STYLE_BOX_ART.+?\\{\"browseId\":\"(.+?)\"}");
+    private static final String  GET_VIDEO_INFO_URL = "https://www.youtube.com/watch?v=";
+    private static final Pattern hlsvpPattern       = Pattern.compile("\\\\\\\"hlsManifestUrl\\\\\\\":\\\\\\\"(.+?)\\\\\\\"");
+    private static final Pattern videoTitlePattern  = Pattern.compile("\"title\":\"(.+?)\"");
+    private static final Pattern videoIdPattern     = Pattern.compile("/id/(.+?)/");
+    private static final Pattern browseIdPattern    = Pattern.compile("RICH_METADATA_RENDERER_STYLE_BOX_ART.+?\\{\"browseId\":\"(.+?)\"}");
 
     @Override
     public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        String channelUrl = channelInfo.getChannelUrl();
-        URI url = new URI(channelUrl + LIVE_VIDEO_SUFFIX);
-        String resHtml = HttpRequestUtil.downloadUrl(url, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
-        Matcher matcher = initDataJsonPattern.matcher(resHtml);
-        if (matcher.find()) {
-            String initDataJson = matcher.group(1);
-            JSONObject jsonObject = JSON.parseObject(initDataJson);
-            JSONArray tabs = jsonObject.getJSONObject("contents").getJSONObject("twoColumnBrowseResultsRenderer").getJSONArray("tabs");
-            JSONArray gridVideoRender = null;
-            for (Object tab : tabs) {
-                JSONObject tabObject = (JSONObject) tab;
-                JSONObject tabRenderer = tabObject.getJSONObject("tabRenderer");
-                if (tabRenderer != null && tabRenderer.getBoolean("selected")) {
-                    gridVideoRender = tabRenderer.getJSONObject("content").getJSONObject("sectionListRenderer").getJSONArray("contents").getJSONObject(0).getJSONObject("itemSectionRenderer").getJSONArray("contents").getJSONObject(0).getJSONObject("gridRenderer").getJSONArray("items");
-                    break;
-                }
-            }
-            String videoId = null;
-            if (gridVideoRender != null) {
-                for (Object reader : gridVideoRender) {
-                    JSONObject readerObject = (JSONObject) reader;
-                    if (readerObject.toJSONString().contains("BADGE_STYLE_TYPE_LIVE_NOW")) {
-                        videoId = readerObject.getJSONObject("gridVideoRenderer").getString("videoId");
-                        return new URI(GET_VIDEO_INFO_URL + videoId);
-                    }
-                }
-            }
-        } else {
-            throw new RuntimeException("没有找到InitData[" + url + "]");
-        }
-        return null;
+        return new URI(channelInfo.getChannelUrl() + "/").resolve("live");
     }
 
     @Override
@@ -100,6 +63,10 @@ public class YouTubeLiveService extends LiveService {
         String description = "";
         String videoId = "";
         if (hlsvpMatcher.find()) {
+            if (!videoInfoRes.contains("\"isLive\":true")) {
+                log.info("节目[" + videoInfoUrl + "]已停止直播(isLive=false)");
+                return null;
+            }
             String hlsvpUrl = URLDecoder.decode(StringEscapeUtils.unescapeJava(hlsvpMatcher.group(1)), StandardCharsets.UTF_8.name());
             Matcher videoIdMatcher = videoIdPattern.matcher(hlsvpUrl);
             if (videoIdMatcher.find()) {
@@ -137,11 +104,10 @@ public class YouTubeLiveService extends LiveService {
             videoInfo.setResolution(streamInfo.getResolution());
             videoInfo.setFrameRate(streamInfo.getFrameRate());
             return videoInfo;
-        } else if (videoInfoRes.contains("LIVE_STREAM_OFFLINE")) {
-            return null;
-        } else {
-            throw new RuntimeException("没有找到InitData[" + GET_VIDEO_INFO_URL + videoId + "]");
+        } else if (!videoInfoRes.contains("ytInitialData")) {
+            throw new RuntimeException("没有找到InitData[" + videoInfoUrl + "]");
         }
+        return null;
     }
 
     @Override

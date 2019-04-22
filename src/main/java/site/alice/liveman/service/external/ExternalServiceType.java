@@ -16,21 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.videofilter.h264;
+package site.alice.liveman.service.external;
 
-public enum NaluType {
-    NALU_TYPE_PADDING, // nothing
-    NALU_TYPE_SLICE,
-    NALU_TYPE_DPA,
-    NALU_TYPE_DPB,
-    NALU_TYPE_DPC,
-    NALU_TYPE_IDR,
-    NALU_TYPE_SEI,
-    NALU_TYPE_SPS,
-    NALU_TYPE_PPS,
-    NALU_TYPE_AUD,
-    NALU_TYPE_EOSEQ,
-    NALU_TYPE_EOSTREAM,
-    NALU_TYPE_FILL,
-    OTHER
+public enum ExternalServiceType {
+    BAIDU_API("baidu");
+
+    ExternalServiceType(String code) {
+        this.code = code;
+    }
+
+    private String code;
+
+    public String getCode() {
+        return code;
+    }
 }

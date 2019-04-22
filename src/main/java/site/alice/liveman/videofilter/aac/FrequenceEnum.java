@@ -16,22 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.utils;
+package site.alice.liveman.videofilter.aac;
 
-
-import java.util.Map;
-import java.util.concurrent.*;
-
-public class ThreadPoolUtil {
-
-    private static final ThreadPoolExecutor          cachedThreadPool    = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    private static final ScheduledThreadPoolExecutor scheduledThreadPool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(50);
-
-    public static void execute(Runnable runnable) {
-        cachedThreadPool.execute(runnable);
-    }
-
-    public static ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return scheduledThreadPool.schedule(command, delay, unit);
-    }
+public enum FrequenceEnum {
+    F96000Hz, F88200Hz, F64000Hz, F48000Hz, F44100Hz, F32000Hz, F24000Hz, F22050Hz, F16000Hz, F12000Hz, F11025Hz, F8000Hz
 }

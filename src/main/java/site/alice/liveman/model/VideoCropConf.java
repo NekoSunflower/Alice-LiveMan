@@ -25,22 +25,22 @@ import site.alice.liveman.jenum.VideoBannedTypeEnum;
 
 import java.io.Serializable;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class VideoCropConf implements Serializable {
-    private VideoBannedTypeEnum   videoBannedType = VideoBannedTypeEnum.NONE;
-    private int                   ctrlWidth;
-    private int                   ctrlHeight;
-    private int                   ctrlLeft;
-    private int                   ctrlTop;
-    private int                   blurSize;
-    private TreeSet<CustomLayout> layouts;
+    private VideoBannedTypeEnum                videoBannedType = VideoBannedTypeEnum.NONE;
+    private boolean                            autoBlur;
+    private int                                blurSize;
+    private CopyOnWriteArrayList<CustomLayout> layouts;
     @JsonIgnore
-    private byte[]                cachedDrawBytes;
+    private byte[]                             cachedDrawBytes;
     @JsonIgnore
-    private byte[]                cachedBlurBytes;
+    private byte[]                             cachedBlurBytes;
 
     public VideoCropConf() {
-        layouts = new TreeSet<>();
+        layouts = new CopyOnWriteArrayList<>();
     }
 
     public VideoBannedTypeEnum getVideoBannedType() {
@@ -51,38 +51,6 @@ public class VideoCropConf implements Serializable {
         this.videoBannedType = videoBannedType;
     }
 
-    public int getCtrlWidth() {
-        return ctrlWidth;
-    }
-
-    public void setCtrlWidth(int ctrlWidth) {
-        this.ctrlWidth = ctrlWidth;
-    }
-
-    public int getCtrlHeight() {
-        return ctrlHeight;
-    }
-
-    public void setCtrlHeight(int ctrlHeight) {
-        this.ctrlHeight = ctrlHeight;
-    }
-
-    public int getCtrlLeft() {
-        return ctrlLeft;
-    }
-
-    public void setCtrlLeft(int ctrlLeft) {
-        this.ctrlLeft = ctrlLeft;
-    }
-
-    public int getCtrlTop() {
-        return ctrlTop;
-    }
-
-    public void setCtrlTop(int ctrlTop) {
-        this.ctrlTop = ctrlTop;
-    }
-
     public int getBlurSize() {
         return blurSize;
     }
@@ -91,11 +59,11 @@ public class VideoCropConf implements Serializable {
         this.blurSize = blurSize;
     }
 
-    public TreeSet<CustomLayout> getLayouts() {
+    public CopyOnWriteArrayList<CustomLayout> getLayouts() {
         return layouts;
     }
 
-    public void setLayouts(TreeSet<CustomLayout> layouts) {
+    public void setLayouts(CopyOnWriteArrayList<CustomLayout> layouts) {
         this.layouts = layouts;
     }
 
@@ -115,14 +83,18 @@ public class VideoCropConf implements Serializable {
         this.cachedBlurBytes = cachedBlurBytes;
     }
 
+    public boolean isAutoBlur() {
+        return autoBlur;
+    }
+
+    public void setAutoBlur(boolean autoBlur) {
+        this.autoBlur = autoBlur;
+    }
+
     @Override
     public String toString() {
         return "VideoCropConf{" +
                 "videoBannedType=" + videoBannedType +
-                ", ctrlWidth=" + ctrlWidth +
-                ", ctrlHeight=" + ctrlHeight +
-                ", ctrlLeft=" + ctrlLeft +
-                ", ctrlTop=" + ctrlTop +
                 ", blurSize=" + blurSize +
                 ", layouts=" + layouts +
                 '}';

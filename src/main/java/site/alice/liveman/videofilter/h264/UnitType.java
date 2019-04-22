@@ -16,22 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.utils;
+package site.alice.liveman.videofilter.h264;
 
-
-import java.util.Map;
-import java.util.concurrent.*;
-
-public class ThreadPoolUtil {
-
-    private static final ThreadPoolExecutor          cachedThreadPool    = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    private static final ScheduledThreadPoolExecutor scheduledThreadPool = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(50);
-
-    public static void execute(Runnable runnable) {
-        cachedThreadPool.execute(runnable);
-    }
-
-    public static ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return scheduledThreadPool.schedule(command, delay, unit);
-    }
+public enum UnitType {
+    NALU_TYPE_PADDING, // nothing
+    NALU_TYPE_SLICE,
+    NALU_TYPE_DPA,
+    NALU_TYPE_DPB,
+    NALU_TYPE_DPC,
+    NALU_TYPE_IDR,
+    NALU_TYPE_SEI,
+    NALU_TYPE_SPS,
+    NALU_TYPE_PPS,
+    NALU_TYPE_AUD,
+    NALU_TYPE_EOSEQ,
+    NALU_TYPE_EOSTREAM,
+    NALU_TYPE_FILL,
+    OTHER
 }
