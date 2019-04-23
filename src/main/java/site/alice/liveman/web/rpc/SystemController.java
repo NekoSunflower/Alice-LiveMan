@@ -28,7 +28,7 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ActionResult;
-import site.alice.liveman.dataobject.vo.SettingVO;
+import site.alice.liveman.dataobject.dto.SettingVO;
 
 import javax.servlet.http.HttpSession;
 

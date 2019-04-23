@@ -31,7 +31,6 @@ import site.alice.liveman.customlayout.impl.RectangleBlurLayout;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.*;
 import site.alice.liveman.service.MediaHistoryService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
@@ -39,7 +38,7 @@ import site.alice.liveman.service.live.LiveServiceFactory;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.ProcessUtil;
 import site.alice.liveman.model.ActionResult;
-import site.alice.liveman.dataobject.vo.BroadcastTaskVO;
+import site.alice.liveman.dataobject.dto.BroadcastTaskVO;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;

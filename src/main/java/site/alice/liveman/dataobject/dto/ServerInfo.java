@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.model;
+package site.alice.liveman.dataobject.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
 

@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package site.alice.liveman.model;
+package site.alice.liveman.dataobject.dto;
 
-import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
 import site.alice.liveman.service.external.TextLocation;
 
@@ -25,8 +24,6 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoInfo implements Serializable {

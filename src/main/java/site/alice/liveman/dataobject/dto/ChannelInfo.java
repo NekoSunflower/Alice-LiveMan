@@ -15,30 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package site.alice.liveman.model;
+package site.alice.liveman.dataobject.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChannelInfo implements Serializable {
-    private String               defaultAccountId;
-    private boolean              autoBalance;
-    private String               dynamicPostAccountId;
-    private String               channelUrl;
-    private String               channelName;
-    private String               cookies;
-    private int[]                defaultArea;
-    private boolean              needRecord;
-    private VideoCropConf        defaultCropConf;
+    private String        defaultAccountId;
+    private boolean       autoBalance;
+    private String        dynamicPostAccountId;
+    private String        channelUrl;
+    private String        channelName;
+    private String        cookies;
+    private int[]         defaultArea;
+    private boolean       needRecord;
+    private VideoCropConf defaultCropConf;
     @JSONField(serialize = false)
-    private Long                 startAt;
+    private Long          startAt;
     @JSONField(serialize = false)
-    private Long                 endAt;
+    private Long          endAt;
 
     public ChannelInfo() {
         this.defaultCropConf = new VideoCropConf();

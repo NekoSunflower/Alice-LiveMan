@@ -32,8 +32,8 @@ import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.service.broadcast.BroadcastService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
 import site.alice.liveman.model.ActionResult;
-import site.alice.liveman.dataobject.vo.AccountInfoVO;
-import site.alice.liveman.dataobject.vo.LoginInfoVO;
+import site.alice.liveman.dataobject.dto.AccountInfoVO;
+import site.alice.liveman.dataobject.dto.LoginInfoVO;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;

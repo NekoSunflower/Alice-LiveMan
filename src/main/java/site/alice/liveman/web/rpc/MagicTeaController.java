@@ -25,7 +25,7 @@ import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.dataobject.vo.LiveNowVO;
+import site.alice.liveman.dataobject.dto.LiveNowVO;
 
 import java.util.ArrayList;
 import java.util.List;

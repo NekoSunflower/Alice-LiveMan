@@ -16,17 +16,45 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.model;
+package site.alice.liveman.dataobject.dto;
 
-import java.awt.*;
+import java.net.Proxy;
 
-public class MediaSetInfo {
+public class ProxyInfo {
+    private String     host;
+    private int        port;
+    private Proxy.Type type;
+    private String     proxyId;
 
+    public String getHost() {
+        return host;
+    }
 
-    private boolean singleTrack;
-    private Integer frameRate;
-    private Dimension outputSize;
+    public void setHost(String host) {
+        this.host = host;
+    }
 
+    public int getPort() {
+        return port;
+    }
 
+    public void setPort(int port) {
+        this.port = port;
+    }
 
+    public Proxy.Type getType() {
+        return type;
+    }
+
+    public void setType(Proxy.Type type) {
+        this.type = type;
+    }
+
+    public String getProxyId() {
+        return proxyId;
+    }
+
+    public void setProxyId(String proxyId) {
+        this.proxyId = proxyId;
+    }
 }

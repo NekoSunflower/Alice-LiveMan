@@ -30,7 +30,7 @@ import site.alice.liveman.model.ServerInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.BroadcastServerService;
 import site.alice.liveman.model.ActionResult;
-import site.alice.liveman.dataobject.vo.ServerVO;
+import site.alice.liveman.dataobject.dto.ServerVO;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;

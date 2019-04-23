@@ -16,45 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.model;
+package site.alice.liveman.dataobject.dto;
 
-import java.net.Proxy;
+import site.alice.liveman.dataobject.BaseDO;
 
-public class ProxyInfo {
-    private String     host;
-    private int        port;
-    private Proxy.Type type;
-    private String     proxyId;
+public class VideoConfHistoryDTO extends BaseDO {
+    /**
+     *
+     */
+    private Long accountId;
 
-    public String getHost() {
-        return host;
+    /**
+     *
+     */
+    private String videoConfig;
+
+    public Long getAccountId() {
+        return accountId;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
-    public int getPort() {
-        return port;
+    public String getVideoConfig() {
+        return videoConfig;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public Proxy.Type getType() {
-        return type;
-    }
-
-    public void setType(Proxy.Type type) {
-        this.type = type;
-    }
-
-    public String getProxyId() {
-        return proxyId;
-    }
-
-    public void setProxyId(String proxyId) {
-        this.proxyId = proxyId;
+    public void setVideoConfig(String videoConfig) {
+        this.videoConfig = videoConfig == null ? null : videoConfig.trim();
     }
 }
