@@ -33,7 +33,7 @@ import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.VideoCropConf;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
@@ -58,7 +58,7 @@ public class DrawingController {
             log.info("找不到请求的媒体代理任务信息[videoId=" + videoId + "]");
             return;
         }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
         if (videoInfo == null) {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;
@@ -133,7 +133,7 @@ public class DrawingController {
             log.info("找不到请求的媒体代理任务信息[videoId=" + videoId + "]");
             return;
         }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
         if (videoInfo == null) {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;

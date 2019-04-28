@@ -21,7 +21,7 @@ package site.alice.liveman.mediaproxy.proxytask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpGet;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.io.File;
@@ -41,7 +41,7 @@ public class FlvMediaProxyTask extends MediaProxyTask {
     @Override
     protected void runTask() throws Exception {
         while (!getTerminated() && retryCount.get() < MAX_RETRY_COUNT) {
-            VideoInfo videoInfo = getVideoInfo();
+            VideoInfo videoInfo = getVideoTaskDTO();
             try {
                 File flvFile = new File(MediaProxyManager.getTempPath() + "/flv/" + videoInfo.getVideoUnionId() + "/" + System.currentTimeMillis() + ".flv");
                 httpGet = new HttpGet(getSourceUrl());

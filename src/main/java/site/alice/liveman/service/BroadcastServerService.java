@@ -22,9 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.config.SettingConfig;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.ServerInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.DynamicServerDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.utils.ProcessUtil;
 
 import java.util.List;

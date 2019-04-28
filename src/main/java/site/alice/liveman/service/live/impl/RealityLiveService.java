@@ -21,11 +21,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -40,11 +38,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class RealityLiveService extends LiveService {
-    private static final String GET_FROM_VLID = "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/get_from_vlid";
-    public static final String LIST_STREAMER_OFFICIAL = "https://user-prod-dot-vlive-prod.appspot.com/api/v1/streamer_users/list_streamer_official";
+    private static final String GET_FROM_VLID          = "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/get_from_vlid";
+    public static final  String LIST_STREAMER_OFFICIAL = "https://user-prod-dot-vlive-prod.appspot.com/api/v1/streamer_users/list_streamer_official";
 
-    @Autowired
-    private LiveManSetting          liveManSetting;
     private Map<String, JSONObject> streamerUsersMap = new ConcurrentHashMap<>(50);
     private long                    lastRefreshTime  = 0;
 
@@ -65,12 +61,12 @@ public class RealityLiveService extends LiveService {
     }
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        return new URI(channelInfo.getChannelUrl());
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        return new URI(channelDTO.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -85,7 +81,7 @@ public class RealityLiveService extends LiveService {
             log.warn(nickname + "的用户信息不存在，请核对！");
             return null;
         }
-        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), channelInfo != null ? channelInfo.getCookies() : null, "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
+        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), channelDTO != null ? channelDTO.getCookies() : null, "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
         JSONObject liveDetailObj = JSON.parseObject(liveDetailJson);
         JSONArray lives = liveDetailObj.getJSONArray("payload");
         if (!lives.isEmpty()) {
@@ -112,7 +108,7 @@ public class RealityLiveService extends LiveService {
                 }
             } catch (Exception ignore) {
             }
-            return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+            return new VideoTaskDTO(channelDTO, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
         }
         return null;
     }

@@ -25,8 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.bo.ExternalAppSecretBO;
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
-import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.dataobject.dto.AccountDTO;
 import site.alice.liveman.model.ActionResult;
+import site.alice.liveman.model.UserContext;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -37,14 +38,13 @@ import java.util.List;
 public class ExternalAppController {
 
     @Autowired
-    private HttpSession         session;
+    private UserContext         userContext;
     @Autowired
     private ExternalAppSecretBO externalAppSecretBO;
 
     @RequestMapping("/list.json")
     public ActionResult<List<ExternalAppSecretDO>> list() {
-        AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (!account.isAdmin()) {
+        if (!userContext.getAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
         return ActionResult.getSuccessResult(externalAppSecretBO.selectForList());
@@ -52,8 +52,7 @@ public class ExternalAppController {
 
     @RequestMapping("/edit.json")
     public ActionResult edit(@RequestBody ExternalAppSecretDO externalAppSecretDO) {
-        AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (!account.isAdmin()) {
+        if (!userContext.getAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
         int update = externalAppSecretBO.update(externalAppSecretDO);
@@ -66,8 +65,7 @@ public class ExternalAppController {
 
     @RequestMapping("/add.json")
     public ActionResult add(@RequestBody ExternalAppSecretDO externalAppSecretDO) {
-        AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (!account.isAdmin()) {
+        if (!userContext.getAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
         externalAppSecretBO.insert(externalAppSecretDO);
@@ -76,8 +74,7 @@ public class ExternalAppController {
 
     @RequestMapping("/remove.json")
     public ActionResult remove(@RequestBody ExternalAppSecretDO externalAppSecretDO) {
-        AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (!account.isAdmin()) {
+        if (!userContext.getAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
         externalAppSecretBO.remove(externalAppSecretDO);

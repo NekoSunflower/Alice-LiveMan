@@ -22,9 +22,11 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -42,16 +44,16 @@ public class ShowRoomLiveService extends LiveService {
     private static final Pattern        initDataPattern = Pattern.compile("<script id=\"js-initial-data\" data-json=\"(.+?)\"></script>");
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        return new URI(channelInfo.getChannelUrl());
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        return new URI(channelDTO.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String channelHtml = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String channelHtml = HttpRequestUtil.downloadUrl(videoInfoUrl, channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = initDataPattern.matcher(channelHtml);
         if (matcher.find()) {
             JSONObject liveDataObj = JSON.parseObject(StringEscapeUtils.unescapeHtml(matcher.group(1)));
@@ -70,7 +72,7 @@ public class ShowRoomLiveService extends LiveService {
                 if (mediaUrl == null) {
                     mediaUrl = m3u8List[3];
                 }
-                return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+                return new VideoInfo(channelDTO, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
             }
         }
         return null;

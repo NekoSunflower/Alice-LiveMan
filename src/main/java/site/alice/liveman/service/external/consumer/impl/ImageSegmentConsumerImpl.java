@@ -23,7 +23,7 @@ import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.customlayout.impl.ImageSegmentBlurLayout;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.external.consumer.ImageSegmentConsumer;
 
 import java.awt.image.BufferedImage;
@@ -56,7 +56,7 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
             videoInfo.getCropConf().setCachedBlurBytes(null);
             MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoId() + "_low");
             if (mediaProxyTask != null) {
-                VideoInfo lowVideoInfo = mediaProxyTask.getVideoInfo();
+                VideoInfo lowVideoInfo = mediaProxyTask.getVideoTaskDTO();
                 if (lowVideoInfo != null) {
                     lowVideoInfo.getCropConf().setLayouts(customLayouts);
                     lowVideoInfo.getCropConf().setCachedBlurBytes(null);

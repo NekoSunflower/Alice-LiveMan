@@ -21,13 +21,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -37,11 +38,11 @@ public class MirrativLiveService extends LiveService {
     private static final String GET_LIVE_INFO_URL = "https://www.mirrativ.com/live/";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        String channelUrl = channelInfo.getChannelUrl();
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        String channelUrl = channelDTO.getChannelUrl();
         String userId = channelUrl.replace("https://www.mirrativ.com/user/", "").replace("/", "");
         URI liveHistoryUrl = new URI("https://www.mirrativ.com/api/live/live_history?user_id=" + userId + "&page=1");
-        String liveHistoryJson = HttpRequestUtil.downloadUrl(liveHistoryUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String liveHistoryJson = HttpRequestUtil.downloadUrl(liveHistoryUrl, channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject liveHistory = JSON.parseObject(liveHistoryJson);
         JSONArray lives = liveHistory.getJSONArray("lives");
         if (!lives.isEmpty()) {
@@ -55,18 +56,18 @@ public class MirrativLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo,String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
         String videoId = videoInfoUrl.toString().substring(GET_LIVE_INFO_URL.length());
-        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI("https://www.mirrativ.com/api/live/live?live_id=" + videoId), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI("https://www.mirrativ.com/api/live/live?live_id=" + videoId), channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject liveDetailObj = JSON.parseObject(liveDetailJson);
         String videoTitle = liveDetailObj.getString("title");
         URI m3u8ListUrl = new URI(liveDetailObj.getString("streaming_url_hls"));
         String[] m3u8List = HttpRequestUtil.downloadUrl(m3u8ListUrl, StandardCharsets.UTF_8).split("\n");
         String mediaUrl = m3u8List[3];
-        return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+        return new VideoInfo(channelDTO, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
     }
 
     @Override

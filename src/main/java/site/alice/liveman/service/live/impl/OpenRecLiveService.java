@@ -22,9 +22,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -41,10 +43,10 @@ public class OpenRecLiveService extends LiveService {
     private static final String         GET_MOVIES_API     = "https://public.openrec.tv/external/api/v5/movies";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        String channelName = channelInfo.getChannelUrl().replace("https://www.openrec.tv/user/", "");
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        String channelName = channelDTO.getChannelUrl().replace("https://www.openrec.tv/user/", "");
         URI moviesUrl = new URI(GET_MOVIES_API + "?channel_id=" + channelName + "&sort=onair_status");
-        String moviesJson = HttpRequestUtil.downloadUrl(moviesUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String moviesJson = HttpRequestUtil.downloadUrl(moviesUrl, channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONArray movies = JSON.parseArray(moviesJson);
         if (!movies.isEmpty()) {
             JSONObject movieObj = (JSONObject) movies.get(0);
@@ -58,12 +60,12 @@ public class OpenRecLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
         String videoId = videoInfoUrl.toString().substring(GET_VIDEO_INFO_URL.length());
-        String movieObjJson = HttpRequestUtil.downloadUrl(new URI(GET_MOVIES_API + "/" + videoId), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String movieObjJson = HttpRequestUtil.downloadUrl(new URI(GET_MOVIES_API + "/" + videoId), channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject movieObj = JSON.parseObject(movieObjJson);
         String videoTitle = movieObj.getString("title");
         URI m3u8ListUrl = new URI(movieObj.getJSONObject("media").getString("url"));
@@ -78,7 +80,7 @@ public class OpenRecLiveService extends LiveService {
         if (mediaUrl == null) {
             mediaUrl = m3u8List[3];
         }
-        return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+        return new VideoInfo(channelDTO, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
     }
 
     @Override

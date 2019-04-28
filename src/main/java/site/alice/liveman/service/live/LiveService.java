@@ -17,11 +17,12 @@
  */
 package site.alice.liveman.service.live;
 
-import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 
 import java.net.URI;
@@ -43,9 +44,9 @@ public abstract class LiveService {
         }
     }
 
-    public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception;
+    public abstract URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception;
 
-    public abstract VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception;
+    public abstract VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception;
 
     protected abstract boolean isMatch(URI channelUrl);
 }

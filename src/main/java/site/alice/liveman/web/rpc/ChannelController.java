@@ -28,9 +28,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.config.SettingConfig;
-import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.dataobject.dto.AccountDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 import site.alice.liveman.model.ActionResult;
 import site.alice.liveman.dataobject.dto.ChannelInfoVO;
 

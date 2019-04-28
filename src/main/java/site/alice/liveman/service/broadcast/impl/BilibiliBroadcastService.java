@@ -32,8 +32,8 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
-import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.AccountDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.broadcast.BroadcastService;
 import site.alice.liveman.utils.HttpRequestUtil;
 

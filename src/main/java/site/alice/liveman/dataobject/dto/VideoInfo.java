@@ -48,7 +48,6 @@ public class VideoInfo implements Serializable {
     private boolean                        vertical;
     private Double                         frameRate;
     private String                         resolution;
-    private List<TextLocation>             textLocations;
 
     public VideoInfo(ChannelInfo channelInfo, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
         this.channelInfo = channelInfo;
@@ -227,14 +226,6 @@ public class VideoInfo implements Serializable {
 
     public void setVertical(boolean vertical) {
         this.vertical = vertical;
-    }
-
-    public List<TextLocation> getTextLocations() {
-        return textLocations;
-    }
-
-    public void setTextLocations(List<TextLocation> textLocations) {
-        this.textLocations = textLocations;
     }
 
     @Override

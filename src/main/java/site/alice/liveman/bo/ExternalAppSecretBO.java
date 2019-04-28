@@ -19,6 +19,7 @@
 package site.alice.liveman.bo;
 
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
+import site.alice.liveman.dataobject.dto.ExternalAppSecretDTO;
 import site.alice.liveman.service.external.ExternalServiceType;
 
 import java.util.List;
@@ -27,11 +28,11 @@ public interface ExternalAppSecretBO {
 
     ExternalAppSecretDO getAppSecret(ExternalServiceType type);
 
-    void insert(ExternalAppSecretDO externalAppSecretDO);
+    int insert(ExternalAppSecretDTO externalAppSecretDTO);
 
-    List<ExternalAppSecretDO> selectForList();
+    List<ExternalAppSecretDTO> selectForList();
 
-    int update(ExternalAppSecretDO externalAppSecretDO);
+    int update(ExternalAppSecretDTO externalAppSecretDTO);
 
-    int remove(ExternalAppSecretDO externalAppSecretDO);
+    int remove(ExternalAppSecretDTO externalAppSecretDTO);
 }

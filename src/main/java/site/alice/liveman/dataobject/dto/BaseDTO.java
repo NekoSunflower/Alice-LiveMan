@@ -20,6 +20,8 @@ package site.alice.liveman.dataobject.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import site.alice.liveman.dataobject.BaseDO;
+import site.alice.liveman.utils.BeanUtils;
 import site.alice.liveman.utils.SecurityUtils;
 
 public class BaseDTO {
@@ -48,5 +50,11 @@ public class BaseDTO {
             }
         }
         this.id = null;
+    }
+
+    public <R extends BaseDO> R trans(Class<R> classz) {
+        R transDist = BeanUtils.instantiateClass(classz);
+        BeanUtils.copyProperties(this, transDist);
+        return transDist;
     }
 }

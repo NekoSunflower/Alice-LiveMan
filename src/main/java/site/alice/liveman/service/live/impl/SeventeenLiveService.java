@@ -22,8 +22,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -36,20 +38,20 @@ public class SeventeenLiveService extends LiveService {
     private static final String liveStreamInfoUrl = "https://api-dsa.17app.co/api/v1/liveStreams/getLiveStreamInfo";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        return new URI(channelInfo.getChannelUrl());
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        return new URI(channelDTO.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         String[] pathSplit = videoInfoUrl.getPath().split("/");
         String profileId = pathSplit[pathSplit.length - 1];
-        String liveStreamInfo = HttpRequestUtil.downloadUrl(new URI(liveStreamInfoUrl), channelInfo == null ? null : channelInfo.getCookies(), "{\"liveStreamID\":\"" + profileId + "\"}", StandardCharsets.UTF_8);
+        String liveStreamInfo = HttpRequestUtil.downloadUrl(new URI(liveStreamInfoUrl), channelDTO == null ? null : channelDTO.getCookies(), "{\"liveStreamID\":\"" + profileId + "\"}", StandardCharsets.UTF_8);
         JSONObject jsonObject = JSON.parseObject(liveStreamInfo).getJSONObject("data");
         JSONArray rtmpUrls = jsonObject.getJSONArray("rtmpUrls");
         if (jsonObject.getInteger("status") > 1 && rtmpUrls != null && rtmpUrls.size() > 0) {
             URI videoUrl = new URI(rtmpUrls.getJSONObject(0).getString("url"));
-            return new VideoInfo(channelInfo, profileId, jsonObject.getString("caption"), videoInfoUrl, videoUrl, "flv");
+            return new VideoInfo(channelDTO, profileId, jsonObject.getString("caption"), videoInfoUrl, videoUrl, "flv");
         }
         return null;
     }

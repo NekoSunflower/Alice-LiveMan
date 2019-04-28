@@ -73,15 +73,8 @@ public class UserContext {
     private Boolean autoRoomTitle;
 
     /**
-     * 推流地址
+     * 租户ID
      */
-    private String streamUrl;
-
-    /**
-     * 当前正在转播的视频id
-     */
-    private Long currentVideoId;
-
     private Long tenantId;
 
     public String getAccountSite() {
@@ -162,22 +155,6 @@ public class UserContext {
 
     public void setAutoRoomTitle(Boolean autoRoomTitle) {
         this.autoRoomTitle = autoRoomTitle;
-    }
-
-    public String getStreamUrl() {
-        return streamUrl;
-    }
-
-    public void setStreamUrl(String streamUrl) {
-        this.streamUrl = streamUrl;
-    }
-
-    public Long getCurrentVideoId() {
-        return currentVideoId;
-    }
-
-    public void setCurrentVideoId(Long currentVideoId) {
-        this.currentVideoId = currentVideoId;
     }
 
     public Long getTenantId() {

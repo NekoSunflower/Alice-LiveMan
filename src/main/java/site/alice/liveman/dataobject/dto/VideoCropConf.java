@@ -21,8 +21,10 @@ package site.alice.liveman.dataobject.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
+import site.alice.liveman.service.external.TextLocation;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VideoCropConf implements Serializable {
@@ -34,6 +36,8 @@ public class VideoCropConf implements Serializable {
     private byte[]                             cachedDrawBytes;
     @JsonIgnore
     private byte[]                             cachedBlurBytes;
+    @JsonIgnore
+    private List<TextLocation>                 textLocations;
 
     public VideoCropConf() {
         layouts = new CopyOnWriteArrayList<>();
@@ -85,6 +89,14 @@ public class VideoCropConf implements Serializable {
 
     public void setAutoBlur(boolean autoBlur) {
         this.autoBlur = autoBlur;
+    }
+
+    public List<TextLocation> getTextLocations() {
+        return textLocations;
+    }
+
+    public void setTextLocations(List<TextLocation> textLocations) {
+        this.textLocations = textLocations;
     }
 
     @Override

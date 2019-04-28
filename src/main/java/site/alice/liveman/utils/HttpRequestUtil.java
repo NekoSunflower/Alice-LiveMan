@@ -45,7 +45,7 @@ import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;

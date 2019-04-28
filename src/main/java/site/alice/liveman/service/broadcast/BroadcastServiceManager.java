@@ -30,12 +30,10 @@ import site.alice.liveman.event.MediaProxyEventListener;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.*;
 import site.alice.liveman.service.BroadcastServerService;
 import site.alice.liveman.service.MediaHistoryService;
 import site.alice.liveman.service.VideoFilterService;
 import site.alice.liveman.service.external.ImageSegmentService;
-import site.alice.liveman.service.external.consumer.impl.ImageSegmentConsumerImpl;
 import site.alice.liveman.service.external.consumer.impl.TextLocationConsumerImpl;
 import site.alice.liveman.service.live.LiveServiceFactory;
 import site.alice.liveman.service.external.TextLocationService;
@@ -46,7 +44,6 @@ import site.alice.liveman.utils.ThreadPoolUtil;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -80,7 +77,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         MediaProxyManager.addListener(new MediaProxyEventListener() {
             @Override
             public void onProxyStart(MediaProxyEvent e) {
-                VideoInfo videoInfo = e.getMediaProxyTask().getVideoInfo();
+                VideoInfo videoInfo = e.getMediaProxyTask().getVideoTaskDTO();
                 if (videoInfo != null) {
                     if (videoInfo.getVideoId().endsWith("_low")) {
                         return;
@@ -108,7 +105,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
 
             @Override
             public void onProxyStop(MediaProxyEvent e) {
-                final VideoInfo videoInfo = e.getMediaProxyTask().getVideoInfo();
+                final VideoInfo videoInfo = e.getMediaProxyTask().getVideoTaskDTO();
                 if (videoInfo != null) {
                     if (videoInfo.getChannelInfo() == null) {
                         return;
@@ -158,7 +155,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                 // 如果要推流的媒体已存在，则直接创建推流任务
                 MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoInfo.getVideoId());
                 if (mediaProxyTask != null) {
-                    videoInfo = mediaProxyTask.getVideoInfo();
+                    videoInfo = mediaProxyTask.getVideoTaskDTO();
                     BroadcastTask broadcastTask = new BroadcastTask(videoInfo, broadcastAccount);
                     if (!videoInfo.setBroadcastTask(broadcastTask)) {
                         throw new RuntimeException("此媒体已在推流任务列表中，无法添加");
@@ -360,7 +357,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                                     if (broadcastAccount.isVip()) {
                                         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(currentVideo.getVideoId() + "_low");
                                         if (mediaProxyTask != null) {
-                                            lowVideoInfo = mediaProxyTask.getVideoInfo();
+                                            lowVideoInfo = mediaProxyTask.getVideoTaskDTO();
                                         } else {
                                             lowVideoInfo = liveServiceFactory.getLiveService(currentVideo.getVideoInfoUrl().toString()).getLiveVideoInfo(currentVideo.getVideoInfoUrl(), currentVideo.getChannelInfo(), "720");
                                             if (lowVideoInfo == null) {

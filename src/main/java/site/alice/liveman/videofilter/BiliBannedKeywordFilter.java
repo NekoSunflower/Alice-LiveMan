@@ -22,15 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import site.alice.liveman.jenum.VideoBannedTypeEnum;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
-import site.alice.liveman.utils.DynamicAreaUtil;
-
-import java.io.File;
-import java.io.IOException;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 @Slf4j
 @Component
@@ -39,12 +33,12 @@ public class BiliBannedKeywordFilter implements VideoFilter {
     private LiveManSetting liveManSetting;
 
     @Override
-    public boolean doFilter(VideoInfo videoInfo) {
+    public boolean doFilter(VideoTaskDTO videoTaskDTO) {
         String bannedKeyword = null;
         for (String bannedChannel : liveManSetting.getBannedYoutubeChannel()) {
             String[] bannedChannelInfo = bannedChannel.split(":");
             if (bannedChannelInfo.length > 1) {
-                if (bannedChannelInfo[1].equals(videoInfo.getDescription())) {
+                if (bannedChannelInfo[1].equals(videoTaskDTO.getDescription())) {
                     bannedKeyword = bannedChannelInfo[0];
                     break;
                 }
@@ -52,7 +46,7 @@ public class BiliBannedKeywordFilter implements VideoFilter {
         }
         for (String _bannedKeyword : liveManSetting.getBannedKeywords()) {
             if (StringUtils.isNotEmpty(_bannedKeyword)) {
-                if (StringUtils.containsIgnoreCase(videoInfo.getTitle(), _bannedKeyword) || _bannedKeyword.equals(bannedKeyword)) {
+                if (StringUtils.containsIgnoreCase(videoTaskDTO.getTitle(), _bannedKeyword) || _bannedKeyword.equals(bannedKeyword)) {
                     bannedKeyword = _bannedKeyword;
                     break;
                 }

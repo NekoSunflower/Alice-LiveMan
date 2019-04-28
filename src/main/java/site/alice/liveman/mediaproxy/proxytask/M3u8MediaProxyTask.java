@@ -19,16 +19,14 @@ package site.alice.liveman.mediaproxy.proxytask;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.utils.FfmpegUtil;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.ProcessUtil;
@@ -39,13 +37,11 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class M3u8MediaProxyTask extends MediaProxyTask {
@@ -64,7 +60,7 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
         downloadTask = new MediaProxyTask(getVideoId() + "_DOWNLOAD", null) {
             @Override
             protected void runTask() throws InterruptedException {
-                VideoInfo mediaVideoInfo = M3u8MediaProxyTask.this.getVideoInfo();
+                VideoInfo mediaVideoInfo = M3u8MediaProxyTask.this.getVideoTaskDTO();
                 boolean needLowFrameRate = liveManSetting.getPreReEncode() && mediaVideoInfo.getVideoId().endsWith("_low") &&
                         (mediaVideoInfo.getFrameRate() != null && mediaVideoInfo.getFrameRate() > 30 ||
                                 mediaVideoInfo.getResolution() != null && Arrays.stream(mediaVideoInfo.getResolution().split("x")).mapToLong(Long::parseLong).sum() > (1280 + 720));
@@ -121,7 +117,7 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
             private void downloadSeqFile(M3u8SeqInfo m3u8SeqInfo) {
                 for (int i = 0; i < 3; i++) {
                     try {
-                        VideoInfo mediaVideoInfo = M3u8MediaProxyTask.this.getVideoInfo();
+                        VideoInfo mediaVideoInfo = M3u8MediaProxyTask.this.getVideoTaskDTO();
                         if (!m3u8SeqInfo.getSeqFile().exists()) {
                             if (mediaVideoInfo.getEncodeMethod() == null) {
                                 HttpRequestUtil.downloadToFile(m3u8SeqInfo.getSeqUrl(), m3u8SeqInfo.getSeqFile());
@@ -164,12 +160,12 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
     @Override
     public void runTask() throws InterruptedException {
         MediaProxyManager.runProxy(downloadTask);
-        VideoInfo videoInfo = getVideoInfo();
+        VideoInfo videoInfo = getVideoTaskDTO();
         File m3u8File = new File(MediaProxyManager.getTempPath() + "/m3u8/" + videoInfo.getVideoUnionId() + "/index.m3u8");
         m3u8File.delete();
         boolean isFirst = true;
         while (retryCount.get() < MAX_RETRY_COUNT && !getTerminated()) {
-            ChannelInfo channelInfo = getVideoInfo().getChannelInfo();
+            ChannelInfo channelInfo = getVideoTaskDTO().getChannelInfo();
             List<M3u8SeqInfo> tempSeqList = new LinkedList<>();
             long start = System.nanoTime();
             try {
@@ -270,7 +266,7 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
     }
 
     public String createM3U8File() {
-        VideoInfo videoInfo = getVideoInfo();
+        VideoInfo videoInfo = getVideoTaskDTO();
         StringBuilder sb = new StringBuilder();
         for (File seqFile : seqFileQueue) {
             if (sb.length() == 0) {

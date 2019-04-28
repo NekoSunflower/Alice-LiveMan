@@ -18,9 +18,8 @@
 package site.alice.liveman.mediaproxy.proxytask;
 
 import lombok.extern.slf4j.Slf4j;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.service.live.LiveServiceFactory;
 import site.alice.liveman.utils.FfmpegUtil;
 import site.alice.liveman.utils.ProcessUtil;
 
@@ -37,7 +36,7 @@ public abstract class MediaProxyTask implements Runnable, Serializable {
     private           String        videoId;
     private           URI           sourceUrl;
     private           URI           targetUrl;
-    private           VideoInfo     videoInfo;
+    private           VideoTaskDTO  videoTaskDTO;
     private transient Thread        runThread;
     private volatile  Boolean       terminated;
     private           long          lastKeyFrameTime;
@@ -67,12 +66,12 @@ public abstract class MediaProxyTask implements Runnable, Serializable {
         this.targetUrl = targetUrl;
     }
 
-    public VideoInfo getVideoInfo() {
-        return videoInfo;
+    public VideoTaskDTO getVideoTaskDTO() {
+        return videoTaskDTO;
     }
 
-    public void setVideoInfo(VideoInfo videoInfo) {
-        this.videoInfo = videoInfo;
+    public void setVideoTaskDTO(VideoTaskDTO videoTaskDTO) {
+        this.videoTaskDTO = videoTaskDTO;
     }
 
     public Boolean getTerminated() {

@@ -18,7 +18,11 @@
 
 package site.alice.liveman.dataobject.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import site.alice.liveman.dataobject.BaseDO;
+
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoTaskDTO extends BaseDO {
     /**
@@ -115,6 +119,27 @@ public class VideoTaskDTO extends BaseDO {
      * 加密秘钥向量
      */
     private byte[] encodeIv;
+
+    /**
+     * 节目开始时间
+     */
+    private Long startAt;
+
+    /**
+     * 节目结束时间
+     */
+    private Long endAt;
+
+    public VideoTaskDTO(ChannelDTO channelDTO, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
+        if (channelDTO != null) {
+            this.channelId = channelDTO.getId();
+        }
+        this.externalVideoId = videoId;
+        this.videoTitle = title;
+        this.videoInfoUrl = videoInfoUrl.toString();
+        this.mediaUrl = mediaUrl.toString();
+        this.mediaFormat = mediaFormat;
+    }
 
     public Long getChannelId() {
         return channelId;
@@ -266,5 +291,21 @@ public class VideoTaskDTO extends BaseDO {
 
     public void setEncodeIv(byte[] encodeIv) {
         this.encodeIv = encodeIv;
+    }
+
+    public Long getStartAt() {
+        return startAt;
+    }
+
+    public void setStartAt(Long startAt) {
+        this.startAt = startAt;
+    }
+
+    public Long getEndAt() {
+        return endAt;
+    }
+
+    public void setEndAt(Long endAt) {
+        this.endAt = endAt;
     }
 }

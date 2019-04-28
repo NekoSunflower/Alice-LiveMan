@@ -21,7 +21,7 @@ package site.alice.liveman.customlayout;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import site.alice.liveman.customlayout.impl.*;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 import javax.validation.constraints.NotNull;
 import java.awt.*;

@@ -28,8 +28,8 @@ import site.alice.liveman.event.MediaProxyEvent;
 import site.alice.liveman.event.MediaProxyEventListener;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.utils.ThreadPoolUtil;
 
 import java.net.Inet4Address;
@@ -61,7 +61,7 @@ public class MediaProxyManager implements ApplicationContextAware {
 
     public static MediaProxyTask createProxy(VideoInfo videoInfo) throws Exception {
         MediaProxyTask mediaProxyTask = createProxyTask(videoInfo, videoInfo.getMediaUrl(), videoInfo.getMediaFormat());
-        mediaProxyTask.setVideoInfo(videoInfo);
+        mediaProxyTask.setVideoTaskDTO(videoInfo);
         ChannelInfo channelInfo = videoInfo.getChannelInfo();
         if (channelInfo != null) {
             videoInfo.setArea(channelInfo.getDefaultArea());

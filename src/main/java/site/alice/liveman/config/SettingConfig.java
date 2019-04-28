@@ -24,7 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;

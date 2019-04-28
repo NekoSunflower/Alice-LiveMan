@@ -24,7 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 import site.alice.liveman.service.live.LiveServiceFactory;
 
 import java.util.concurrent.CopyOnWriteArraySet;

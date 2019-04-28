@@ -18,10 +18,10 @@
 
 package site.alice.liveman.videofilter;
 
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 public interface VideoFilter {
 
-    boolean doFilter(VideoInfo videoInfo);
+    boolean doFilter(VideoTaskDTO videoTaskDTO);
 
 }

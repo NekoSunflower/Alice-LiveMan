@@ -36,24 +36,15 @@ public abstract class AbstractBaseBO<D extends BaseDO, E, M extends BaseDOMapper
     @Autowired
     private UserContext userContext;
 
-    private M mapper;
-
-    public M getMapper() {
-        return mapper;
-    }
+    protected M mapper;
 
     protected abstract Class<D> getDOClass();
-
-    @Autowired
-    public void setMapper(M mapper) {
-        this.mapper = mapper;
-    }
 
     long countByExample(E example) {
         return mapper.countByExample(example);
     }
 
-    int deleteByExample(E example) {
+    protected int deleteByExample(E example) {
         D record = null;
         try {
             record = getDOClass().newInstance();
@@ -66,7 +57,7 @@ public abstract class AbstractBaseBO<D extends BaseDO, E, M extends BaseDOMapper
         return mapper.updateByExample(record, example);
     }
 
-    int deleteByPrimaryKey(Long id) {
+    public int deleteByPrimaryKey(Long id) {
         D record = null;
         try {
             record = getDOClass().newInstance();
@@ -80,47 +71,51 @@ public abstract class AbstractBaseBO<D extends BaseDO, E, M extends BaseDOMapper
         return mapper.updateByPrimaryKeySelective(record);
     }
 
-    int insert(D record) {
+    public int insert(D record) {
         record.setGmtCreated(new Date());
         record.setGmtModified(new Date());
         record.setCreator(userContext.getAccountId() + "");
         record.setModifier(userContext.getAccountId() + "");
+        record.setTenantId(userContext.getTenantId());
         return mapper.insert(record);
     }
 
-    int insertSelective(D record) {
+    public int insertSelective(D record) {
         record.setGmtCreated(new Date());
         record.setGmtModified(new Date());
+        record.setCreator(userContext.getAccountId() + "");
+        record.setModifier(userContext.getAccountId() + "");
+        record.setTenantId(userContext.getTenantId());
         return mapper.insertSelective(record);
     }
 
-    List<D> selectByExample(E example) {
+    public List<D> selectByExample(E example) {
         return mapper.selectByExample(example);
     }
 
-    D selectByPrimaryKey(Long id) {
+    public D selectByPrimaryKey(Long id) {
         return mapper.selectByPrimaryKey(id);
     }
 
-    int updateByExampleSelective(@Param("record") D record, @Param("example") E example) {
+    public int updateByExampleSelective(@Param("record") D record, @Param("example") E example) {
         record.setGmtModified(new Date());
         record.setModifier(userContext.getAccountId() + "");
         return mapper.updateByExampleSelective(record, example);
     }
 
-    int updateByExample(@Param("record") D record, @Param("example") E example) {
+    public int updateByExample(@Param("record") D record, @Param("example") E example) {
         record.setGmtModified(new Date());
         record.setModifier(userContext.getAccountId() + "");
         return mapper.updateByExample(record, example);
     }
 
-    int updateByPrimaryKeySelective(D record) {
+    public int updateByPrimaryKeySelective(D record) {
         record.setGmtModified(new Date());
         record.setModifier(userContext.getAccountId() + "");
         return mapper.updateByPrimaryKeySelective(record);
     }
 
-    int updateByPrimaryKey(D record) {
+    public int updateByPrimaryKey(D record) {
         record.setGmtModified(new Date());
         record.setModifier(userContext.getAccountId() + "");
         return mapper.updateByPrimaryKey(record);

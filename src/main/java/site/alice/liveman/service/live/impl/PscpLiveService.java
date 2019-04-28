@@ -23,8 +23,10 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -42,9 +44,9 @@ public class PscpLiveService extends LiveService {
     private static final String  accessVideoPublicUrl = "https://proxsee.pscp.tv/api/v2/accessVideoPublic?broadcast_id=";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        String channelUrl = channelInfo.getChannelUrl();
-        String channelHtml = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelInfo.getChannelUrl(), Collections.emptyMap(), StandardCharsets.UTF_8);
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        String channelUrl = channelDTO.getChannelUrl();
+        String channelHtml = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelDTO.getChannelUrl(), Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher dataStoreMatcher = dataStorePattern.matcher(channelHtml);
         if (dataStoreMatcher.find()) {
             String dataStore = StringEscapeUtils.unescapeJava(dataStoreMatcher.group(0));
@@ -64,15 +66,15 @@ public class PscpLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         String broadcastId = videoInfoUrl.getPath().replace("/w/", "");
-        String json = HttpRequestUtil.downloadUrl(new URI(accessVideoPublicUrl + broadcastId), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String json = HttpRequestUtil.downloadUrl(new URI(accessVideoPublicUrl + broadcastId), channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject accessVideoPublic = JSON.parseObject(json);
         JSONObject broadcast = accessVideoPublic.getJSONObject("broadcast");
         String title = broadcast.getString("status");
         String hlsUrl = accessVideoPublic.getString("hls_url");
         if (StringUtils.isNotEmpty(hlsUrl)) {
-            return new VideoInfo(channelInfo, broadcastId, title, videoInfoUrl, new URI(hlsUrl), "m3u8");
+            return new VideoInfo(channelDTO, broadcastId, title, videoInfoUrl, new URI(hlsUrl), "m3u8");
         }
         return null;
     }

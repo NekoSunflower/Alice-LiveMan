@@ -27,7 +27,7 @@ import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.MediaHistory;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +73,7 @@ public class MediaHistoryService {
             @Override
             public void onProxyStart(MediaProxyEvent e) {
                 MediaProxyTask task = e.getMediaProxyTask();
-                VideoInfo videoInfo = task.getVideoInfo();
+                VideoInfo videoInfo = task.getVideoTaskDTO();
                 if (videoInfo != null && !mediaHistoryMap.containsKey(videoInfo.getVideoId())) {
                     ChannelInfo channelInfo = videoInfo.getChannelInfo();
                     if (channelInfo == null) {

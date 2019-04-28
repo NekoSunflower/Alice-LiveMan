@@ -23,7 +23,7 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.ptr.IntByReference;
 import lombok.extern.slf4j.Slf4j;
-import site.alice.liveman.model.ServerInfo;
+import site.alice.liveman.dataobject.dto.DynamicServerDTO;
 
 import java.io.*;
 import java.lang.reflect.Field;

@@ -29,12 +29,9 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 public class NicoLiveMediaProxyTask extends M3u8MediaProxyTask {
@@ -87,8 +84,8 @@ public class NicoLiveMediaProxyTask extends M3u8MediaProxyTask {
             public void beforeRequest(Map<String, List<String>> headers) {
                 headers.put("Origin", Collections.singletonList("http://live2.nicovideo.jp"));
                 headers.put("User-Agent", Collections.singletonList("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"));
-                if (getVideoInfo().getChannelInfo() != null) {
-                    headers.put("Cookie", Collections.singletonList(getVideoInfo().getChannelInfo().getCookies()));
+                if (getVideoTaskDTO().getChannelInfo() != null) {
+                    headers.put("Cookie", Collections.singletonList(getVideoTaskDTO().getChannelInfo().getCookies()));
                 }
             }
         }).build();

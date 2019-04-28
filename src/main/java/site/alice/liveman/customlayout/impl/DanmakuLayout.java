@@ -19,7 +19,7 @@
 package site.alice.liveman.customlayout.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -20,101 +20,81 @@ package site.alice.liveman.bo.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.bo.AbstractBaseBO;
 import site.alice.liveman.bo.ExternalAppSecretBO;
-import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.ExternalAppSecretDOExample;
+import site.alice.liveman.dataobject.dto.ExternalAppSecretDTO;
+import site.alice.liveman.mapper.ExternalAppSecretDOMapper;
+import site.alice.liveman.model.UserContext;
 import site.alice.liveman.service.external.ExternalServiceType;
+import site.alice.liveman.utils.BeanUtils;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class ExternalAppSecretBOImpl implements ExternalAppSecretBO {
+public class ExternalAppSecretBOImpl extends AbstractBaseBO<ExternalAppSecretDO, ExternalAppSecretDOExample, ExternalAppSecretDOMapper> implements ExternalAppSecretBO {
 
     @Autowired
-    private LiveManSetting liveManSetting;
-    @Autowired
-    private SettingConfig  settingConfig;
+    private UserContext userContext;
 
     @Override
     public ExternalAppSecretDO getAppSecret(ExternalServiceType type) {
-        try {
-//            List<ExternalAppSecretDO> externalAppSecretDOS = liveManSetting.getExternalAppSecretDOS().stream().filter(ocrAppSecretDO -> type.getCode().equals(ocrAppSecretDO.getType())).peek(ocrAppSecretDO -> {
-//                Date nextResumeTime = ocrAppSecretDO.getNextResumeTime();
-//                if (nextResumeTime != null && nextResumeTime.getTime() <= System.currentTimeMillis()) {
-//                    ocrAppSecretDO.getLimit().set(ocrAppSecretDO.getTotalLimit());
-//                    ocrAppSecretDO.setNextResumeTime(new Date(nextResumeTime.getYear(), nextResumeTime.getMonth(), nextResumeTime.getDate() + 1));
-//                }
-//            }).sorted((o1, o2) -> o2.getLimit().get() - o1.getLimit().get()).collect(Collectors.toList());
-//            if (!externalAppSecretDOS.isEmpty()) {
-//                ExternalAppSecretDO externalAppSecretDO = externalAppSecretDOS.get(0);
-//                externalAppSecretDO.getLimit().decrementAndGet();
-//                log.info("返回OcrAppSecret：" + ToStringBuilder.reflectionToString(externalAppSecretDO));
-//                return externalAppSecretDO;
-//            }
-//            log.info("没有找到可用的AppSecret，请求的Type:" + type.getCode());
-            return null;
-        } finally {
-            settingConfig.saveSetting(liveManSetting);
+        ExternalAppSecretDOExample example = new ExternalAppSecretDOExample();
+        example.createCriteria().andTenantIdEqualTo(userContext.getTenantId()).andTypeEqualTo(type.getCode());
+        example.setOrderByClause("`limit` desc limit 1");
+        List<ExternalAppSecretDO> externalAppSecretDOS = mapper.selectByExample(example);
+        if (!externalAppSecretDOS.isEmpty()) {
+            ExternalAppSecretDO externalAppSecretDO = externalAppSecretDOS.get(0);
+            mapper.decrementLimit(externalAppSecretDO.getId());
+            log.info("返回OcrAppSecret：" + ToStringBuilder.reflectionToString(externalAppSecretDO));
+            return externalAppSecretDO;
         }
+        log.info("没有找到可用的AppSecret，请求的Type:" + type.getCode());
+        return null;
     }
 
     @Override
-    public void insert(ExternalAppSecretDO externalAppSecretDO) {
-        if (externalAppSecretDO.getNextResumeTime() == null) {
+    protected Class<ExternalAppSecretDO> getDOClass() {
+        return ExternalAppSecretDO.class;
+    }
+
+    @Autowired
+    public void setMapper(ExternalAppSecretDOMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    @Override
+    public int insert(ExternalAppSecretDTO externalAppSecretDTO) {
+        if (externalAppSecretDTO.getNextResumeTime() == null) {
             Date date = new Date();
-            externalAppSecretDO.setNextResumeTime(new Date(date.getYear(), date.getMonth(), date.getDate() + 1));
+            externalAppSecretDTO.setNextResumeTime(new Date(date.getYear(), date.getMonth(), date.getDate() + 1));
         }
-        if (externalAppSecretDO.getLimit() == null) {
-            externalAppSecretDO.setLimit(externalAppSecretDO.getTotalLimit());
+        if (externalAppSecretDTO.getLimit() == null) {
+            externalAppSecretDTO.setLimit(externalAppSecretDTO.getTotalLimit());
         }
-        try {
-            liveManSetting.getExternalAppSecretDOS().add(externalAppSecretDO);
-        } finally {
-            settingConfig.saveSetting(liveManSetting);
-        }
+        return super.insert(externalAppSecretDTO.trans(ExternalAppSecretDO.class));
     }
 
     @Override
-    public List<ExternalAppSecretDO> selectForList() {
-        CopyOnWriteArraySet<ExternalAppSecretDO> externalAppSecretDOS = liveManSetting.getExternalAppSecretDOS();
-        if (liveManSetting.getExternalAppSecretDOS() == null) {
-            return new ArrayList<>();
-        } else {
-            return new ArrayList<>(externalAppSecretDOS);
-        }
+    public List<ExternalAppSecretDTO> selectForList() {
+        ExternalAppSecretDOExample example = new ExternalAppSecretDOExample();
+        example.createCriteria().andTenantIdEqualTo(userContext.getTenantId());
+        List<ExternalAppSecretDO> externalAppSecretDOS = mapper.selectByExample(example);
+        return BeanUtils.transList(externalAppSecretDOS, ExternalAppSecretDTO.class);
     }
 
     @Override
-    public int update(ExternalAppSecretDO externalAppSecretDO) {
-        AtomicInteger count = new AtomicInteger();
-        liveManSetting.getExternalAppSecretDOS().forEach(appSecretDO -> {
-            if (appSecretDO.equals(externalAppSecretDO)) {
-                BeanUtils.copyProperties(externalAppSecretDO, appSecretDO);
-                count.getAndIncrement();
-            }
-        });
-        if (count.get() > 0) {
-            settingConfig.saveSetting(liveManSetting);
-        }
-        return count.get();
+    public int update(ExternalAppSecretDTO externalAppSecretDTO) {
+        return updateByPrimaryKey(externalAppSecretDTO.trans(ExternalAppSecretDO.class));
     }
 
     @Override
-    public int remove(ExternalAppSecretDO externalAppSecretDO) {
-        boolean result = liveManSetting.getExternalAppSecretDOS().removeIf(appSecretDO -> appSecretDO.equals(externalAppSecretDO));
-        if (result) {
-            settingConfig.saveSetting(liveManSetting);
-        }
-        return result ? 1 : 0;
+    public int remove(ExternalAppSecretDTO externalAppSecretDTO) {
+        return deleteByPrimaryKey(externalAppSecretDTO.getId());
     }
 }

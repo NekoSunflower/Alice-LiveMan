@@ -18,6 +18,9 @@
 
 package site.alice.liveman.dataobject;
 
+import site.alice.liveman.dataobject.dto.BaseDTO;
+import site.alice.liveman.utils.BeanUtils;
+
 import java.util.Date;
 
 public class BaseDO {
@@ -111,5 +114,11 @@ public class BaseDO {
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public <R extends BaseDTO> R trans(Class<R> classz) {
+        R transDist = BeanUtils.instantiateClass(classz);
+        BeanUtils.copyProperties(this, transDist);
+        return transDist;
     }
 }

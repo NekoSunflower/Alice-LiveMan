@@ -27,7 +27,7 @@ import de.tuberlin.onedrivesdk.folder.OneFolder;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 
 import java.io.IOException;
 import java.util.HashMap;

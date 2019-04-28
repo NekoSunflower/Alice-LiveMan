@@ -18,7 +18,7 @@
 
 package site.alice.liveman.service.broadcast;
 
-import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.dataobject.dto.AccountDTO;
 
 import java.io.IOException;
 import java.io.InputStream;

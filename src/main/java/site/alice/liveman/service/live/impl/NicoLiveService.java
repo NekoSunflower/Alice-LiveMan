@@ -19,8 +19,10 @@
 package site.alice.liveman.service.live.impl;
 
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
@@ -40,12 +42,12 @@ public class NicoLiveService extends LiveService {
     private static final Pattern VIDEO_ID_PATTERN       = Pattern.compile("&quot;nicoliveProgramId&quot;:&quot;(.+?)&quot;");
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        String channelUrl = channelInfo.getChannelUrl();
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        String channelUrl = channelDTO.getChannelUrl();
         if (!channelUrl.endsWith("/live")) {
             channelUrl += "/live";
         }
-        String html = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String html = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = LIVE_VIDEO_URL_PATTERN.matcher(html);
         if (matcher.find()) {
             return new URI(matcher.group(1));
@@ -54,11 +56,11 @@ public class NicoLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String html = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String html = HttpRequestUtil.downloadUrl(videoInfoUrl, channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = EMBEDDED_DATA_PATTERN.matcher(html);
         if (matcher.find()) {
             String embeddedData = matcher.group(1);
@@ -77,7 +79,7 @@ public class NicoLiveService extends LiveService {
             if (videoIdMatcher.find()) {
                 videoId = videoIdMatcher.group(1);
             }
-            return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, new URI(webSocketUrl), "m3u8");
+            return new VideoInfo(channelDTO, videoId, videoTitle, videoInfoUrl, new URI(webSocketUrl), "m3u8");
         } else {
             throw new RuntimeException("没有找到EmbeddedData[" + videoInfoUrl + "]");
         }

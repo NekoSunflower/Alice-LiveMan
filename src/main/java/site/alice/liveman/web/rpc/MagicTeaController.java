@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.dataobject.dto.AccountDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.dataobject.dto.LiveNowVO;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class MagicTeaController {
         List<LiveNowVO> liveNowVOS = new ArrayList<>();
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         for (MediaProxyTask mediaProxyTask : executedProxyTaskMap.values()) {
-            VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+            VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
             if (videoInfo != null && videoInfo.getChannelInfo() != null) {
                 LiveNowVO liveNowVO = new LiveNowVO();
                 if (videoInfo.getBroadcastTask() != null) {

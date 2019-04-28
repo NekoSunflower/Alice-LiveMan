@@ -21,8 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.dataobject.dto.ChannelDTO;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.dataobject.dto.VideoTaskDTO;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.M3u8Util;
@@ -46,16 +48,16 @@ public class YouTubeLiveService extends LiveService {
     private static final Pattern browseIdPattern    = Pattern.compile("RICH_METADATA_RENDERER_STYLE_BOX_ART.+?\\{\"browseId\":\"(.+?)\"}");
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
-        return new URI(channelInfo.getChannelUrl() + "/").resolve("live");
+    public URI getLiveVideoInfoUrl(ChannelDTO channelDTO) throws Exception {
+        return new URI(channelDTO.getChannelUrl() + "/").resolve("live");
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoTaskDTO getLiveVideoInfo(URI videoInfoUrl, ChannelDTO channelDTO, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String videoInfoRes = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String videoInfoRes = HttpRequestUtil.downloadUrl(videoInfoUrl, channelDTO != null ? channelDTO.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher hlsvpMatcher = hlsvpPattern.matcher(videoInfoRes);
         Matcher videoTitleMatcher = videoTitlePattern.matcher(videoInfoRes);
         Matcher browseIdMatcher = browseIdPattern.matcher(videoInfoRes);
@@ -96,7 +98,7 @@ public class YouTubeLiveService extends LiveService {
                 mediaUrl = m3u8List[m3u8List.length - 1];
             }
             String[] videoParts = videoId.split("\\.");
-            VideoInfo videoInfo = new VideoInfo(channelInfo, videoParts[0], videoTitle, videoInfoUrl, new URI(mediaUrl), "m3u8");
+            VideoInfo videoInfo = new VideoInfo(channelDTO, videoParts[0], videoTitle, videoInfoUrl, new URI(mediaUrl), "m3u8");
             if (videoParts.length > 1) {
                 videoInfo.setPart(videoParts[1]);
             }

@@ -18,9 +18,11 @@
 
 package site.alice.liveman.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import site.alice.liveman.dataobject.ExternalAppSecretDO;
 import site.alice.liveman.dataobject.ExternalAppSecretDOExample;
 
 public interface ExternalAppSecretDOMapper extends BaseDOMapper<ExternalAppSecretDO, ExternalAppSecretDOExample> {
 
+    void decrementLimit(@Param("id") Long id);
 }

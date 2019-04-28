@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.dataobject.dto.SystemSettingDTO;
 import site.alice.liveman.model.MediaHistory;
 import site.alice.liveman.service.MediaHistoryService;
 import site.alice.liveman.utils.OneDriveUtil;

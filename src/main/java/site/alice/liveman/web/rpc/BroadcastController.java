@@ -73,7 +73,7 @@ public class BroadcastController {
         List<BroadcastTaskVO> broadcastTaskVOList = new ArrayList<>();
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         for (MediaProxyTask mediaProxyTask : executedProxyTaskMap.values()) {
-            VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+            VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
             if (videoInfo != null && videoInfo.getChannelInfo() != null) {
                 if (videoInfo.getVideoId().endsWith("_low")) {
                     continue;
@@ -114,7 +114,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
         log.info(account.getAccountId() + "认领了转播任务[videoId=" + videoId + ", title=" + videoInfo.getTitle() + "]");
         BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
         if (broadcastTask != null) {
@@ -145,7 +145,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        VideoCropConf cropConf = mediaProxyTask.getVideoInfo().getCropConf();
+        VideoCropConf cropConf = mediaProxyTask.getVideoTaskDTO().getCropConf();
         return ActionResult.getSuccessResult(cropConf);
     }
 
@@ -159,7 +159,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
         BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
@@ -194,7 +194,7 @@ public class BroadcastController {
             videoInfo.setCropConf(cropConf);
             MediaProxyTask lowMediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId + "_low");
             if (lowMediaProxyTask != null) {
-                lowMediaProxyTask.getVideoInfo().setCropConf(cropConf);
+                lowMediaProxyTask.getVideoTaskDTO().setCropConf(cropConf);
             }
             try {
                 settingConfig.saveSetting(liveManSetting);
@@ -218,7 +218,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoTaskDTO().getBroadcastTask();
         if (broadcastTask == null) {
             log.info("此转播任务尚未运行，或已停止[BroadcastTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -253,7 +253,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoTaskDTO().getBroadcastTask();
         if (broadcastTask != null) {
             broadcastTask.terminateTask();
             broadcastTask.waitForTerminate();
@@ -303,7 +303,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = mediaProxyTask.getVideoTaskDTO();
         BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();

@@ -22,7 +22,7 @@ import site.alice.liveman.dataobject.BaseDO;
 
 import java.util.Date;
 
-public class ExternalAppSecretDTO extends BaseDO {
+public class ExternalAppSecretDTO extends BaseDTO {
 
     /**
      * 外部服务类型
