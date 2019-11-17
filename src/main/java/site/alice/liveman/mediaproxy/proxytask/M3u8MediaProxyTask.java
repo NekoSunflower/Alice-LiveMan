@@ -22,15 +22,10 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.utils.FfmpegUtil;
 import site.alice.liveman.utils.HttpRequestUtil;
-import site.alice.liveman.utils.ProcessUtil;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -40,7 +35,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -56,8 +50,6 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
     protected              AtomicInteger               retryCount      = new AtomicInteger(0);
     private                int                         lastSeqIndex    = 0;
     private final          MediaProxyTask              downloadTask;
-    @Autowired
-    private                LiveManSetting              liveManSetting;
 
     public M3u8MediaProxyTask(String videoId, URI sourceUrl) {
         super(videoId, sourceUrl);
@@ -65,38 +57,7 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
             @Override
             protected void runTask() throws InterruptedException {
                 VideoInfo mediaVideoInfo = M3u8MediaProxyTask.this.getVideoInfo();
-                boolean needLowFrameRate = liveManSetting.getPreReEncode() && mediaVideoInfo.getVideoId().endsWith("_low") && mediaVideoInfo.getCropConf().getBroadcastResolution() == VideoResolutionEnum.R720F30 &&
-                        (mediaVideoInfo.getFrameRate() != null && mediaVideoInfo.getFrameRate() > 30 ||
-                                mediaVideoInfo.getResolution() != null && Arrays.stream(mediaVideoInfo.getResolution().split("x")).mapToLong(Long::parseLong).sum() > (1280 + 720));
-                log.info("videoId=" + mediaVideoInfo.getVideoId() + ", fps=" + mediaVideoInfo.getFrameRate() + ", resolution=" + mediaVideoInfo.getResolution() + ", needLowFrameRate=" + needLowFrameRate);
-                final BlockingQueue<M3u8SeqInfo> toLowFrameRatePidQueue = new LinkedBlockingQueue<>();
-                if (needLowFrameRate) {
-                    mediaVideoInfo.setResolution("1280x720");
-                    MediaProxyManager.runProxy(new MediaProxyTask(getVideoId() + "_LOW-FRAME-RATE", null) {
-                        @Override
-                        protected void runTask() throws Exception {
-                            while (!M3u8MediaProxyTask.this.getTerminated()) {
-                                M3u8SeqInfo m3u8SeqInfo = toLowFrameRatePidQueue.poll(1000, TimeUnit.MILLISECONDS);
-                                if (m3u8SeqInfo != null) {
-                                    ProcessUtil.waitProcess(m3u8SeqInfo.getConvertPid());
-                                    m3u8SeqInfo.getSeqFile().delete();
-                                    File recodedFile = new File(m3u8SeqInfo.getSeqFile().toString().replace(".tmp", ""));
-                                    if (recodedFile.exists() && recodedFile.length() > 0) {
-                                        while (seqFileQueue.size() > 100) {
-                                            seqFileQueue.poll();
-                                        }
-                                        seqFileQueue.offer(recodedFile);
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public String getTempPath() {
-                            return MediaProxyManager.getTempPath() + "/m3u8/" + M3u8MediaProxyTask.this.getVideoInfo().getVideoUnionId();
-                        }
-                    });
-                }
+                log.info("videoId=" + mediaVideoInfo.getVideoUnionId() + ", fps=" + mediaVideoInfo.getFrameRate() + ", resolution=" + mediaVideoInfo.getRealResolution());
                 while (retryCount.get() < MAX_RETRY_COUNT) {
                     if (M3u8MediaProxyTask.this.getTerminated()) {
                         return;
@@ -107,25 +68,16 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
                             log.warn("警告:节目[" + M3u8MediaProxyTask.this.getVideoId() + "]当前的下载队列长度为:" + downloadDeque.size());
                         }
                         File dictSeqFile = m3u8SeqInfo.getSeqFile();
-                        if (needLowFrameRate) {
-                            m3u8SeqInfo.setSeqFile(new File(m3u8SeqInfo.getSeqFile().toString() + ".tmp"));
-                        }
                         long startTime = System.nanoTime();
                         downloadSeqFile(m3u8SeqInfo);
                         long dt = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
                         if (dt >= 1000) {
                             log.warn("警告:下载[videoId=" + M3u8MediaProxyTask.this.getVideoId() + "]seq文件时间过长[耗时:" + dt + "毫秒, 文件地址:" + m3u8SeqInfo.getSeqUrl() + "]");
                         }
-                        if (needLowFrameRate) {
-                            long process = ProcessUtil.createProcess(FfmpegUtil.buildToLowFrameRateCmdLine(m3u8SeqInfo.getSeqFile(), dictSeqFile), getVideoId() + "_LOW-FRAME-RATE");
-                            m3u8SeqInfo.setConvertPid(process);
-                            toLowFrameRatePidQueue.offer(m3u8SeqInfo);
-                        } else {
-                            while (seqFileQueue.size() > 100) {
-                                seqFileQueue.poll();
-                            }
-                            seqFileQueue.offer(dictSeqFile);
+                        while (seqFileQueue.size() > 100) {
+                            seqFileQueue.poll();
                         }
+                        seqFileQueue.offer(dictSeqFile);
                     }
                 }
             }

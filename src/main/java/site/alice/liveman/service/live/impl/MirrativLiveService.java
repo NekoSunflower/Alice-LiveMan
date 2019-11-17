@@ -37,11 +37,11 @@ public class MirrativLiveService extends LiveService {
     private static final String GET_LIVE_INFO_URL = "https://www.mirrativ.com/live/";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
         String userId = channelUrl.replace("https://www.mirrativ.com/user/", "").replace("/", "");
         URI liveHistoryUrl = new URI("https://www.mirrativ.com/api/live/live_history?user_id=" + userId + "&page=1");
-        String liveHistoryJson = HttpRequestUtil.downloadUrl(liveHistoryUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String liveHistoryJson = HttpRequestUtil.downloadUrl(liveHistoryUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject liveHistory = JSON.parseObject(liveHistoryJson);
         JSONArray lives = liveHistory.getJSONArray("lives");
         if (!lives.isEmpty()) {
@@ -55,12 +55,12 @@ public class MirrativLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo,String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
         String videoId = videoInfoUrl.toString().substring(GET_LIVE_INFO_URL.length());
-        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI("https://www.mirrativ.com/api/live/live?live_id=" + videoId), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI("https://www.mirrativ.com/api/live/live?live_id=" + videoId), cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject liveDetailObj = JSON.parseObject(liveDetailJson);
         String videoTitle = liveDetailObj.getString("title");
         URI m3u8ListUrl = new URI(liveDetailObj.getString("streaming_url_hls"));

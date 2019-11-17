@@ -18,31 +18,36 @@
 
 package site.alice.liveman.model;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.jenum.VideoResolutionEnum;
 
 import java.io.Serializable;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-public class VideoCropConf implements Serializable {
+public class BroadcastConfig implements Serializable {
     private VideoBannedTypeEnum                videoBannedType = VideoBannedTypeEnum.NONE;
     private boolean                            autoBlur;
     private boolean                            autoImageSegment;
     private int                                blurSize;
     private CopyOnWriteArrayList<CustomLayout> layouts;
     private VideoResolutionEnum                broadcastResolution;
+    private int[]                              area;
+    private boolean                            vertical;
+    private boolean                            isAudioBanned;
+    private boolean                            needRecord;
+    private boolean                            needAutoBroadcast;
+    private String                             cookies;
     @JsonIgnore
     private byte[]                             cachedDrawBytes;
     @JsonIgnore
     private byte[]                             cachedBlurBytes;
+    @JsonIgnore
+    private AccountInfo                        accountInfo;
 
-    public VideoCropConf() {
+    public BroadcastConfig() {
         layouts = new CopyOnWriteArrayList<>();
     }
 
@@ -106,8 +111,77 @@ public class VideoCropConf implements Serializable {
         return broadcastResolution;
     }
 
+    public int[] getArea() {
+        return area;
+    }
+
+    public void setArea(int[] area) {
+        this.area = area;
+    }
+
+    public boolean isVertical() {
+        return vertical;
+    }
+
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
+    }
+
     public void setBroadcastResolution(VideoResolutionEnum broadcastResolution) {
         this.broadcastResolution = broadcastResolution;
+    }
+
+    public boolean isNeedAutoBroadcast() {
+        return needAutoBroadcast;
+    }
+
+    public void setNeedAutoBroadcast(boolean needAutoBroadcast) {
+        this.needAutoBroadcast = needAutoBroadcast;
+    }
+
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
+    }
+
+    public void setAccountInfo(AccountInfo accountInfo) {
+        this.accountInfo = accountInfo;
+    }
+
+    public boolean isAudioBanned() {
+        return isAudioBanned;
+    }
+
+    public void setAudioBanned(boolean audioBanned) {
+        isAudioBanned = audioBanned;
+    }
+
+    public boolean isNeedRecord() {
+        return needRecord;
+    }
+
+    public void setNeedRecord(boolean needRecord) {
+        this.needRecord = needRecord;
+    }
+
+    public String getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(String cookies) {
+        this.cookies = cookies;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BroadcastConfig that = (BroadcastConfig) o;
+        return Objects.equals(accountInfo, that.accountInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accountInfo);
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.broadcast.BroadcastService;
 import site.alice.liveman.utils.HttpRequestUtil;
@@ -70,17 +71,18 @@ public class BilibiliBroadcastService implements BroadcastService {
     public String getBroadcastAddress(AccountInfo accountInfo) throws Exception {
         VideoInfo videoInfo = accountInfo.getCurrentVideo();
         int area = 199;
-        if (videoInfo.getCropConf().getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(accountInfo);
+        if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
             area = 33;
-        } else if (videoInfo.getArea() != null) {
-            area = videoInfo.getArea()[1];
+        } else if (broadcastConfig.getArea() != null) {
+            area = broadcastConfig.getArea()[1];
         }
         Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.getCookies());
         String csrfToken = "";
         if (matcher.find()) {
             csrfToken = matcher.group(1);
         }
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.getCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (videoInfo.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
+        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.getCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("code") == 0) {

@@ -18,7 +18,6 @@
 
 package site.alice.liveman.service;
 
-import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +26,10 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.jenum.ExternalServiceType;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ServerInfo;
-import site.alice.liveman.model.VideoCropConf;
-import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.model.BroadcastConfig;
+import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
 import site.alice.liveman.service.external.DynamicServerService;
 import site.alice.liveman.utils.JschSshUtil;
-import site.alice.liveman.utils.ProcessUtil;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -49,52 +47,52 @@ public class BroadcastServerService {
     @Autowired
     private              DynamicServerService dynamicServerService;
 
-    public ServerInfo getAvailableServer(VideoInfo videoInfo) {
+    public ServerInfo getAvailableServer(BroadcastTask broadcastTask) {
         CopyOnWriteArraySet<ServerInfo> servers = liveManSetting.getServers();
         try {
             // 获取服务器之前先释放掉所有被占用的服务器
-            releaseServer(videoInfo);
+            releaseServer(broadcastTask);
+            BroadcastConfig broadcastConfig = broadcastTask.getVideoInfo().getBroadcastConfig(broadcastTask.getBroadcastAccount());
             // 查找已经可用的服务器
-            List<ServerInfo> availableServers = servers.stream().filter(server -> server.getCurrentVideo() == null && server.getPerformance() == videoInfo.getCropConf().getBroadcastResolution().getPerformance() && server.isAvailable()).collect(Collectors.toList());
+            List<ServerInfo> availableServers = servers.stream().filter(server -> server.getBroadcastTask() == null && server.getPerformance() == broadcastConfig.getBroadcastResolution().getPerformance() && server.isAvailable()).collect(Collectors.toList());
             while (!availableServers.isEmpty()) {
                 ServerInfo serverInfo = availableServers.get((int) (Math.random() * availableServers.size()));
-                if (serverInfo.setCurrentVideo(videoInfo)) {
-                    log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => videoId=" + videoInfo.getVideoId());
+                if (serverInfo.setCurrentVideo(broadcastTask)) {
+                    log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => " + broadcastTask);
                     return serverInfo;
                 } else {
                     availableServers.remove(serverInfo);
                 }
             }
             // 查找尚未初始化完毕的服务器
-            List<ServerInfo> unavailableServers = servers.stream().filter(server -> server.getCurrentVideo() == null && server.getPerformance() == videoInfo.getCropConf().getBroadcastResolution().getPerformance() && !server.isAvailable()).collect(Collectors.toList());
+            List<ServerInfo> unavailableServers = servers.stream().filter(server -> server.getBroadcastTask() == null && server.getPerformance() == broadcastConfig.getBroadcastResolution().getPerformance() && !server.isAvailable()).collect(Collectors.toList());
             if (unavailableServers.isEmpty()) {
                 // 没有找到可用的服务器，动态扩容
-                VideoCropConf cropConf = videoInfo.getCropConf();
-                ServerInfo serverInfo = dynamicServerService.create(cropConf.getBroadcastResolution().getPerformance());
+                ServerInfo serverInfo = dynamicServerService.create(broadcastConfig.getBroadcastResolution().getPerformance());
                 if (serverInfo != null) {
                     addServer(serverInfo);
                     settingConfig.saveSetting(liveManSetting);
-                    if (serverInfo.setCurrentVideo(videoInfo)) {
+                    if (serverInfo.setCurrentVideo(broadcastTask)) {
                         if (testServer(serverInfo) && installServer(serverInfo)) {
                             serverInfo.setAvailable(true);
                             settingConfig.saveSetting(liveManSetting);
-                            log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => videoId=" + videoInfo.getVideoId());
+                            log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => " + broadcastTask);
                             return serverInfo;
                         } else {
-                            serverInfo.removeCurrentVideo(videoInfo);
+                            serverInfo.removeCurrentVideo(broadcastTask);
                         }
                     }
                 }
             }
             while (!unavailableServers.isEmpty()) {
                 ServerInfo serverInfo = unavailableServers.get((int) (Math.random() * unavailableServers.size()));
-                if (serverInfo.setCurrentVideo(videoInfo)) {
+                if (serverInfo.setCurrentVideo(broadcastTask)) {
                     if (serverInfo.getExternalServiceType() == ExternalServiceType.VULTR_API) {
                         if (dynamicServerService.update(serverInfo) == null) {
                             log.warn("server " + serverInfo.getRemark() + " was not found, remove it.");
                             servers.remove(serverInfo);
                             unavailableServers.remove(serverInfo);
-                            serverInfo.removeCurrentVideo(videoInfo);
+                            serverInfo.removeCurrentVideo(broadcastTask);
                             settingConfig.saveSetting(liveManSetting);
                             continue;
                         }
@@ -102,20 +100,20 @@ public class BroadcastServerService {
                     if (testServer(serverInfo) && installServer(serverInfo)) {
                         serverInfo.setAvailable(true);
                         settingConfig.saveSetting(liveManSetting);
-                        log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => videoId=" + videoInfo.getVideoId());
+                        log.info("转播服务器调度成功[" + serverInfo.getRemark() + "@" + serverInfo.getAddress() + ":" + serverInfo.getPort() + "] => " + broadcastTask);
                         return serverInfo;
                     } else {
                         log.info("转播服务器[" + serverInfo.getRemark() + "]尚未初始化完毕，当前无法连接。");
                         unavailableServers.remove(serverInfo);
-                        serverInfo.removeCurrentVideo(videoInfo);
+                        serverInfo.removeCurrentVideo(broadcastTask);
                     }
                 } else {
                     unavailableServers.remove(serverInfo);
                 }
             }
-            log.info("没有找到空闲的转播服务器![videoId=" + videoInfo.getVideoUnionId() + "]");
+            log.info("没有找到空闲的转播服务器![broadcastTask=" + broadcastTask + "]");
         } catch (Throwable e) {
-            releaseServer(videoInfo);
+            releaseServer(broadcastTask);
             throw e;
         }
         return null;
@@ -173,7 +171,7 @@ public class BroadcastServerService {
         }
     }
 
-    public void releaseServer(VideoInfo videoInfo) {
+    public void releaseServer(BroadcastTask videoInfo) {
         CopyOnWriteArraySet<ServerInfo> servers = liveManSetting.getServers();
         for (ServerInfo server : servers) {
             server.removeCurrentVideo(videoInfo);

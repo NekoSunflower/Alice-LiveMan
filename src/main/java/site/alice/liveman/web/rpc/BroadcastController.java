@@ -71,16 +71,17 @@ public class BroadcastController {
 
     @RequestMapping("/taskList.json")
     public ActionResult<List<BroadcastTaskVO>> taskList() {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
         List<BroadcastTaskVO> broadcastTaskVOList = new ArrayList<>();
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         for (MediaProxyTask mediaProxyTask : executedProxyTaskMap.values()) {
             VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
             if (videoInfo != null && videoInfo.getChannelInfo() != null) {
-                if (videoInfo.getVideoId().endsWith("_low")) {
+                if (videoInfo.getVideoUnionId().endsWith("_low")) {
                     continue;
                 }
                 BroadcastTaskVO broadcastTaskVO = new BroadcastTaskVO();
-                BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+                BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
                 if (broadcastTask != null) {
                     broadcastTaskVO.setHealth(broadcastTask.getHealth());
                     AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
@@ -90,17 +91,18 @@ public class BroadcastController {
                         broadcastTaskVO.setRoomId(broadcastAccount.getRoomId());
                     }
                 }
+                BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(account);
                 ChannelInfo channelInfo = videoInfo.getChannelInfo();
                 if (channelInfo != null) {
                     broadcastTaskVO.setChannelName(channelInfo.getChannelName());
                 }
-                broadcastTaskVO.setArea(videoInfo.getArea());
-                broadcastTaskVO.setAudioBanned(videoInfo.isAudioBanned());
-                broadcastTaskVO.setVideoId(videoInfo.getVideoId());
+                broadcastTaskVO.setArea(broadcastConfig.getArea());
+                broadcastTaskVO.setAudioBanned(broadcastConfig.isAudioBanned());
+                broadcastTaskVO.setVideoId(videoInfo.getVideoUnionId());
                 broadcastTaskVO.setVideoTitle(videoInfo.getTitle());
-                broadcastTaskVO.setNeedRecord(videoInfo.isNeedRecord());
+                broadcastTaskVO.setNeedRecord(broadcastConfig.isNeedRecord());
                 broadcastTaskVO.setMediaUrl(mediaProxyTask.getTargetUrl().getPath());
-                broadcastTaskVO.setVertical(videoInfo.isVertical());
+                broadcastTaskVO.setVertical(broadcastConfig.isVertical());
                 broadcastTaskVOList.add(broadcastTaskVO);
             }
         }
@@ -121,7 +123,7 @@ public class BroadcastController {
             return ActionResult.getErrorResult("17Live账号不允许手动推流，请联系管理员添加相应频道！");
         }
         log.info(account.getAccountId() + "认领了转播任务[videoId=" + videoId + ", title=" + videoInfo.getTitle() + "]");
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
             if (broadcastAccount != null) {
@@ -132,7 +134,7 @@ public class BroadcastController {
             }
         }
         try {
-            VideoCropConf cropConf = videoInfo.getCropConf();
+            BroadcastConfig cropConf = videoInfo.getBroadcastConfig(account);
             if (cropConf.getBroadcastResolution() != null && cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
                 if (account.getAccountSite().equals("17live")) {
                     return ActionResult.getErrorResult("17Live账号不支持自定义推流，请点击[管理] -> [视频内容规则]选择[取消内容规制]选项！");
@@ -155,19 +157,20 @@ public class BroadcastController {
     }
 
     @RequestMapping("/getCropConf.json")
-    public ActionResult<VideoCropConf> getCropConf(String videoId) {
+    public ActionResult<BroadcastConfig> getCropConf(String videoId) {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
         MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
         if (mediaProxyTask == null) {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        VideoCropConf cropConf = mediaProxyTask.getVideoInfo().getCropConf();
+        BroadcastConfig cropConf = mediaProxyTask.getVideoInfo().getBroadcastConfig(account);
         return ActionResult.getSuccessResult(cropConf);
     }
 
 
     @RequestMapping("/cropConfSave.json")
-    public ActionResult cropConfSave(String videoId, @RequestBody VideoCropConf cropConf) {
+    public ActionResult cropConfSave(String videoId, @RequestBody BroadcastConfig cropConf) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         log.info("cropConfSave()[videoId=" + videoId + "][accountRoomId=" + account.getRoomId() + "]");
         MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
@@ -176,7 +179,7 @@ public class BroadcastController {
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
         VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
         AccountInfo broadcastAccount = null;
         if (broadcastTask != null) {
             broadcastAccount = broadcastTask.getBroadcastAccount();
@@ -187,7 +190,7 @@ public class BroadcastController {
                 }
             }
         }
-        VideoCropConf _cropConf = videoInfo.getCropConf();
+        BroadcastConfig _cropConf = videoInfo.getBroadcastConfig(account);
         if (cropConf != null) {
             boolean needRestart = false;
             if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
@@ -217,10 +220,10 @@ public class BroadcastController {
             } else if (CollectionUtils.isNotEmpty(cropConf.getLayouts())) {
                 cropConf.getLayouts().clear();
             }
-            videoInfo.setCropConf(cropConf);
+            videoInfo.addBroadcastConfig(cropConf);
             MediaProxyTask lowMediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId + "_low");
             if (lowMediaProxyTask != null) {
-                lowMediaProxyTask.getVideoInfo().setCropConf(cropConf);
+                lowMediaProxyTask.getVideoInfo().addBroadcastConfig(cropConf);
             }
             try {
                 settingConfig.saveSetting(liveManSetting);
@@ -247,7 +250,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask(account);
         if (broadcastTask == null) {
             log.info("此转播任务尚未运行，或已停止[BroadcastTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -282,7 +285,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask(account);
         if (broadcastTask != null) {
             broadcastTask.terminateTask();
             broadcastTask.waitForTerminate();
@@ -302,15 +305,15 @@ public class BroadcastController {
             }
             ChannelInfo channelInfo = new ChannelInfo();
             channelInfo.setChannelName("手动推流");
-            channelInfo.setCookies(cookies);
-            VideoInfo liveVideoInfo = liveServiceFactory.getLiveService(videoUrl).getLiveVideoInfo(new URI(videoUrl), channelInfo, liveManSetting.getDefaultResolution());
+            VideoInfo liveVideoInfo = liveServiceFactory.getLiveService(videoUrl).getLiveVideoInfo(new URI(videoUrl), channelInfo, cookies, liveManSetting.getDefaultResolution());
             if (liveVideoInfo == null) {
                 return ActionResult.getErrorResult("当前节目尚未开播");
             }
             Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
-            if (executedProxyTaskMap.containsKey(liveVideoInfo.getVideoId())) {
+            if (executedProxyTaskMap.containsKey(liveVideoInfo.getVideoUnionId())) {
                 return ActionResult.getErrorResult("此媒体地址已存在于推流列表中，请直接认领");
             }
+            liveVideoInfo.setPrivateAccount(account);
             BroadcastTask broadcastTask = broadcastServiceManager.createSingleBroadcastTask(liveVideoInfo, account);
             if (broadcastTask == null) {
                 return ActionResult.getErrorResult("操作失败：BroadcastTask创建失败");
@@ -337,7 +340,8 @@ public class BroadcastController {
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
         VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(account);
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
             if (broadcastAccount != null) {
@@ -349,21 +353,21 @@ public class BroadcastController {
                 if (broadcastTaskVO.getArea() != null && broadcastTaskVO.getArea().length > 1) {
                     areaId = broadcastTaskVO.getArea()[1];
                 }
-                if (broadcastTaskVO.isVertical() != videoInfo.isVertical()) {
+                if (broadcastTaskVO.isVertical() != broadcastConfig.isVertical()) {
                     broadcastServiceManager.getBroadcastService(account.getAccountSite()).stopBroadcast(broadcastAccount, false);
                 }
                 broadcastServiceManager.getBroadcastService(account.getAccountSite()).setBroadcastSetting(broadcastAccount, broadcastTaskVO.getRoomTitle(), areaId);
             }
         }
-        videoInfo.setVertical(broadcastTaskVO.isVertical());
-        videoInfo.setArea(broadcastTaskVO.getArea());
-        videoInfo.setNeedRecord(broadcastTaskVO.isNeedRecord());
+        broadcastConfig.setVertical(broadcastTaskVO.isVertical());
+        broadcastConfig.setArea(broadcastTaskVO.getArea());
+        broadcastConfig.setNeedRecord(broadcastTaskVO.isNeedRecord());
         MediaHistory mediaHistory = mediaHistoryService.getMediaHistory(videoId);
         if (mediaHistory != null) {
             mediaHistory.setNeedRecord(broadcastTaskVO.isNeedRecord());
         }
-        if (videoInfo.isAudioBanned() != broadcastTaskVO.isAudioBanned()) {
-            videoInfo.setAudioBanned(broadcastTaskVO.isAudioBanned());
+        if (broadcastConfig.isAudioBanned() != broadcastTaskVO.isAudioBanned()) {
+            broadcastConfig.setAudioBanned(broadcastTaskVO.isAudioBanned());
             if (broadcastTask != null) {
                 ProcessUtil.killProcess(broadcastTask.getPid());
             }

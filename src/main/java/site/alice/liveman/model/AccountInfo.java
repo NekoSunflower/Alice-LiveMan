@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class AccountInfo implements Comparable<AccountInfo> {
 
+    private String                           parentAccountId;
     private String                           accountId;
     private String                           accountSite;
     private String                           cookies;
@@ -40,7 +41,6 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private String                           roomId;
     private String                           uid;
     private String                           roomUrl;
-    private boolean                          joinAutoBalance;
     private boolean                          admin;
     private boolean                          disable;
     private boolean                          postBiliDynamic;
@@ -56,11 +56,29 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private Long                             rtmpUrlRefreshTime;
     @JSONField(serialize = false)
     private String                           rtmpUrl;
+    @JSONField(serialize = false)
+    private AccountInfo                      parentAccountInfo;
 
     public AccountInfo() {
         point = new AtomicLong();
         billTimeMap = new ConcurrentHashMap<>();
         billRecords = new CopyOnWriteArrayList<>();
+    }
+
+    public String getParentAccountId() {
+        return parentAccountId;
+    }
+
+    public void setParentAccountId(String parentAccountId) {
+        this.parentAccountId = parentAccountId;
+    }
+
+    public AccountInfo getParentAccountInfo() {
+        return parentAccountInfo;
+    }
+
+    public void setParentAccountInfo(AccountInfo parentAccountInfo) {
+        this.parentAccountInfo = parentAccountInfo;
     }
 
     public String getAccountId() {
@@ -119,14 +137,6 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.roomUrl = roomUrl;
     }
 
-    public boolean isJoinAutoBalance() {
-        return joinAutoBalance;
-    }
-
-    public void setJoinAutoBalance(boolean joinAutoBalance) {
-        this.joinAutoBalance = joinAutoBalance;
-    }
-
     public VideoInfo getCurrentVideo() {
         return currentVideo.get();
     }
@@ -155,12 +165,12 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.disable = disable;
     }
 
-    public Long getPoint() {
-        return point.get();
-    }
-
-    public void setPoint(AtomicLong point) {
-        this.point = point;
+    public long getPoint() {
+        if (parentAccountInfo != null) {
+            return parentAccountInfo.getPoint();
+        } else {
+            return point.get();
+        }
     }
 
     public long changePoint(long delta, String remark) {
@@ -169,7 +179,11 @@ public class AccountInfo implements Comparable<AccountInfo> {
         if (billRecords.size() > 100) {
             billRecords = new CopyOnWriteArrayList<>(billRecords.subList(0, 100));
         }
-        return this.point.addAndGet(delta);
+        if (parentAccountInfo != null) {
+            return parentAccountInfo.changePoint(delta, remark);
+        } else {
+            return this.point.addAndGet(delta);
+        }
     }
 
     public BroadcastError getBroadcastError() {

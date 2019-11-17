@@ -57,7 +57,7 @@ public class BrowserLayout extends DrawingLayout {
         lastPaint = System.nanoTime();
         ProcessUtil.AliceProcess browserProcess = ProcessUtil.getAliceProcess(pid);
         if (browserProcess == null || !browserProcess.isAlive()) {
-            log.info("BrowserLayout[videoId=" + videoInfo.getVideoId() + "]启动Browser...");
+            log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]启动Browser...");
             String[] args = new String[]{new File("phantomjs").getAbsolutePath(), "--web-security=false",
                                          new File("capture.js").getAbsolutePath(), getUrl().toString(),
                                          width + "", height + ""};
@@ -78,13 +78,13 @@ public class BrowserLayout extends DrawingLayout {
                                 try {
                                     imageRef.set(ImageIO.read(bis));
                                 } catch (IOException e) {
-                                    log.error("BrowserLayout[videoId=" + videoInfo.getVideoId() + "]", e);
+                                    log.error("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]", e);
                                 }
                             } else {
-                                log.info("BrowserLayout[videoId=" + videoInfo.getVideoId() + "]:" + nextLine);
+                                log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]:" + nextLine);
                             }
                             if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - lastPaint) > 10) {
-                                log.info("BrowserLayout[videoId=" + videoInfo.getVideoId() + "]超过10秒闲置，自动释放Browser资源");
+                                log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]超过10秒闲置，自动释放Browser资源");
                                 ProcessUtil.killProcess(ProcessUtil.getProcessHandle(_browserProcess));
                                 return;
                             }

@@ -42,13 +42,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 public class MediaProxyManager implements ApplicationContextAware {
-    private static final Logger                        LOGGER               = LoggerFactory.getLogger(MediaProxyManager.class);
-    private static final Map<String, MediaProxyTask>   executedProxyTaskMap = new ConcurrentHashMap<>();
-    private static final List<MediaProxyEventListener> listeners            = new CopyOnWriteArrayList<>();
-    private static       Map<String, MediaProxy>       proxyMap;
-    private static       String                        tempPath;
-    private static final String                        targetUrlFormat      = "http://" + getIpAddress() + ":8080/mediaProxy/%s/%s";
-    private static       ApplicationContext            applicationContext;
+    private static final Logger                                    LOGGER               = LoggerFactory.getLogger(MediaProxyManager.class);
+    private static final ConcurrentHashMap<String, MediaProxyTask> executedProxyTaskMap = new ConcurrentHashMap<>();
+    private static final List<MediaProxyEventListener>             listeners            = new CopyOnWriteArrayList<>();
+    private static       Map<String, MediaProxy>                   proxyMap;
+    private static       String                                    tempPath;
+    private static final String                                    targetUrlFormat      = "http://" + getIpAddress() + ":8080/mediaProxy/%s/%s";
+    private static       ApplicationContext                        applicationContext;
 
     public static String getTempPath() {
         return tempPath;
@@ -60,12 +60,13 @@ public class MediaProxyManager implements ApplicationContextAware {
     }
 
     public static MediaProxyTask createProxy(VideoInfo videoInfo) throws Exception {
+        return createProxy(videoInfo, false);
+    }
+
+    public static MediaProxyTask createProxy(VideoInfo videoInfo, boolean shadowProxyTask) throws Exception {
         MediaProxyTask mediaProxyTask = createProxyTask(videoInfo, videoInfo.getMediaUrl(), videoInfo.getMediaFormat());
         mediaProxyTask.setVideoInfo(videoInfo);
-        ChannelInfo channelInfo = videoInfo.getChannelInfo();
-        if (channelInfo != null) {
-            videoInfo.setArea(channelInfo.getDefaultArea());
-        }
+        mediaProxyTask.setShadowProxyTask(shadowProxyTask);
         videoInfo.setMediaProxyUrl(mediaProxyTask.getTargetUrl());
         runProxy(mediaProxyTask);
         return mediaProxyTask;
@@ -75,10 +76,10 @@ public class MediaProxyManager implements ApplicationContextAware {
         for (Map.Entry<String, MediaProxy> metaProxyEntry : proxyMap.entrySet()) {
             MediaProxy metaProxy = metaProxyEntry.getValue();
             if (metaProxy.isMatch(sourceUrl, requestFormat)) {
-                MediaProxyTask mediaProxyTask = metaProxy.createProxyTask(videoInfo.getVideoId(), sourceUrl);
+                MediaProxyTask mediaProxyTask = metaProxy.createProxyTask(videoInfo.getVideoUnionId(), sourceUrl);
                 applicationContext.getAutowireCapableBeanFactory().autowireBean(mediaProxyTask);
                 String proxyName = metaProxyEntry.getKey().replace("MediaProxy", "");
-                String targetUrl = String.format(targetUrlFormat, proxyName, videoInfo.getVideoId());
+                String targetUrl = String.format(targetUrlFormat, proxyName, videoInfo.getVideoUnionId());
                 mediaProxyTask.setTargetUrl(new URI(targetUrl));
                 return mediaProxyTask;
             }
@@ -101,10 +102,9 @@ public class MediaProxyManager implements ApplicationContextAware {
     }
 
     public static void runProxy(MediaProxyTask task) {
-        MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(task.getVideoId());
+        MediaProxyTask mediaProxyTask = executedProxyTaskMap.putIfAbsent(task.getVideoId(), task);
         if (mediaProxyTask == null) {
             LOGGER.info("开始节目直播流代理[" + task.getVideoId() + "]" + (task.getSourceUrl() != null ? "[sourceUrl=" + task.getSourceUrl() + ", targetUrl=" + task.getTargetUrl() + "]" : ""));
-            executedProxyTaskMap.put(task.getVideoId(), task);
             ThreadPoolUtil.execute(task);
             for (MediaProxyEventListener listener : listeners) {
                 try {

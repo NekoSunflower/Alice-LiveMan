@@ -63,7 +63,7 @@ public class MagicTeaController {
                         liveNowVO.setUid(broadcastAccount.getUid());
                         liveNowVO.setAccountId(broadcastAccount.getAccountId());
                         liveNowVO.setAccountSite(broadcastAccount.getAccountSite());
-                        liveNowVO.setThumbnail("/api/magictea/" + videoInfo.getVideoId() + "/thumbnail.jpg");
+                        liveNowVO.setThumbnail("/api/magictea/" + videoInfo.getVideoUnionId() + "/thumbnail.jpg");
                         liveNowVOS.add(liveNowVO);
                     }
                 }

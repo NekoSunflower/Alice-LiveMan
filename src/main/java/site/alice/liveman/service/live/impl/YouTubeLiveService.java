@@ -46,16 +46,16 @@ public class YouTubeLiveService extends LiveService {
     private static final Pattern browseIdPattern    = Pattern.compile("RICH_METADATA_RENDERER_STYLE_BOX_ART.+?\\{\"browseId\":\"(.+?)\"}");
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         return new URI(channelInfo.getChannelUrl() + "/").resolve("live");
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String videoInfoRes = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String videoInfoRes = HttpRequestUtil.downloadUrl(videoInfoUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher hlsvpMatcher = hlsvpPattern.matcher(videoInfoRes);
         Matcher videoTitleMatcher = videoTitlePattern.matcher(videoInfoRes);
         Matcher browseIdMatcher = browseIdPattern.matcher(videoInfoRes);
@@ -101,7 +101,7 @@ public class YouTubeLiveService extends LiveService {
                 videoInfo.setPart(videoParts[1]);
             }
             videoInfo.setDescription(description);
-            videoInfo.setResolution(streamInfo.getResolution());
+            videoInfo.setRealResolution(streamInfo.getResolution());
             videoInfo.setFrameRate(streamInfo.getFrameRate());
             return videoInfo;
         } else if (!videoInfoRes.contains("ytInitialData")) {

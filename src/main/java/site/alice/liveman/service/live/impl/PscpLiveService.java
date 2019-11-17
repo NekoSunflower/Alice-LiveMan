@@ -42,9 +42,9 @@ public class PscpLiveService extends LiveService {
     private static final String  accessVideoPublicUrl = "https://proxsee.pscp.tv/api/v2/accessVideoPublic?broadcast_id=";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
-        String channelHtml = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelInfo.getChannelUrl(), Collections.emptyMap(), StandardCharsets.UTF_8);
+        String channelHtml = HttpRequestUtil.downloadUrl(new URI(channelUrl), cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher dataStoreMatcher = dataStorePattern.matcher(channelHtml);
         if (dataStoreMatcher.find()) {
             String dataStore = StringEscapeUtils.unescapeJava(dataStoreMatcher.group(0));
@@ -64,9 +64,9 @@ public class PscpLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         String broadcastId = videoInfoUrl.getPath().replace("/w/", "");
-        String json = HttpRequestUtil.downloadUrl(new URI(accessVideoPublicUrl + broadcastId), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String json = HttpRequestUtil.downloadUrl(new URI(accessVideoPublicUrl + broadcastId), cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         JSONObject accessVideoPublic = JSON.parseObject(json);
         JSONObject broadcast = accessVideoPublic.getJSONObject("broadcast");
         String title = broadcast.getString("status");

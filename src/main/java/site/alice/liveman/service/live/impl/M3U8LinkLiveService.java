@@ -32,13 +32,13 @@ import java.util.UUID;
 @Service
 public class M3U8LinkLiveService extends LiveService {
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
-        String m3u8 = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+        String m3u8 = HttpRequestUtil.downloadUrl(videoInfoUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         if (m3u8.contains("#EXTM3U")) {
             return new VideoInfo(channelInfo, UUID.randomUUID().toString(), videoInfoUrl.toString(), videoInfoUrl, videoInfoUrl, "m3u8");
         } else {

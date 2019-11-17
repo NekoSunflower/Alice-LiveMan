@@ -84,12 +84,12 @@ public class DynamicServerJob {
                 }
                 // 在1分钟内就要进入下一个收费周期了，检查是否需要释放服务器
                 if (((System.currentTimeMillis() - server.getDateCreated()) / 1000.0 / 60) % 60 > 59) {
-                    VideoInfo currentVideo = server.getCurrentVideo();
-                    if (currentVideo == null) {
+                    BroadcastTask broadcastTask = server.getBroadcastTask();
+                    if (broadcastTask == null) {
                         servers.remove(server);
                         dynamicServerService.destroy(server);
                     } else {
-                        log.info("服务器[" + server.getRemark() + "]正在被节目[videoId=" + currentVideo.getVideoUnionId() + "]使用，续期。");
+                        log.info("服务器[" + server.getRemark() + "]正在被推流任务[" + broadcastTask + "]使用，续期。");
                     }
                 }
             }
@@ -112,12 +112,11 @@ public class DynamicServerJob {
         CopyOnWriteArraySet<ServerInfo> servers = liveManSetting.getServers();
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         for (ServerInfo server : servers) {
-            VideoInfo currentVideo = server.getCurrentVideo();
-            if (currentVideo != null) {
-                BroadcastTask broadcastTask = currentVideo.getBroadcastTask();
+            BroadcastTask broadcastTask = server.getBroadcastTask();
+            if (broadcastTask != null) {
                 VideoInfo videoInfo = broadcastTask.getVideoInfo();
                 AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
-                VideoResolutionEnum broadcastResolution = videoInfo.getCropConf().getBroadcastResolution();
+                VideoResolutionEnum broadcastResolution = videoInfo.getBroadcastConfig(broadcastAccount).getBroadcastResolution();
                 int serverPoint = liveManSetting.getServerPoints()[broadcastResolution.getPerformance()];
                 ConcurrentHashMap<Integer, Long> billTimeMap = broadcastAccount.getBillTimeMap();
                 if (!billTimeMap.containsKey(broadcastResolution.getPerformance())) {
@@ -125,7 +124,7 @@ public class DynamicServerJob {
                         log.info("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.getPoint() + ", need=" + serverPoint + "]");
                         broadcastTask.terminateTask();
                     } else {
-                        String remark = dateFormat.format(new Date()) + " - " + dateFormat.format(new Date(System.currentTimeMillis() + 59 * 60 * 1000)) + " 转播节目[" + videoInfo.getTitle() + "]@" + videoInfo.getCropConf().getBroadcastResolution();
+                        String remark = dateFormat.format(new Date()) + " - " + dateFormat.format(new Date(System.currentTimeMillis() + 59 * 60 * 1000)) + " 转播节目[" + videoInfo.getTitle() + "]@" + videoInfo.getBroadcastConfig(broadcastAccount).getBroadcastResolution();
                         long result = broadcastAccount.changePoint(-1 * serverPoint, remark);
                         log.info("账户[roomId=" + broadcastAccount.getRoomId() + "]" + remark + "@" + server.getRemark() + ", 扣费:" + serverPoint + ", 剩余:" + result);
                         billTimeMap.put(broadcastResolution.getPerformance(), System.currentTimeMillis());

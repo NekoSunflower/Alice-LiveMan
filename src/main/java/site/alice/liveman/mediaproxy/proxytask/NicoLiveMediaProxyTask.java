@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import javax.websocket.*;
@@ -87,8 +88,11 @@ public class NicoLiveMediaProxyTask extends M3u8MediaProxyTask {
             public void beforeRequest(Map<String, List<String>> headers) {
                 headers.put("Origin", Collections.singletonList("http://live2.nicovideo.jp"));
                 headers.put("User-Agent", Collections.singletonList("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"));
-                if (getVideoInfo().getChannelInfo() != null) {
-                    headers.put("Cookie", Collections.singletonList(getVideoInfo().getChannelInfo().getCookies()));
+                if (getVideoInfo().getPrivateAccount() != null) {
+                    BroadcastConfig broadcastConfig = getVideoInfo().getBroadcastConfig(getVideoInfo().getPrivateAccount());
+                    if (broadcastConfig != null) {
+                        headers.put("Cookie", Collections.singletonList(broadcastConfig.getCookies()));
+                    }
                 }
             }
         }).build();

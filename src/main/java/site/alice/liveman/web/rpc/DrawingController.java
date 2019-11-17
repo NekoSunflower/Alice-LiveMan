@@ -32,11 +32,10 @@ import site.alice.liveman.customlayout.impl.BrowserLayout;
 import site.alice.liveman.customlayout.impl.ImageSegmentBlurLayout;
 import site.alice.liveman.customlayout.impl.RectangleBlurLayout;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
-import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.KeyFrame;
-import site.alice.liveman.model.VideoCropConf;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
 
 import javax.servlet.http.HttpServletResponse;
@@ -67,19 +66,19 @@ public class DrawingController {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;
         }
-        String resolution = videoInfo.getResolution();
+        String resolution = videoInfo.getRealResolution();
         if (resolution == null) {
             KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
             if (keyFrame != null) {
                 resolution = keyFrame.getWidth() + "x" + keyFrame.getHeight();
-                videoInfo.setResolution(resolution);
+                videoInfo.setRealResolution(resolution);
                 log.info("媒体分辨率[videoId=" + videoId + "]获取成功！[" + resolution + "]");
             } else {
                 log.warn("媒体分辨率[videoId=" + videoId + "]获取失败！");
                 return;
             }
         }
-        VideoCropConf cropConf = videoInfo.getCropConf();
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
         if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
             byte[] cachedDrawBytes = cropConf.getCachedDrawBytes();
@@ -100,7 +99,7 @@ public class DrawingController {
                         try {
                             customLayout.paintLayout(graphics);
                         } catch (Exception e) {
-                            log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoId() + "]渲染出错", e);
+                            log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoUnionId() + "]渲染出错", e);
                         }
                     }
                 }
@@ -117,7 +116,7 @@ public class DrawingController {
                 os.write(cachedDrawBytes);
                 os.flush();
             } catch (Exception e) {
-                log.error("无法输出图像数据到响应流[videoId=" + videoInfo.getVideoId() + "]", e);
+                log.error("无法输出图像数据到响应流[videoId=" + videoInfo.getVideoUnionId() + "]", e);
             }
         }
     }
@@ -136,20 +135,20 @@ public class DrawingController {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;
         }
-        String resolution = videoInfo.getResolution();
+        String resolution = videoInfo.getRealResolution();
         if (resolution == null) {
             log.info("未知媒体分辨率[videoId=" + videoId + "]，尝试获取...");
             KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
             if (keyFrame != null) {
                 resolution = keyFrame.getWidth() + "x" + keyFrame.getHeight();
-                videoInfo.setResolution(resolution);
+                videoInfo.setRealResolution(resolution);
                 log.info("媒体分辨率[videoId=" + videoId + "]获取成功！[" + resolution + "]");
             } else {
                 log.warn("媒体分辨率[videoId=" + videoId + "]获取失败！");
                 return;
             }
         }
-        VideoCropConf cropConf = videoInfo.getCropConf();
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
         if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
             try (OutputStream os = response.getOutputStream()) {
@@ -163,7 +162,7 @@ public class DrawingController {
                             try {
                                 customLayout.paintLayout(graphics);
                             } catch (Exception e) {
-                                log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoId() + "]渲染出错", e);
+                                log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoUnionId() + "]渲染出错", e);
                             }
                         }
                     }
@@ -172,7 +171,7 @@ public class DrawingController {
                             try {
                                 customLayout.paintLayout(graphics);
                             } catch (Exception e) {
-                                log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoId() + "]渲染出错", e);
+                                log.error(customLayout.getClass().getName() + "[videoId=" + videoInfo.getVideoUnionId() + "]渲染出错", e);
                             }
                         }
                     }
@@ -186,7 +185,7 @@ public class DrawingController {
                 os.write(cachedBlurBytes);
                 os.flush();
             } catch (Exception e) {
-                log.error("无法输出图像数据到响应流[videoId=" + videoInfo.getVideoId() + "]", e);
+                log.error("无法输出图像数据到响应流[videoId=" + videoInfo.getVideoUnionId() + "]", e);
             }
         }
     }

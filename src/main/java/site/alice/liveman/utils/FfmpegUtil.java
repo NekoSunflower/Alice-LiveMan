@@ -18,7 +18,6 @@
 
 package site.alice.liveman.utils;
 
-import com.sun.jna.Platform;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,12 +26,9 @@ import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.ServerInfo;
-import site.alice.liveman.model.VideoCropConf;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.service.BroadcastServerService;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 
 import static site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.*;
@@ -58,32 +54,31 @@ public class FfmpegUtil {
         return liveManSetting.getFfmpegPath() + "\t-i\t" + srcFile + "\t-r\t30\t-s\t1280x720\t-copyts\t-acodec\tcopy\t-qscale:v\t8\t" + dictFile + "\t-y";
     }
 
-    public static String buildFfmpegCmdLine(VideoInfo videoInfo, String broadcastAddress) {
+    public static String buildFfmpegCmdLine(VideoInfo videoInfo, BroadcastConfig broadcastConfig, String broadcastAddress) {
         String cmdLine = "\t-re\t-i\t\"" + videoInfo.getMediaProxyUrl() + "\"";
-        VideoCropConf cropConf = videoInfo.getCropConf();
-        if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
+        if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
             cmdLine += "\t-vf\t\"[in]scale=32:-1[out]\"";
             cmdLine += "\t-vcodec\th264";
-        } else if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoId());
+        } else if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
+            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
             KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
             if (keyFrame != null) {
-                VideoResolutionEnum broadcastResolution = videoInfo.getCropConf().getBroadcastResolution();
+                VideoResolutionEnum broadcastResolution = broadcastConfig.getBroadcastResolution();
                 double scale = (double) broadcastResolution.getResolution() / Math.min(keyFrame.getHeight(), keyFrame.getWidth());
                 long width = Math.round(keyFrame.getWidth() * scale / 2) * 2;
                 long height = Math.round(keyFrame.getHeight() * scale / 2) * 2;
                 String filter;
-                if (cropConf.getBlurSize() > 0) {
-                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoId()) + "\"";
+                if (broadcastConfig.getBlurSize() > 0) {
+                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoUnionId()) + "\"";
                     if (scale == 1 && broadcastResolution.getFrameRate().equals(keyFrame.getFps()) && broadcastResolution != VideoResolutionEnum.R1080F60) {
-                        filter = "[0:v]smartblur=" + cropConf.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[0:v][alf]overlay[v];[v][screen]overlay";
+                        filter = "[0:v]smartblur=" + broadcastConfig.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[0:v][alf]overlay[v];[v][screen]overlay";
                     } else {
-                        filter = "[0:v]fps=" + broadcastResolution.getFrameRate() + ",scale=" + width + "x" + height + ",split=2[ref0][ref1];[ref0]" + (broadcastResolution == VideoResolutionEnum.R1080F60 ? "fps=15," : "") + "smartblur=" + cropConf.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[ref1][alf]overlay[v];[v][screen]overlay";
+                        filter = "[0:v]fps=" + broadcastResolution.getFrameRate() + ",scale=" + width + "x" + height + ",split=2[ref0][ref1];[ref0]" + (broadcastResolution == VideoResolutionEnum.R1080F60 ? "fps=15," : "") + "smartblur=" + broadcastConfig.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[ref1][alf]overlay[v];[v][screen]overlay";
                     }
                 } else {
                     filter = "[0:v]fps=" + broadcastResolution.getFrameRate() + ",scale=" + width + "x" + height + "[v];[1:v]scale=" + width + "x" + height + "[screen];[v][screen]overlay";
                 }
-                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
+                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoUnionId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
             } else {
                 log.error("无法获取节目[" + videoInfo.getVideoUnionId() + "]的视频源信息");
                 return null;
@@ -91,7 +86,7 @@ public class FfmpegUtil {
         } else {
             cmdLine += "\t-vcodec\tcopy";
         }
-        if (videoInfo.isAudioBanned()) {
+        if (broadcastConfig.isAudioBanned()) {
             cmdLine += "\t-ac\t1";
         }
         cmdLine += "\t-acodec\taac\t-b:a\t130K\t-f\tflv\t\"" + broadcastAddress + "\"";

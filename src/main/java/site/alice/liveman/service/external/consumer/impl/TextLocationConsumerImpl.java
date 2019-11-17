@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
@@ -51,16 +52,16 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
 
     @Override
     public void accept(List<TextLocation> textLocations, BufferedImage bufferedImage) {
-        log.info("评论区识别[" + videoInfo.getVideoId() + "]:" + textLocations);
+        log.info("评论区识别[" + videoInfo.getVideoUnionId() + "]:" + textLocations);
         try {
             File easyDlDir = new File("./easydl/");
             easyDlDir.mkdirs();
             String dashFileName;
             if (textLocations.size() > 1) {
                 // 可能是误识别，保存这次的识别记录
-                dashFileName = videoInfo.getVideoId() + "_" + System.currentTimeMillis();
+                dashFileName = videoInfo.getVideoUnionId() + "_" + System.currentTimeMillis();
             } else {
-                dashFileName = videoInfo.getVideoId() + "_" + System.currentTimeMillis() / 600000;
+                dashFileName = videoInfo.getVideoUnionId() + "_" + System.currentTimeMillis() / 600000;
             }
             ImageIO.write(bufferedImage, "jpg", new File(easyDlDir + "/" + dashFileName + "_raw.jpg"));
             try (OutputStream os = new FileOutputStream(easyDlDir + "/" + dashFileName + "_rect.txt")) {
@@ -110,7 +111,7 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
 
             // 设置新的自定义渲染层
             double scale = 720.0 / bufferedImage.getHeight();
-            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getCropConf().getLayouts();
+            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getBroadcastConfig().getLayouts();
             customLayouts.removeIf(customLayout -> customLayout instanceof RectangleBlurLayout);
             for (TextLocation textLocation : videoInfoTextLocations) {
                 RectangleBlurLayout rectangleBlurLayout = new RectangleBlurLayout();
@@ -121,18 +122,18 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
                 rectangleBlurLayout.setHeight((int) (textLocation.getRectangle().getHeight() * scale));
                 customLayouts.add(rectangleBlurLayout);
             }
-            videoInfo.getCropConf().setCachedBlurBytes(null);
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoId() + "_low");
+            videoInfo.getBroadcastConfig().setCachedBlurBytes(null);
+            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId() + "_low");
             if (mediaProxyTask != null) {
                 VideoInfo lowVideoInfo = mediaProxyTask.getVideoInfo();
                 if (lowVideoInfo != null) {
-                    lowVideoInfo.getCropConf().setLayouts(customLayouts);
-                    lowVideoInfo.getCropConf().setCachedBlurBytes(null);
-                    if (lowVideoInfo.getCropConf().getBlurSize() != 5) {
-                        videoInfo.getCropConf().setBlurSize(5);
-                        lowVideoInfo.getCropConf().setBlurSize(5);
-                        BroadcastServiceManager.BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
-                        if (broadcastTask != null) {
+                    lowVideoInfo.getBroadcastConfig().setLayouts(customLayouts);
+                    lowVideoInfo.getBroadcastConfig().setCachedBlurBytes(null);
+                    if (lowVideoInfo.getBroadcastConfig().getBlurSize() != 5) {
+                        videoInfo.getBroadcastConfig().setBlurSize(5);
+                        lowVideoInfo.getBroadcastConfig().setBlurSize(5);
+                        Set<BroadcastServiceManager.BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
+                        for (BroadcastServiceManager.BroadcastTask broadcastTask : broadcastTasks) {
                             ProcessUtil.killProcess(broadcastTask.getPid());
                         }
                     }

@@ -42,7 +42,7 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
     public void accept(BufferedImage resultImage, BufferedImage originalImage) {
         try {
             double scale = 720.0 / originalImage.getHeight();
-            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getCropConf().getLayouts();
+            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getBroadcastConfig().getLayouts();
             customLayouts.removeIf(customLayout -> customLayout instanceof ImageSegmentBlurLayout);
             ImageSegmentBlurLayout imageSegmentBlurLayout = new ImageSegmentBlurLayout();
             imageSegmentBlurLayout.setIndex(10);
@@ -53,18 +53,18 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
             imageSegmentBlurLayout.setWidth((int) (originalImage.getWidth() * scale));
             imageSegmentBlurLayout.setHeight((int) (originalImage.getHeight() * scale));
             customLayouts.add(imageSegmentBlurLayout);
-            videoInfo.getCropConf().setCachedBlurBytes(null);
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoId() + "_low");
+            videoInfo.getBroadcastConfig().setCachedBlurBytes(null);
+            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId() + "_low");
             if (mediaProxyTask != null) {
                 VideoInfo lowVideoInfo = mediaProxyTask.getVideoInfo();
                 if (lowVideoInfo != null) {
-                    lowVideoInfo.getCropConf().setLayouts(customLayouts);
-                    lowVideoInfo.getCropConf().setCachedBlurBytes(null);
+                    lowVideoInfo.getBroadcastConfig().setLayouts(customLayouts);
+                    lowVideoInfo.getBroadcastConfig().setCachedBlurBytes(null);
                 }
             }
-            log.info("Accepted image segment[videoId=" + videoInfo.getVideoId() + "]");
+            log.info("Accepted image segment[videoId=" + videoInfo.getVideoUnionId() + "]");
         } catch (Throwable e) {
-            log.error("处理图像分割失败[videoId=" + videoInfo.getVideoId() + "]", e);
+            log.error("处理图像分割失败[videoId=" + videoInfo.getVideoUnionId() + "]", e);
         }
     }
 }

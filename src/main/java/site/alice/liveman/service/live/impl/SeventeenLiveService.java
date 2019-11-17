@@ -36,15 +36,15 @@ public class SeventeenLiveService extends LiveService {
     private static final String liveStreamInfoUrl = "https://api-dsa.17app.co/api/v1/liveStreams/getLiveStreamInfo";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         String[] pathSplit = videoInfoUrl.getPath().split("/");
         String profileId = pathSplit[pathSplit.length - 1];
-        String liveStreamInfo = HttpRequestUtil.downloadUrl(new URI(liveStreamInfoUrl), channelInfo == null ? null : channelInfo.getCookies(), "{\"liveStreamID\":\"" + profileId + "\"}", StandardCharsets.UTF_8);
+        String liveStreamInfo = HttpRequestUtil.downloadUrl(new URI(liveStreamInfoUrl), cookies, "{\"liveStreamID\":\"" + profileId + "\"}", StandardCharsets.UTF_8);
         JSONObject jsonObject = JSON.parseObject(liveStreamInfo).getJSONObject("data");
         JSONArray rtmpUrls = jsonObject.getJSONArray("rtmpUrls");
         if (jsonObject.getInteger("status") > 1 && rtmpUrls != null && rtmpUrls.size() > 0) {

@@ -20,22 +20,23 @@ package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import site.alice.liveman.jenum.ExternalServiceType;
+import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ServerInfo {
-    private Integer                    port;
-    private String                     address;
-    private String                     username;
-    private String                     password;
-    private Long                       dateCreated;
-    private int                        performance;
-    private ExternalServiceType        externalServiceType;
-    private String                     remark;
-    private boolean                    available;
+    private Integer                        port;
+    private String                         address;
+    private String                         username;
+    private String                         password;
+    private Long                           dateCreated;
+    private int                            performance;
+    private ExternalServiceType            externalServiceType;
+    private String                         remark;
+    private boolean                        available;
     @JSONField(serialize = false)
-    private AtomicReference<VideoInfo> currentVideo = new AtomicReference<>();
+    private AtomicReference<BroadcastTask> broadcastTask = new AtomicReference<>();
 
     public Integer getPort() {
         return port;
@@ -93,16 +94,16 @@ public class ServerInfo {
         this.externalServiceType = externalServiceType;
     }
 
-    public VideoInfo getCurrentVideo() {
-        return currentVideo.get();
+    public BroadcastTask getBroadcastTask() {
+        return broadcastTask.get();
     }
 
-    public boolean setCurrentVideo(VideoInfo currentVideo) {
-        return this.currentVideo.compareAndSet(null, currentVideo);
+    public boolean setCurrentVideo(BroadcastTask broadcastTask) {
+        return this.broadcastTask.compareAndSet(null, broadcastTask);
     }
 
-    public boolean removeCurrentVideo(VideoInfo currentVideo) {
-        return this.currentVideo.compareAndSet(currentVideo, null) || this.currentVideo.compareAndSet(null, null);
+    public boolean removeCurrentVideo(BroadcastTask broadcastTask) {
+        return this.broadcastTask.compareAndSet(broadcastTask, null) || this.broadcastTask.compareAndSet(null, null);
     }
 
     public String getRemark() {

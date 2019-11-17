@@ -40,8 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class RealityLiveService extends LiveService {
-    private static final String GET_FROM_VLID = "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/get_from_vlid";
-    public static final String LIST_STREAMER_OFFICIAL = "https://user-prod-dot-vlive-prod.appspot.com/api/v1/streamer_users/list_streamer_official";
+    private static final String GET_FROM_VLID          = "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/get_from_vlid";
+    public static final  String LIST_STREAMER_OFFICIAL = "https://user-prod-dot-vlive-prod.appspot.com/api/v1/streamer_users/list_streamer_official";
 
     @Autowired
     private LiveManSetting          liveManSetting;
@@ -65,12 +65,12 @@ public class RealityLiveService extends LiveService {
     }
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -85,7 +85,7 @@ public class RealityLiveService extends LiveService {
             log.warn(nickname + "的用户信息不存在，请核对！");
             return null;
         }
-        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), channelInfo != null ? channelInfo.getCookies() : null, "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
+        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), cookies, "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
         JSONObject liveDetailObj = JSON.parseObject(liveDetailJson);
         JSONArray lives = liveDetailObj.getJSONArray("payload");
         if (!lives.isEmpty()) {

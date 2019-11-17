@@ -31,7 +31,6 @@ import site.alice.liveman.utils.M3u8Util;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 @Service
 public class ColonLiveService extends LiveService {
@@ -43,7 +42,7 @@ public class ColonLiveService extends LiveService {
 
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
         if (channelUrl.startsWith(VTUBER_PROFILE_URL)) {
             String uuid = channelUrl.replace(VTUBER_PROFILE_URL, "");
@@ -58,7 +57,7 @@ public class ColonLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -106,7 +105,7 @@ public class ColonLiveService extends LiveService {
         }
         VideoInfo videoInfo = new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUri.resolve(m3u8FileUrl), "m3u8");
         if (streamInfo != null) {
-            videoInfo.setResolution(streamInfo.getResolution());
+            videoInfo.setRealResolution(streamInfo.getResolution());
             videoInfo.setFrameRate(streamInfo.getFrameRate());
         }
         return videoInfo;

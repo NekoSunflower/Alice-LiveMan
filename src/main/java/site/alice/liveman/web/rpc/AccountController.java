@@ -111,7 +111,6 @@ public class AccountController {
             return ActionResult.getErrorResult("此账号已存在，如要更新账号信息请删除后重新添加");
         }
         account.setDescription(accountInfoVO.getDescription());
-        account.setJoinAutoBalance(accountInfoVO.isJoinAutoBalance());
         Set<AccountInfo> accounts = liveManSetting.getAccounts();
         if (!accounts.add(account)) {
             return ActionResult.getErrorResult("此账号已存在，如要更新账号信息请删除后重新添加");
@@ -135,7 +134,7 @@ public class AccountController {
                     return ActionResult.getErrorResult("账户AP点数非零，无法删除！");
                 }
                 if (byAccountId.getCurrentVideo() != null) {
-                    BroadcastServiceManager.BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask();
+                    BroadcastServiceManager.BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask(byAccountId);
                     if (broadcastTask != null) {
                         if (!broadcastTask.terminateTask()) {
                             log.info("删除账户信息失败：无法终止转播任务，CAS操作失败");
@@ -222,7 +221,6 @@ public class AccountController {
         AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId());
         if (byAccountId != null) {
             byAccountId.setDescription(accountInfoVO.getDescription());
-            byAccountId.setJoinAutoBalance(accountInfoVO.isJoinAutoBalance());
             byAccountId.setPostBiliDynamic(accountInfoVO.isPostBiliDynamic());
             byAccountId.setAutoRoomTitle(accountInfoVO.isAutoRoomTitle());
             byAccountId.setBroadcastResolution(accountInfoVO.getBroadcastResolution());

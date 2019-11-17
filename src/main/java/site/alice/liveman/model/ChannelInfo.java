@@ -18,60 +18,28 @@
 package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ChannelInfo implements Serializable {
-    private String               defaultAccountId;
-    private boolean              autoBalance;
-    private String               dynamicPostAccountId;
-    private String               channelUrl;
-    private String               channelName;
-    private String               cookies;
-    private int[]                defaultArea;
-    private boolean              needRecord;
-    private VideoCropConf        defaultCropConf;
+    private String                               channelUrl;
+    private String                               channelName;
+    private CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs;
     @JSONField(serialize = false)
-    private Long                 startAt;
+    private Long                                 startAt;
     @JSONField(serialize = false)
-    private Long                 endAt;
+    private Long                                 endAt;
 
     public ChannelInfo() {
-        this.defaultCropConf = new VideoCropConf();
+        this.defaultBroadcastConfigs = new CopyOnWriteArraySet<>();
     }
 
     public ChannelInfo(String channelName, String channelUrl) {
         this.channelName = channelName;
         this.channelUrl = channelUrl;
-        this.defaultCropConf = new VideoCropConf();
-    }
-
-    public String getDefaultAccountId() {
-        return defaultAccountId;
-    }
-
-    public void setDefaultAccountId(String defaultAccountId) {
-        this.defaultAccountId = defaultAccountId;
-    }
-
-    public boolean isAutoBalance() {
-        return autoBalance;
-    }
-
-    public void setAutoBalance(boolean autoBalance) {
-        this.autoBalance = autoBalance;
-    }
-
-    public String getDynamicPostAccountId() {
-        return dynamicPostAccountId;
-    }
-
-    public void setDynamicPostAccountId(String dynamicPostAccountId) {
-        this.dynamicPostAccountId = dynamicPostAccountId;
+        this.defaultBroadcastConfigs = new CopyOnWriteArraySet<>();
     }
 
     public String getChannelName() {
@@ -94,21 +62,6 @@ public class ChannelInfo implements Serializable {
         }
     }
 
-    public String getCookies() {
-        return cookies;
-    }
-
-    public void setCookies(String cookies) {
-        this.cookies = cookies;
-    }
-
-    public int[] getDefaultArea() {
-        return defaultArea;
-    }
-
-    public void setDefaultArea(int[] defaultArea) {
-        this.defaultArea = defaultArea;
-    }
 
     public Long getStartAt() {
         return startAt;
@@ -126,20 +79,28 @@ public class ChannelInfo implements Serializable {
         this.endAt = endAt;
     }
 
-    public boolean isNeedRecord() {
-        return needRecord;
+    public CopyOnWriteArraySet<BroadcastConfig> getDefaultBroadcastConfigs() {
+        return defaultBroadcastConfigs;
     }
 
-    public void setNeedRecord(boolean needRecord) {
-        this.needRecord = needRecord;
+    public void setDefaultBroadcastConfigs(CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs) {
+        this.defaultBroadcastConfigs = defaultBroadcastConfigs;
     }
 
-    public VideoCropConf getDefaultCropConf() {
-        return defaultCropConf;
+    public BroadcastConfig getDefaultBroadcastConfig(AccountInfo accountInfo) {
+        for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
+            if (defaultBroadcastConfig.getAccountInfo().equals(accountInfo)) {
+                return defaultBroadcastConfig;
+            }
+        }
+        return null;
     }
 
-    public void setDefaultCropConf(VideoCropConf defaultCropConf) {
-        this.defaultCropConf = defaultCropConf;
+    public void addDefaultBroadcastConfig(BroadcastConfig broadcastConfig) {
+        if (!this.defaultBroadcastConfigs.add(broadcastConfig)) {
+            this.defaultBroadcastConfigs.remove(broadcastConfig);
+            this.defaultBroadcastConfigs.add(broadcastConfig);
+        }
     }
 
     @Override

@@ -51,7 +51,7 @@ public class TwitchLiveService extends LiveService {
     private LiveManSetting liveManSetting;
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -59,13 +59,13 @@ public class TwitchLiveService extends LiveService {
         String channelName = channelUrl.substring(22);
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("client-id", clientId);
-        String streamJSON = HttpRequestUtil.downloadUrl(new URI(GET_STREAM_INFO_URL + channelName), channelInfo != null ? channelInfo.getCookies() : null, headerMap, StandardCharsets.UTF_8);
+        String streamJSON = HttpRequestUtil.downloadUrl(new URI(GET_STREAM_INFO_URL + channelName), cookies, headerMap, StandardCharsets.UTF_8);
         JSONObject streamObj = JSON.parseObject(streamJSON).getJSONObject("stream");
         if (streamObj != null) {
             String videoId = streamObj.getString("_id");
             JSONObject channelObj = streamObj.getJSONObject("channel");
             String videoTitle = channelObj.getString("status");
-            String streamTokenJSON = HttpRequestUtil.downloadUrl(new URI(String.format(GET_STREAM_TOKEN_URL, channelName)), channelInfo != null ? channelInfo.getCookies() : null, headerMap, StandardCharsets.UTF_8);
+            String streamTokenJSON = HttpRequestUtil.downloadUrl(new URI(String.format(GET_STREAM_TOKEN_URL, channelName)), cookies, headerMap, StandardCharsets.UTF_8);
             JSONObject streamTokenObj = JSON.parseObject(streamTokenJSON);
             String token = streamTokenObj.getString("token");
             String sig = streamTokenObj.getString("sig");
@@ -101,7 +101,7 @@ public class TwitchLiveService extends LiveService {
             }
             VideoInfo videoInfo = new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, new URI(m3u8FileUrl), "m3u8");
             if (streamInfo != null) {
-                videoInfo.setResolution(streamInfo.getResolution());
+                videoInfo.setRealResolution(streamInfo.getResolution());
                 videoInfo.setFrameRate(streamInfo.getFrameRate());
             }
             videoInfo.setDescription(streamObj.getString("game"));
@@ -111,12 +111,12 @@ public class TwitchLiveService extends LiveService {
     }
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
         String channelName = channelUrl.substring(22);
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("client-id", clientId);
-        String streamJSON = HttpRequestUtil.downloadUrl(new URI(GET_STREAM_INFO_URL + channelName), channelInfo != null ? channelInfo.getCookies() : null, headerMap, StandardCharsets.UTF_8);
+        String streamJSON = HttpRequestUtil.downloadUrl(new URI(GET_STREAM_INFO_URL + channelName), cookies, headerMap, StandardCharsets.UTF_8);
         JSONObject streamObj = JSON.parseObject(streamJSON).getJSONObject("stream");
         if (streamObj != null && "live".equals(streamObj.getString("stream_type"))) {
             return new URI(channelUrl);

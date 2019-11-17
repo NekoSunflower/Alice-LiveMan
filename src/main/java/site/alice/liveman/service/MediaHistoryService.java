@@ -25,6 +25,7 @@ import site.alice.liveman.event.MediaProxyEvent;
 import site.alice.liveman.event.MediaProxyEventListener;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.MediaHistory;
 import site.alice.liveman.model.VideoInfo;
@@ -38,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Service
 @Slf4j
@@ -52,15 +54,17 @@ public class MediaHistoryService {
                 List<String> historyList = IOUtils.readLines(new FileInputStream(HISTORY_FILE), StandardCharsets.UTF_8);
                 for (String historyLine : historyList) {
                     try {
-                        String[] split = historyLine.split("\\|");
-                        MediaHistory mediaHistory = new MediaHistory();
-                        mediaHistory.setVideoId(split[0]);
-                        mediaHistory.setVideoTitle(split[1]);
-                        mediaHistory.setChannelName(split[2]);
-                        mediaHistory.setDatetime(new Date(Long.parseLong(split[3])));
-                        mediaHistory.setNeedRecord(true);
-                        mediaHistory.setPostDynamic(true);
-                        mediaHistoryMap.put(mediaHistory.getVideoId(), mediaHistory);
+                        String[] split = historyLine.split("\\||");
+                        if (split.length > 3) {
+                            MediaHistory mediaHistory = new MediaHistory();
+                            mediaHistory.setVideoId(split[0]);
+                            mediaHistory.setVideoTitle(split[1]);
+                            mediaHistory.setChannelName(split[2]);
+                            mediaHistory.setDatetime(new Date(Long.parseLong(split[3])));
+                            mediaHistory.setNeedRecord(true);
+                            mediaHistory.setPostDynamic(true);
+                            mediaHistoryMap.put(mediaHistory.getVideoId(), mediaHistory);
+                        }
                     } catch (Exception e) {
                         log.error("读取转播历史信息出错[" + historyLine + "]", e);
                     }
@@ -79,8 +83,16 @@ public class MediaHistoryService {
                     if (channelInfo == null) {
                         return;
                     }
+                    boolean needRecord = false;
+                    CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = channelInfo.getDefaultBroadcastConfigs();
+                    for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
+                        if (defaultBroadcastConfig.isNeedRecord()) {
+                            needRecord = true;
+                            break;
+                        }
+                    }
                     MediaHistory mediaHistory = new MediaHistory();
-                    mediaHistory.setNeedRecord(videoInfo.isNeedRecord());
+                    mediaHistory.setNeedRecord(needRecord);
                     mediaHistory.setVideoId(videoInfo.getVideoId());
                     mediaHistory.setVideoTitle(videoInfo.getTitle());
                     mediaHistory.setChannelName(channelInfo.getChannelName());
@@ -88,7 +100,7 @@ public class MediaHistoryService {
                     mediaHistoryMap.put(videoInfo.getVideoId(), mediaHistory);
                     synchronized (this) {
                         try (OutputStream os = new FileOutputStream("history.txt", true)) {
-                            IOUtils.write(String.format("%s|%s|%s|%s\n", videoInfo.getVideoId(), videoInfo.getTitle(), channelInfo.getChannelName(), System.currentTimeMillis()), os, StandardCharsets.UTF_8);
+                            IOUtils.write(String.format("%s||%s||%s||%s\n", videoInfo.getVideoId(), videoInfo.getTitle(), channelInfo.getChannelName(), System.currentTimeMillis()), os, StandardCharsets.UTF_8);
                         } catch (Exception err) {
                             log.error("保存历史记录失败", err);
                         }

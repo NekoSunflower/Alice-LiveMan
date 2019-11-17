@@ -17,42 +17,39 @@
  */
 package site.alice.liveman.model;
 
-import site.alice.liveman.customlayout.CustomLayout;
-import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
 import site.alice.liveman.service.external.TextLocation;
+import site.alice.liveman.utils.SecurityUtils;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class VideoInfo implements Serializable {
 
-    private ChannelInfo                    channelInfo;
-    private String                         videoId;
-    private String                         part;
-    private String                         title;
-    private String                         description;
-    private URI                            videoInfoUrl;
-    private URI                            mediaProxyUrl;
-    private URI                            mediaUrl;
-    private String                         mediaFormat;
-    private int[]                          area;
-    private boolean                        isAudioBanned;
-    private boolean                        needRecord;
-    private String                         encodeMethod;
-    private byte[]                         encodeKey;
-    private byte[]                         encodeIV;
-    private AtomicReference<BroadcastTask> broadcastTask;
-    private VideoCropConf                  cropConf;
-    private boolean                        vertical;
-    private Double                         frameRate;
-    private String                         resolution;
-    private List<TextLocation>             textLocations;
+    private ChannelInfo                          channelInfo;
+    private String                               videoId;
+    private AccountInfo                          privateAccount;
+    private String                               part;
+    private String                               title;
+    private String                               description;
+    private URI                                  videoInfoUrl;
+    private URI                                  mediaProxyUrl;
+    private URI                                  mediaUrl;
+    private String                               mediaFormat;
+    private String                               encodeMethod;
+    private byte[]                               encodeKey;
+    private byte[]                               encodeIV;
+    private CopyOnWriteArraySet<BroadcastTask>   broadcastTasks;
+    private CopyOnWriteArraySet<BroadcastConfig> broadcastConfigs;
+    private Double                               frameRate;
+    private String                               requiredResolution;
+    private String                               realResolution;
+    private List<TextLocation>                   textLocations;
 
     public VideoInfo(ChannelInfo channelInfo, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
         this.channelInfo = channelInfo;
@@ -61,8 +58,16 @@ public class VideoInfo implements Serializable {
         this.videoInfoUrl = videoInfoUrl;
         this.mediaUrl = mediaUrl;
         this.mediaFormat = mediaFormat;
-        this.broadcastTask = new AtomicReference<>();
-        this.cropConf = new VideoCropConf();
+        this.broadcastTasks = new CopyOnWriteArraySet<>();
+        this.broadcastConfigs = new CopyOnWriteArraySet<>();
+    }
+
+    public AccountInfo getPrivateAccount() {
+        return privateAccount;
+    }
+
+    public void setPrivateAccount(AccountInfo privateAccount) {
+        this.privateAccount = privateAccount;
     }
 
     public URI getVideoInfoUrl() {
@@ -73,8 +78,16 @@ public class VideoInfo implements Serializable {
         this.videoInfoUrl = videoInfoUrl;
     }
 
+    public String getRequiredResolution() {
+        return requiredResolution;
+    }
+
+    public void setRequiredResolution(String requiredResolution) {
+        this.requiredResolution = requiredResolution;
+    }
+
     public String getVideoUnionId() {
-        return videoId + (part == null ? "" : "." + part);
+        return videoId + (part == null ? "" : "." + part) + (privateAccount == null ? "" : "." + SecurityUtils.md5Encode(privateAccount.getAccountId().getBytes(StandardCharsets.UTF_8)) + "." + requiredResolution);
     }
 
     public ChannelInfo getChannelInfo() {
@@ -133,40 +146,25 @@ public class VideoInfo implements Serializable {
         this.mediaFormat = mediaFormat;
     }
 
-    public boolean isAudioBanned() {
-        return isAudioBanned;
+    public Set<BroadcastTask> getBroadcastTasks() {
+        return broadcastTasks;
     }
 
-    public void setAudioBanned(boolean audioBanned) {
-        isAudioBanned = audioBanned;
-    }
-
-    public boolean isNeedRecord() {
-        return needRecord;
-    }
-
-    public void setNeedRecord(boolean needRecord) {
-        this.needRecord = needRecord;
-    }
-
-    public int[] getArea() {
-        return area;
-    }
-
-    public void setArea(int[] area) {
-        this.area = area;
-    }
-
-    public BroadcastTask getBroadcastTask() {
-        return broadcastTask.get();
-    }
-
-    public boolean setBroadcastTask(BroadcastTask broadcastTask) {
-        return this.broadcastTask.compareAndSet(null, broadcastTask);
+    public boolean addBroadcastTask(BroadcastTask broadcastTask) {
+        return this.broadcastTasks.add(broadcastTask);
     }
 
     public boolean removeBroadcastTask(BroadcastTask broadcastTask) {
-        return this.broadcastTask.compareAndSet(broadcastTask, null);
+        return this.broadcastTasks.remove(broadcastTask);
+    }
+
+    public BroadcastTask getBroadcastTask(AccountInfo accountInfo) {
+        for (BroadcastTask broadcastTask : broadcastTasks) {
+            if (broadcastTask.getBroadcastAccount().equals(accountInfo)) {
+                return broadcastTask;
+            }
+        }
+        return null;
     }
 
     public String getEncodeMethod() {
@@ -201,12 +199,28 @@ public class VideoInfo implements Serializable {
         this.part = part;
     }
 
-    public VideoCropConf getCropConf() {
-        return cropConf;
+    public CopyOnWriteArraySet<BroadcastConfig> getBroadcastConfigs() {
+        return broadcastConfigs;
     }
 
-    public void setCropConf(VideoCropConf cropConf) {
-        this.cropConf = cropConf;
+    public void setBroadcastConfigs(CopyOnWriteArraySet<BroadcastConfig> broadcastConfigs) {
+        this.broadcastConfigs = broadcastConfigs;
+    }
+
+    public BroadcastConfig getBroadcastConfig(AccountInfo accountInfo) {
+        for (BroadcastConfig broadcastConfig : broadcastConfigs) {
+            if (broadcastConfig.getAccountInfo().equals(accountInfo)) {
+                return broadcastConfig;
+            }
+        }
+        return null;
+    }
+
+    public void addBroadcastConfig(BroadcastConfig broadcastConfig) {
+        if (!this.broadcastConfigs.add(broadcastConfig)) {
+            this.broadcastConfigs.remove(broadcastConfig);
+            this.broadcastConfigs.add(broadcastConfig);
+        }
     }
 
     public Double getFrameRate() {
@@ -217,20 +231,12 @@ public class VideoInfo implements Serializable {
         this.frameRate = frameRate;
     }
 
-    public String getResolution() {
-        return resolution;
+    public String getRealResolution() {
+        return realResolution;
     }
 
-    public void setResolution(String resolution) {
-        this.resolution = resolution;
-    }
-
-    public boolean isVertical() {
-        return vertical;
-    }
-
-    public void setVertical(boolean vertical) {
-        this.vertical = vertical;
+    public void setRealResolution(String realResolution) {
+        this.realResolution = realResolution;
     }
 
     public List<TextLocation> getTextLocations() {
@@ -250,8 +256,6 @@ public class VideoInfo implements Serializable {
                 ", description='" + description + '\'' +
                 ", mediaUrl=" + mediaUrl +
                 ", mediaFormat='" + mediaFormat + '\'' +
-                ", area=" + Arrays.toString(area) +
-                ", isAudioBanned=" + isAudioBanned +
                 ", encodeMethod='" + encodeMethod + '\'' +
                 ", encodeKey=" + Arrays.toString(encodeKey) +
                 ", encodeIV=" + Arrays.toString(encodeIV) +

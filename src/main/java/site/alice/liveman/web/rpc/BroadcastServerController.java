@@ -60,9 +60,9 @@ public class BroadcastServerController {
             serverVO.setAddress(server.getAddress());
             serverVO.setRemark(server.getRemark());
             serverVO.setPerformance(server.getPerformance());
-            VideoInfo currentVideo = server.getCurrentVideo();
+            VideoInfo currentVideo = server.getBroadcastTask();
             if (currentVideo != null) {
-                serverVO.setVideoId(currentVideo.getVideoId());
+                serverVO.setVideoId(currentVideo.getVideoUnionId());
                 serverVO.setVideoTitle(currentVideo.getTitle());
             }
             serverVOS.add(serverVO);

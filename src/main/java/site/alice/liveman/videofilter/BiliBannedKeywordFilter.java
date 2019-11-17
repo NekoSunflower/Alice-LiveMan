@@ -22,15 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
-import site.alice.liveman.utils.DynamicAreaUtil;
-
-import java.io.File;
-import java.io.IOException;
 
 @Slf4j
 @Component

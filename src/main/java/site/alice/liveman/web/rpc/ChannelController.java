@@ -104,10 +104,9 @@ public class ChannelController {
                 channel.setChannelName(channelInfo.getChannelName());
                 channel.setDefaultAccountId(channelInfo.getDefaultAccountId());
                 channel.setDynamicPostAccountId(channelInfo.getDynamicPostAccountId());
-                channel.setAutoBalance(channelInfo.isAutoBalance());
                 channel.setDefaultArea(channelInfo.getDefaultArea());
                 channel.setNeedRecord(channelInfo.isNeedRecord());
-                channel.setDefaultCropConf(channelInfo.getDefaultCropConf());
+                channel.setDefaultBroadcastConfig(channelInfo.getDefaultBroadcastConfig());
                 if (!StringUtils.isEmpty(channelInfo.getCookies())) {
                     channel.setCookies(channelInfo.getCookies());
                 }

@@ -47,7 +47,7 @@ public class AutoLiveManJob {
         channels.parallelStream().forEach(channelInfo -> {
             MediaProxyTask mediaProxyTask;
             try {
-                mediaProxyTask = liveServiceFactory.getLiveService(channelInfo.getChannelUrl()).createMediaProxyTask(channelInfo, liveManSetting.getDefaultResolution());
+                mediaProxyTask = liveServiceFactory.getLiveService(channelInfo.getChannelUrl()).createMediaProxyTask(channelInfo, null, liveManSetting.getDefaultResolution());
                 if (mediaProxyTask != null) {
                     LOGGER.info(channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]正在直播，媒体地址:" + mediaProxyTask.getSourceUrl());
                 } else {

@@ -40,12 +40,12 @@ public class NicoLiveService extends LiveService {
     private static final Pattern VIDEO_ID_PATTERN       = Pattern.compile("&quot;nicoliveProgramId&quot;:&quot;(.+?)&quot;");
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
         if (!channelUrl.endsWith("/live")) {
             channelUrl += "/live";
         }
-        String html = HttpRequestUtil.downloadUrl(new URI(channelUrl), channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String html = HttpRequestUtil.downloadUrl(new URI(channelUrl), cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = LIVE_VIDEO_URL_PATTERN.matcher(html);
         if (matcher.find()) {
             return new URI(matcher.group(1));
@@ -54,11 +54,11 @@ public class NicoLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String html = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo != null ? channelInfo.getCookies() : null, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String html = HttpRequestUtil.downloadUrl(videoInfoUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = EMBEDDED_DATA_PATTERN.matcher(html);
         if (matcher.find()) {
             String embeddedData = matcher.group(1);

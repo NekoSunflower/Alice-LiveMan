@@ -16,18 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package site.alice.liveman.utils;
+package site.alice.liveman.service.dynamic.post.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
+import org.springframework.stereotype.Service;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.service.dynamic.post.DynamicPostService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
+import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -35,33 +36,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component
-public class BilibiliApiUtil {
+@Service
+public class BilibiliDynamicPostService implements DynamicPostService {
 
     private static final String DYNAMIC_POST_API   = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create";
-    private static final String DYNAMIC_POST_PARAM = "dynamic_id=0&type=4&rid=0&content=#Vtuber##%s# 正在直播：%s %s&at_uids=&ctrl=[]&csrf_token=";
+    private static final String DYNAMIC_POST_PARAM = "dynamic_id=0&type=4&rid=0&content=%s&at_uids=&ctrl=[]&csrf_token=";
 
-    @Autowired
-    private LiveManSetting          liveManSetting;
     @Autowired
     private BroadcastServiceManager broadcastServiceManager;
 
-    public void postDynamic(AccountInfo accountInfo) {
-        AccountInfo postAccount = accountInfo;
-        VideoInfo videoInfo = accountInfo.getCurrentVideo();
-        ChannelInfo channelInfo = videoInfo.getChannelInfo();
-        String dynamicPostAccountId = channelInfo.getDynamicPostAccountId();
-        if (dynamicPostAccountId != null) {
-            AccountInfo byAccountId = liveManSetting.findByAccountId(dynamicPostAccountId);
-            if (byAccountId == null) {
-                log.warn("频道" + channelInfo.getChannelName() + "指定了动态发送账号[" + dynamicPostAccountId + "]，但此账号不存在，将使用推流账号发送动态");
-            } else {
-                postAccount = byAccountId;
-            }
-        }
-        if (!postAccount.isPostBiliDynamic()) {
-            return;
-        }
+    @Override
+    public void postDynamic(AccountInfo postAccount, String content) {
         Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(postAccount.getCookies());
         String csrfToken = "";
         if (matcher.find()) {
@@ -69,8 +54,8 @@ public class BilibiliApiUtil {
         }
         String postData = null;
         try {
-            broadcastServiceManager.getBroadcastService(accountInfo.getAccountSite()).getBroadcastRoomId(accountInfo);
-            postData = String.format(DYNAMIC_POST_PARAM, videoInfo.getChannelInfo().getChannelName(), videoInfo.getTitle(), accountInfo.getRoomUrl()) + csrfToken;
+            broadcastServiceManager.getBroadcastService(postAccount.getAccountSite()).getBroadcastRoomId(postAccount);
+            postData = String.format(DYNAMIC_POST_PARAM, content) + csrfToken;
             String res = HttpRequestUtil.downloadUrl(new URI(DYNAMIC_POST_API), postAccount.getCookies(), postData, StandardCharsets.UTF_8);
             JSONObject jsonObject = JSONObject.parseObject(res);
             if (jsonObject.getInteger("code") != 0) {
@@ -79,5 +64,10 @@ public class BilibiliApiUtil {
         } catch (Exception ex) {
             log.error("发送B站动态失败[postData=" + postData + "]", ex);
         }
+    }
+
+    @Override
+    public boolean match(AccountInfo postAccount) {
+        return "bilibili".equals(postAccount.getAccountSite());
     }
 }

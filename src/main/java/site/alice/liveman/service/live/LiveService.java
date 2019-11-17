@@ -17,7 +17,6 @@
  */
 package site.alice.liveman.service.live;
 
-import org.springframework.stereotype.Service;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.model.ChannelInfo;
@@ -28,25 +27,26 @@ import java.net.URI;
 
 public abstract class LiveService {
 
-    public MediaProxyTask createMediaProxyTask(ChannelInfo channelInfo, String resolution) throws Exception {
-        VideoInfo videoInfo = getLiveVideoInfo(getLiveVideoInfoUrl(channelInfo), channelInfo, resolution);
+    public MediaProxyTask createMediaProxyTask(ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+        VideoInfo videoInfo = getLiveVideoInfo(getLiveVideoInfoUrl(channelInfo, cookies), channelInfo, cookies, resolution);
         if (videoInfo != null) {
-            videoInfo.setNeedRecord(channelInfo.isNeedRecord());
-            if (channelInfo.getDefaultCropConf().isAutoBlur()) {
-                videoInfo.getCropConf().setBlurSize(5);
-                videoInfo.getCropConf().setAutoBlur(true);
-                videoInfo.getCropConf().setVideoBannedType(VideoBannedTypeEnum.CUSTOM_SCREEN);
-            }
-            videoInfo.getCropConf().setAutoImageSegment(channelInfo.getDefaultCropConf().isAutoImageSegment());
             return MediaProxyManager.createProxy(videoInfo);
         } else {
             return null;
         }
     }
 
-    public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception;
+    public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception;
 
-    public abstract VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String resolution) throws Exception;
+    public abstract VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception;
+
+    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+        VideoInfo videoInfo = getLiveVideoInfo0(videoInfoUrl, channelInfo, cookies, resolution);
+        if (videoInfo != null) {
+            videoInfo.setRequiredResolution(resolution);
+        }
+        return videoInfo;
+    }
 
     protected abstract boolean isMatch(URI channelUrl);
 }
