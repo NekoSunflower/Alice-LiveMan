@@ -54,7 +54,7 @@ public class MediaHistoryService {
                 List<String> historyList = IOUtils.readLines(new FileInputStream(HISTORY_FILE), StandardCharsets.UTF_8);
                 for (String historyLine : historyList) {
                     try {
-                        String[] split = historyLine.split("\\||");
+                        String[] split = historyLine.split("\\|\\|");
                         if (split.length > 3) {
                             MediaHistory mediaHistory = new MediaHistory();
                             mediaHistory.setVideoId(split[0]);

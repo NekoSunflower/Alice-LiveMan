@@ -54,7 +54,7 @@ public class DynamicServerJob {
     @Autowired
     private BroadcastServerService broadcastServerService;
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+   // @Scheduled(cron = "0 0/1 * * * ?")
     public void serverScanner() {
         CopyOnWriteArraySet<ServerInfo> servers = liveManSetting.getServers();
         List<ServerInfo> list = dynamicServerService.list();
@@ -74,7 +74,7 @@ public class DynamicServerJob {
         }
     }
 
-    @Scheduled(cron = "0/5 * * * * ?")
+   // @Scheduled(cron = "0/5 * * * * ?")
     public void destroyServerJob() {
         CopyOnWriteArraySet<ServerInfo> servers = liveManSetting.getServers();
         for (ServerInfo server : servers) {
@@ -97,7 +97,7 @@ public class DynamicServerJob {
         settingConfig.saveSetting(liveManSetting);
     }
 
-    @Scheduled(cron = "0/5 * * * * ?")
+   // @Scheduled(cron = "0/5 * * * * ?")
     public void accountBillJob() {
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
         for (AccountInfo account : accounts) {

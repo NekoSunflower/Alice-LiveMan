@@ -54,11 +54,18 @@ public class ChannelController {
 
     @RequestMapping("/channelList.json")
     public ActionResult<List<ChannelInfoVO>> channelList() {
+        AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
         Set<ChannelInfo> channels = liveManSetting.getChannels();
         List<ChannelInfoVO> channelInfoVOList = new ArrayList<>();
         for (ChannelInfo channel : channels) {
             ChannelInfoVO channelInfoVO = new ChannelInfoVO();
-            BeanUtils.copyProperties(channel, channelInfoVO);
+            channelInfoVO.setChannelName(channel.getChannelName());
+            channelInfoVO.setChannelUrl(channel.getChannelUrl());
+            BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
+            if (defaultBroadcastConfig == null) {
+                defaultBroadcastConfig = new BroadcastConfig();
+            }
+            channelInfoVO.setDefaultBroadcastConfig(defaultBroadcastConfig);
             channelInfoVOList.add(channelInfoVO);
         }
         return ActionResult.getSuccessResult(channelInfoVOList);
@@ -77,6 +84,8 @@ public class ChannelController {
         } catch (IllegalArgumentException e) {
             return ActionResult.getErrorResult(e.getMessage());
         }
+        channelInfo.setChannelName(channelInfo.getChannelName().trim());
+        channelInfo.setChannelUrl(channelInfo.getChannelUrl().trim());
         if (!liveManSetting.getChannels().add(channelInfo)) {
             return ActionResult.getErrorResult("尝试添加的频道已存在");
         }
@@ -106,10 +115,10 @@ public class ChannelController {
                 BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
                 if (defaultBroadcastConfig == null) {
                     defaultBroadcastConfig = new BroadcastConfig();
-                    defaultBroadcastConfig.setAccountInfo(accountInfo);
                     channel.addDefaultBroadcastConfig(defaultBroadcastConfig);
                 }
                 BeanUtils.copyProperties(channelInfo.getDefaultBroadcastConfig(), defaultBroadcastConfig);
+                defaultBroadcastConfig.setAccountInfo(accountInfo);
                 try {
                     settingConfig.saveSetting(liveManSetting);
                 } catch (Exception e) {

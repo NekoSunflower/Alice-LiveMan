@@ -89,7 +89,7 @@ public class ChannelInfo implements Serializable {
 
     public BroadcastConfig getDefaultBroadcastConfig(AccountInfo accountInfo) {
         for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
-            if (defaultBroadcastConfig.getAccountInfo().equals(accountInfo)) {
+            if (accountInfo.equals(defaultBroadcastConfig.getAccountInfo())) {
                 return defaultBroadcastConfig;
             }
         }

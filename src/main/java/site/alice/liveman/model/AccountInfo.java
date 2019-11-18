@@ -173,6 +173,10 @@ public class AccountInfo implements Comparable<AccountInfo> {
         }
     }
 
+    public void setPoint(AtomicLong point) {
+        this.point = point;
+    }
+
     public long changePoint(long delta, String remark) {
         BillRecord billRecord = new BillRecord(delta, remark);
         billRecords.add(0, billRecord);

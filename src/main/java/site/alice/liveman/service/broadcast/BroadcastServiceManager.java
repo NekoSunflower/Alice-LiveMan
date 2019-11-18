@@ -196,7 +196,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         List<AccountInfo> accountInfoList = new ArrayList<>();
         CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = channelInfo.getDefaultBroadcastConfigs();
         for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
-            if (defaultBroadcastConfig.isNeedAutoBroadcast()) {
+            if (defaultBroadcastConfig.isAutoBroadcast()) {
                 AccountInfo accountInfo = defaultBroadcastConfig.getAccountInfo();
                 String logInfo = "频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "的默认直播间[" + accountInfo.getAccountId() + "]";
                 if (accountInfo.isDisable()) {

@@ -160,7 +160,7 @@ public class VideoInfo implements Serializable {
 
     public BroadcastTask getBroadcastTask(AccountInfo accountInfo) {
         for (BroadcastTask broadcastTask : broadcastTasks) {
-            if (broadcastTask.getBroadcastAccount().equals(accountInfo)) {
+            if (accountInfo.equals(broadcastTask.getBroadcastAccount())) {
                 return broadcastTask;
             }
         }
@@ -209,7 +209,7 @@ public class VideoInfo implements Serializable {
 
     public BroadcastConfig getBroadcastConfig(AccountInfo accountInfo) {
         for (BroadcastConfig broadcastConfig : broadcastConfigs) {
-            if (broadcastConfig.getAccountInfo().equals(accountInfo)) {
+            if (accountInfo.equals(broadcastConfig.getAccountInfo())) {
                 return broadcastConfig;
             }
         }

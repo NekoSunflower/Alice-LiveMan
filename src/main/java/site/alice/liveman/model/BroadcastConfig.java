@@ -38,7 +38,7 @@ public class BroadcastConfig implements Serializable {
     private boolean                            vertical;
     private boolean                            isAudioBanned;
     private boolean                            needRecord;
-    private boolean                            needAutoBroadcast;
+    private boolean                            autoBroadcast;
     private String                             cookies;
     @JsonIgnore
     private byte[]                             cachedDrawBytes;
@@ -131,12 +131,12 @@ public class BroadcastConfig implements Serializable {
         this.broadcastResolution = broadcastResolution;
     }
 
-    public boolean isNeedAutoBroadcast() {
-        return needAutoBroadcast;
+    public boolean isAutoBroadcast() {
+        return autoBroadcast;
     }
 
-    public void setNeedAutoBroadcast(boolean needAutoBroadcast) {
-        this.needAutoBroadcast = needAutoBroadcast;
+    public void setAutoBroadcast(boolean autoBroadcast) {
+        this.autoBroadcast = autoBroadcast;
     }
 
     public AccountInfo getAccountInfo() {
