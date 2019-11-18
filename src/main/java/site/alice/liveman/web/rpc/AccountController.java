@@ -30,7 +30,7 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BillRecord;
 import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.utils.SecurityUtils;
 import site.alice.liveman.web.dataobject.ActionResult;
 import site.alice.liveman.web.dataobject.vo.AccountInfoVO;
@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @RestController
@@ -134,7 +133,7 @@ public class AccountController {
                     return ActionResult.getErrorResult("账户AP点数非零，无法删除！");
                 }
                 if (byAccountId.getCurrentVideo() != null) {
-                    BroadcastServiceManager.BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask(byAccountId);
+                    BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask(byAccountId);
                     if (broadcastTask != null) {
                         if (!broadcastTask.terminateTask()) {
                             log.info("删除账户信息失败：无法终止转播任务，CAS操作失败");

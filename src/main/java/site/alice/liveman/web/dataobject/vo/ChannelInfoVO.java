@@ -21,38 +21,9 @@ package site.alice.liveman.web.dataobject.vo;
 import site.alice.liveman.model.BroadcastConfig;
 
 public class ChannelInfoVO {
-    private String          defaultAccountId;
-    private boolean         autoBalance;
-    private String          dynamicPostAccountId;
     private String          channelUrl;
     private String          channelName;
-    private int[]           defaultArea;
-    private boolean         needRecord;
-    private BroadcastConfig defaultCropConf;
-
-    public String getDefaultAccountId() {
-        return defaultAccountId;
-    }
-
-    public void setDefaultAccountId(String defaultAccountId) {
-        this.defaultAccountId = defaultAccountId;
-    }
-
-    public boolean isAutoBalance() {
-        return autoBalance;
-    }
-
-    public void setAutoBalance(boolean autoBalance) {
-        this.autoBalance = autoBalance;
-    }
-
-    public String getDynamicPostAccountId() {
-        return dynamicPostAccountId;
-    }
-
-    public void setDynamicPostAccountId(String dynamicPostAccountId) {
-        this.dynamicPostAccountId = dynamicPostAccountId;
-    }
+    private BroadcastConfig defaultBroadcastConfig;
 
     public String getChannelUrl() {
         return channelUrl;
@@ -70,27 +41,11 @@ public class ChannelInfoVO {
         this.channelName = channelName;
     }
 
-    public int[] getDefaultArea() {
-        return defaultArea;
+    public BroadcastConfig getDefaultBroadcastConfig() {
+        return defaultBroadcastConfig;
     }
 
-    public void setDefaultArea(int[] defaultArea) {
-        this.defaultArea = defaultArea;
-    }
-
-    public boolean isNeedRecord() {
-        return needRecord;
-    }
-
-    public void setNeedRecord(boolean needRecord) {
-        this.needRecord = needRecord;
-    }
-
-    public BroadcastConfig getDefaultCropConf() {
-        return defaultCropConf;
-    }
-
-    public void setDefaultCropConf(BroadcastConfig defaultCropConf) {
-        this.defaultCropConf = defaultCropConf;
+    public void setDefaultBroadcastConfig(BroadcastConfig defaultBroadcastConfig) {
+        this.defaultBroadcastConfig = defaultBroadcastConfig;
     }
 }

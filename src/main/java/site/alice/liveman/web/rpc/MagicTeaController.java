@@ -28,6 +28,7 @@ import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.web.dataobject.vo.LiveNowVO;
 
 import javax.imageio.ImageIO;
@@ -36,6 +37,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @CrossOrigin
@@ -56,8 +58,9 @@ public class MagicTeaController {
                     liveNowVO.setChannelName(channelInfo.getChannelName());
                 }
                 liveNowVO.setVideoTitle(videoInfo.getTitle());
-                if (videoInfo.getBroadcastTask() != null) {
-                    AccountInfo broadcastAccount = videoInfo.getBroadcastTask().getBroadcastAccount();
+                Set<BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
+                for (BroadcastTask broadcastTask : broadcastTasks) {
+                    AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
                     if (broadcastAccount != null) {
                         liveNowVO.setRoomId(broadcastAccount.getRoomId());
                         liveNowVO.setUid(broadcastAccount.getUid());

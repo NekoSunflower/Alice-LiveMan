@@ -35,6 +35,7 @@ import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.KeyFrame;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
 
@@ -53,8 +54,8 @@ public class DrawingController {
     @Autowired
     private HttpServletResponse response;
 
-    @RequestMapping(method = RequestMethod.GET, value = "/screen/{videoId}")
-    public void screen(@PathVariable("videoId") String videoId) {
+    @RequestMapping(method = RequestMethod.GET, value = "/screen/{videoId}/{accountId}")
+    public void screen(@PathVariable("videoId") String videoId, @PathVariable("accountId") String accountId) {
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
         if (mediaProxyTask == null) {
@@ -78,7 +79,13 @@ public class DrawingController {
                 return;
             }
         }
-        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.setAccountId(accountId);
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig(accountInfo);
+        if (cropConf == null) {
+            log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
+            return;
+        }
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
         if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
             byte[] cachedDrawBytes = cropConf.getCachedDrawBytes();
@@ -122,8 +129,8 @@ public class DrawingController {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET, value = "/mask/{videoId}")
-    public void mask(@PathVariable("videoId") String videoId) {
+    @RequestMapping(method = RequestMethod.GET, value = "/mask/{videoId}/{accountId}")
+    public void mask(@PathVariable("videoId") String videoId, @PathVariable("accountId") String accountId) {
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
         if (mediaProxyTask == null) {
@@ -148,7 +155,13 @@ public class DrawingController {
                 return;
             }
         }
-        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.setAccountId(accountId);
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig(accountInfo);
+        if (cropConf == null) {
+            log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
+            return;
+        }
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
         if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
             try (OutputStream os = response.getOutputStream()) {

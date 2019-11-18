@@ -20,7 +20,7 @@ package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import site.alice.liveman.jenum.ExternalServiceType;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;

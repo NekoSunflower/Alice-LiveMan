@@ -29,6 +29,7 @@ import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ServerInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.BroadcastServerService;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.web.dataobject.ActionResult;
 import site.alice.liveman.web.dataobject.vo.ServerVO;
 
@@ -60,10 +61,10 @@ public class BroadcastServerController {
             serverVO.setAddress(server.getAddress());
             serverVO.setRemark(server.getRemark());
             serverVO.setPerformance(server.getPerformance());
-            VideoInfo currentVideo = server.getBroadcastTask();
-            if (currentVideo != null) {
-                serverVO.setVideoId(currentVideo.getVideoUnionId());
-                serverVO.setVideoTitle(currentVideo.getTitle());
+            BroadcastTask broadcastTask = server.getBroadcastTask();
+            if (broadcastTask != null) {
+                serverVO.setVideoId(broadcastTask.getVideoInfo().getVideoUnionId());
+                serverVO.setVideoTitle(broadcastTask.getVideoInfo().getTitle());
             }
             serverVOS.add(serverVO);
         }

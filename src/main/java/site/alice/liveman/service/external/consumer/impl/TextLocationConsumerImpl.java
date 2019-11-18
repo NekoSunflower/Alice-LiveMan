@@ -23,8 +23,10 @@ import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.customlayout.impl.RectangleBlurLayout;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
+import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.external.TextLocation;
 import site.alice.liveman.service.external.consumer.TextLocationConsumer;
 import site.alice.liveman.utils.ProcessUtil;
@@ -44,14 +46,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class TextLocationConsumerImpl implements TextLocationConsumer {
 
-    private VideoInfo videoInfo;
+    private BroadcastTask broadcastTask;
 
-    public TextLocationConsumerImpl(VideoInfo videoInfo) {
-        this.videoInfo = videoInfo;
+    public TextLocationConsumerImpl(BroadcastTask broadcastTask) {
+        this.broadcastTask = broadcastTask;
     }
 
     @Override
     public void accept(List<TextLocation> textLocations, BufferedImage bufferedImage) {
+        VideoInfo videoInfo = broadcastTask.getVideoInfo();
+        AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(broadcastAccount);
         log.info("评论区识别[" + videoInfo.getVideoUnionId() + "]:" + textLocations);
         try {
             File easyDlDir = new File("./easydl/");
@@ -111,7 +116,7 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
 
             // 设置新的自定义渲染层
             double scale = 720.0 / bufferedImage.getHeight();
-            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getBroadcastConfig().getLayouts();
+            CopyOnWriteArrayList<CustomLayout> customLayouts = broadcastConfig.getLayouts();
             customLayouts.removeIf(customLayout -> customLayout instanceof RectangleBlurLayout);
             for (TextLocation textLocation : videoInfoTextLocations) {
                 RectangleBlurLayout rectangleBlurLayout = new RectangleBlurLayout();
@@ -122,21 +127,16 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
                 rectangleBlurLayout.setHeight((int) (textLocation.getRectangle().getHeight() * scale));
                 customLayouts.add(rectangleBlurLayout);
             }
-            videoInfo.getBroadcastConfig().setCachedBlurBytes(null);
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId() + "_low");
-            if (mediaProxyTask != null) {
-                VideoInfo lowVideoInfo = mediaProxyTask.getVideoInfo();
-                if (lowVideoInfo != null) {
-                    lowVideoInfo.getBroadcastConfig().setLayouts(customLayouts);
-                    lowVideoInfo.getBroadcastConfig().setCachedBlurBytes(null);
-                    if (lowVideoInfo.getBroadcastConfig().getBlurSize() != 5) {
-                        videoInfo.getBroadcastConfig().setBlurSize(5);
-                        lowVideoInfo.getBroadcastConfig().setBlurSize(5);
-                        Set<BroadcastServiceManager.BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
-                        for (BroadcastServiceManager.BroadcastTask broadcastTask : broadcastTasks) {
-                            ProcessUtil.killProcess(broadcastTask.getPid());
-                        }
-                    }
+            broadcastConfig.setCachedBlurBytes(null);
+            VideoInfo lowVideoInfo = broadcastTask.getLowVideoInfo();
+            if (lowVideoInfo != null) {
+                BroadcastConfig lowBroadcastConfig = lowVideoInfo.getBroadcastConfig(broadcastAccount);
+                lowBroadcastConfig.setLayouts(customLayouts);
+                lowBroadcastConfig.setCachedBlurBytes(null);
+                if (lowBroadcastConfig.getBlurSize() != 5) {
+                    broadcastConfig.setBlurSize(5);
+                    lowBroadcastConfig.setBlurSize(5);
+                    ProcessUtil.killProcess(broadcastTask.getPid());
                 }
             }
         } catch (Throwable e) {

@@ -27,7 +27,7 @@ import site.alice.liveman.jenum.ExternalServiceType;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ServerInfo;
 import site.alice.liveman.model.BroadcastConfig;
-import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.external.DynamicServerService;
 import site.alice.liveman.utils.JschSshUtil;
 

@@ -23,7 +23,10 @@ import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.customlayout.impl.ImageSegmentBlurLayout;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
+import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.external.consumer.ImageSegmentConsumer;
 
 import java.awt.image.BufferedImage;
@@ -32,17 +35,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
 
-    private VideoInfo videoInfo;
+    private BroadcastTask broadcastTask;
 
-    public ImageSegmentConsumerImpl(VideoInfo videoInfo) {
-        this.videoInfo = videoInfo;
+    public ImageSegmentConsumerImpl(BroadcastTask broadcastTask) {
+        this.broadcastTask = broadcastTask;
     }
 
     @Override
     public void accept(BufferedImage resultImage, BufferedImage originalImage) {
+        VideoInfo videoInfo = broadcastTask.getVideoInfo();
+        AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(broadcastAccount);
         try {
             double scale = 720.0 / originalImage.getHeight();
-            CopyOnWriteArrayList<CustomLayout> customLayouts = videoInfo.getBroadcastConfig().getLayouts();
+            CopyOnWriteArrayList<CustomLayout> customLayouts = broadcastConfig.getLayouts();
             customLayouts.removeIf(customLayout -> customLayout instanceof ImageSegmentBlurLayout);
             ImageSegmentBlurLayout imageSegmentBlurLayout = new ImageSegmentBlurLayout();
             imageSegmentBlurLayout.setIndex(10);
@@ -53,14 +59,11 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
             imageSegmentBlurLayout.setWidth((int) (originalImage.getWidth() * scale));
             imageSegmentBlurLayout.setHeight((int) (originalImage.getHeight() * scale));
             customLayouts.add(imageSegmentBlurLayout);
-            videoInfo.getBroadcastConfig().setCachedBlurBytes(null);
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId() + "_low");
-            if (mediaProxyTask != null) {
-                VideoInfo lowVideoInfo = mediaProxyTask.getVideoInfo();
-                if (lowVideoInfo != null) {
-                    lowVideoInfo.getBroadcastConfig().setLayouts(customLayouts);
-                    lowVideoInfo.getBroadcastConfig().setCachedBlurBytes(null);
-                }
+            broadcastConfig.setCachedBlurBytes(null);
+            VideoInfo lowVideoInfo = broadcastTask.getLowVideoInfo();
+            if (lowVideoInfo != null) {
+                lowVideoInfo.getBroadcastConfig(broadcastAccount).setLayouts(customLayouts);
+                lowVideoInfo.getBroadcastConfig(broadcastAccount).setCachedBlurBytes(null);
             }
             log.info("Accepted image segment[videoId=" + videoInfo.getVideoUnionId() + "]");
         } catch (Throwable e) {

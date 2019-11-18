@@ -17,7 +17,7 @@
  */
 package site.alice.liveman.model;
 
-import site.alice.liveman.service.broadcast.BroadcastServiceManager.BroadcastTask;
+import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.external.TextLocation;
 import site.alice.liveman.utils.SecurityUtils;
 

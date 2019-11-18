@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.web.dataobject.ActionResult;
@@ -89,7 +90,7 @@ public class ChannelController {
     }
 
     @RequestMapping("/editChannel.json")
-    public ActionResult editChannel(@RequestBody ChannelInfo channelInfo) {
+    public ActionResult editChannel(@RequestBody ChannelInfoVO channelInfo) {
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
         try {
             Assert.hasText(channelInfo.getChannelName(), "频道名称不能为空");
@@ -102,14 +103,13 @@ public class ChannelController {
         for (ChannelInfo channel : channels) {
             if (channel.getChannelUrl().equals(channelInfo.getChannelUrl())) {
                 channel.setChannelName(channelInfo.getChannelName());
-                channel.setDefaultAccountId(channelInfo.getDefaultAccountId());
-                channel.setDynamicPostAccountId(channelInfo.getDynamicPostAccountId());
-                channel.setDefaultArea(channelInfo.getDefaultArea());
-                channel.setNeedRecord(channelInfo.isNeedRecord());
-                channel.setDefaultBroadcastConfig(channelInfo.getDefaultBroadcastConfig());
-                if (!StringUtils.isEmpty(channelInfo.getCookies())) {
-                    channel.setCookies(channelInfo.getCookies());
+                BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
+                if (defaultBroadcastConfig == null) {
+                    defaultBroadcastConfig = new BroadcastConfig();
+                    defaultBroadcastConfig.setAccountInfo(accountInfo);
+                    channel.addDefaultBroadcastConfig(defaultBroadcastConfig);
                 }
+                BeanUtils.copyProperties(channelInfo.getDefaultBroadcastConfig(), defaultBroadcastConfig);
                 try {
                     settingConfig.saveSetting(liveManSetting);
                 } catch (Exception e) {
