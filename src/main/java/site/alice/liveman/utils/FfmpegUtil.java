@@ -69,7 +69,7 @@ public class FfmpegUtil {
                 long height = Math.round(keyFrame.getHeight() * scale / 2) * 2;
                 String filter;
                 if (broadcastConfig.getBlurSize() > 0) {
-                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountInfo().getAccountId()) + "\"";
+                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountId()) + "\"";
                     if (scale == 1 && broadcastResolution.getFrameRate().equals(keyFrame.getFps()) && broadcastResolution != VideoResolutionEnum.R1080F60) {
                         filter = "[0:v]smartblur=" + broadcastConfig.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[0:v][alf]overlay[v];[v][screen]overlay";
                     } else {
@@ -78,7 +78,7 @@ public class FfmpegUtil {
                 } else {
                     filter = "[0:v]fps=" + broadcastResolution.getFrameRate() + ",scale=" + width + "x" + height + "[v];[1:v]scale=" + width + "x" + height + "[screen];[v][screen]overlay";
                 }
-                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountInfo().getAccountId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
+                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
             } else {
                 log.error("无法获取节目[" + videoInfo.getVideoUnionId() + "]的视频源信息");
                 return null;

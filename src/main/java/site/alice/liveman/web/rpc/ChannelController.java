@@ -99,26 +99,28 @@ public class ChannelController {
     }
 
     @RequestMapping("/editChannel.json")
-    public ActionResult editChannel(@RequestBody ChannelInfoVO channelInfo) {
+    public ActionResult editChannel(@RequestBody ChannelInfoVO channelInfoVO) {
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
         try {
-            Assert.hasText(channelInfo.getChannelName(), "频道名称不能为空");
-            Assert.hasText(channelInfo.getChannelUrl(), "频道地址不能为空");
+            Assert.hasText(channelInfoVO.getChannelName(), "频道名称不能为空");
+            Assert.hasText(channelInfoVO.getChannelUrl(), "频道地址不能为空");
         } catch (IllegalArgumentException e) {
             return ActionResult.getErrorResult(e.getMessage());
         }
-        log.info("accountId=" + accountInfo.getAccountId() + "编辑频道channelInfo=" + JSON.toJSONString(channelInfo));
+        log.info("accountId=" + accountInfo.getAccountId() + "编辑频道channelInfo=" + JSON.toJSONString(channelInfoVO));
         Set<ChannelInfo> channels = liveManSetting.getChannels();
         for (ChannelInfo channel : channels) {
-            if (channel.getChannelUrl().equals(channelInfo.getChannelUrl())) {
-                channel.setChannelName(channelInfo.getChannelName());
+            if (channel.getChannelUrl().equals(channelInfoVO.getChannelUrl())) {
+                if (accountInfo.isAdmin()) {
+                    channel.setChannelName(channelInfoVO.getChannelName());
+                }
                 BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
                 if (defaultBroadcastConfig == null) {
                     defaultBroadcastConfig = new BroadcastConfig();
                     channel.addDefaultBroadcastConfig(defaultBroadcastConfig);
                 }
-                BeanUtils.copyProperties(channelInfo.getDefaultBroadcastConfig(), defaultBroadcastConfig);
-                defaultBroadcastConfig.setAccountInfo(accountInfo);
+                BeanUtils.copyProperties(channelInfoVO.getDefaultBroadcastConfig(), defaultBroadcastConfig);
+                defaultBroadcastConfig.setAccountId(accountInfo.getAccountId());
                 try {
                     settingConfig.saveSetting(liveManSetting);
                 } catch (Exception e) {

@@ -209,7 +209,7 @@ public class VideoInfo implements Serializable {
 
     public BroadcastConfig getBroadcastConfig(AccountInfo accountInfo) {
         for (BroadcastConfig broadcastConfig : broadcastConfigs) {
-            if (accountInfo.equals(broadcastConfig.getAccountInfo())) {
+            if (accountInfo.getAccountId().equals(broadcastConfig.getAccountId())) {
                 return broadcastConfig;
             }
         }

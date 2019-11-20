@@ -95,6 +95,9 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                         return;
                     }
                     final Set<BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
+                    if (broadcastTasks.isEmpty()) {
+                        return;
+                    }
                     for (BroadcastTask broadcastTask : broadcastTasks) {
                         AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
                         if (broadcastAccount != null) {
@@ -197,15 +200,17 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = channelInfo.getDefaultBroadcastConfigs();
         for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
             if (defaultBroadcastConfig.isAutoBroadcast()) {
-                AccountInfo accountInfo = defaultBroadcastConfig.getAccountInfo();
-                String logInfo = "频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "的默认直播间[" + accountInfo.getAccountId() + "]";
-                if (accountInfo.isDisable()) {
+                AccountInfo accountInfo = liveManSetting.findByAccountId(defaultBroadcastConfig.getAccountId());
+                String logInfo = "频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "的默认直播间[" + defaultBroadcastConfig.getAccountId() + "]";
+                if (accountInfo == null) {
+                    log.info(logInfo + "账号信息不存在");
+                } else if (accountInfo.isDisable()) {
                     log.info(logInfo + "的账号信息不可用");
                 } else if (!accountInfo.setCurrentVideo(videoInfo)) {
                     log.info(logInfo + "已被占用[videoInfo=" + accountInfo.getCurrentVideo().getVideoUnionId() + "]");
                 } else {
                     log.info(logInfo + "已添加到推流账户列表中");
-                    accountInfoList.add(defaultBroadcastConfig.getAccountInfo());
+                    accountInfoList.add(accountInfo);
                 }
             }
         }
