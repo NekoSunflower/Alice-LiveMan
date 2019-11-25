@@ -39,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -87,7 +89,6 @@ public class SettingConfig {
 
     public synchronized void saveSetting(LiveManSetting liveManSetting) throws RuntimeException {
         try {
-            new File("./keys/").mkdirs();
             long keyTimestamp = System.currentTimeMillis();
             String settingJson = JSON.toJSONString(liveManSetting);
             byte[] data = settingJson.getBytes(StandardCharsets.UTF_8);
@@ -99,8 +100,15 @@ public class SettingConfig {
                 IOUtils.write(encodedData, fileOutputStream);
             }
             if (tempFile.setLastModified((keyTimestamp / 1000) * 1000)) {
-                IOUtils.write(keyTimestamp + "\n", new FileOutputStream(new File("./keys/.key"), true));
-                settingFile.delete();
+                if (new Date().getHours() % 2 == 0) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddhhmmss");
+                    File bakFile = new File(settingFile.toString() + "." + dateFormat.format(new Date()) + ".bak");
+                    if (!bakFile.exists()) {
+                        settingFile.renameTo(bakFile);
+                    }
+                } else {
+                    settingFile.delete();
+                }
                 tempFile.renameTo(settingFile);
             }
         } catch (Exception e) {

@@ -20,10 +20,9 @@ package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import site.alice.liveman.jenum.VideoResolutionEnum;
+import site.alice.liveman.web.dataobject.DynamicPostSetting;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,6 +40,7 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private String                           roomId;
     private String                           uid;
     private String                           roomUrl;
+    private String                           shareCode;
     private boolean                          admin;
     private boolean                          disable;
     private boolean                          postBiliDynamic;
@@ -48,6 +48,7 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private AtomicLong                       point;
     private ConcurrentHashMap<Integer, Long> billTimeMap;
     private CopyOnWriteArrayList<BillRecord> billRecords;
+    private List<DynamicPostSetting>         dynamicPostSettings;
     private VideoResolutionEnum              broadcastResolution;
     private BroadcastError                   broadcastError;
     @JSONField(serialize = false)
@@ -63,6 +64,7 @@ public class AccountInfo implements Comparable<AccountInfo> {
         point = new AtomicLong();
         billTimeMap = new ConcurrentHashMap<>();
         billRecords = new CopyOnWriteArrayList<>();
+        dynamicPostSettings = new CopyOnWriteArrayList<>();
     }
 
     public String getParentAccountId() {
@@ -137,6 +139,14 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.roomUrl = roomUrl;
     }
 
+    public String getShareCode() {
+        return shareCode;
+    }
+
+    public void setShareCode(String shareCode) {
+        this.shareCode = shareCode;
+    }
+
     public VideoInfo getCurrentVideo() {
         return currentVideo.get();
     }
@@ -147,6 +157,14 @@ public class AccountInfo implements Comparable<AccountInfo> {
 
     public boolean removeCurrentVideo(VideoInfo currentVideo) {
         return this.currentVideo.compareAndSet(currentVideo, null) || this.currentVideo.compareAndSet(null, null);
+    }
+
+    public List<DynamicPostSetting> getDynamicPostSettings() {
+        return dynamicPostSettings;
+    }
+
+    public void setDynamicPostSettings(List<DynamicPostSetting> dynamicPostSettings) {
+        this.dynamicPostSettings = dynamicPostSettings;
     }
 
     public boolean isAdmin() {
@@ -173,6 +191,11 @@ public class AccountInfo implements Comparable<AccountInfo> {
         }
     }
 
+    /**
+     * 反序列化时候要用
+     *
+     * @param point
+     */
     public void setPoint(AtomicLong point) {
         this.point = point;
     }

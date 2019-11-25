@@ -41,7 +41,10 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @RestController
@@ -85,10 +88,20 @@ public class LoginController {
             }
             log.info("adminRoomId = '" + adminRoomId + "'");
             accountInfo.setAdmin(accountInfo.getRoomId().equals(adminRoomId));
+            accountInfo.setParentAccountInfo(liveManSetting.findByAccountId(accountInfo.getParentAccountId()));
             session.setAttribute("account", accountInfo);
             BeanUtils.copyProperties(accountInfo, accountInfoVO);
             accountInfoVO.setBillTimeMap(new HashMap<>(accountInfo.getBillTimeMap()));
             accountInfoVO.setServerPoints(liveManSetting.getServerPoints());
+            // 查找该账号下的所有共享号
+            CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+            List<String> shardAccountIds = new ArrayList<>();
+            for (AccountInfo shardAccountInfo : accounts) {
+                if (accountInfo.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
+                    shardAccountIds.add(shardAccountInfo.getAccountId());
+                }
+            }
+            accountInfoVO.setShardAccountIds(shardAccountIds);
             return ActionResult.getSuccessResult(accountInfoVO);
         } catch (Exception e) {
             log.error("登录失败", e);

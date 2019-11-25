@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @RestController
@@ -65,6 +66,14 @@ public class AccountController {
             if (!currentAccount.isAdmin()) {
                 accountInfoVO.setPoint(-1);
             }
+            // 查找该账号下的所有共享号
+            List<String> shardAccountIds = new ArrayList<>();
+            for (AccountInfo accountInfo : accounts) {
+                if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
+                    shardAccountIds.add(accountInfo.getAccountId());
+                }
+            }
+            accountInfoVO.setShardAccountIds(shardAccountIds);
             accountInfoVOList.add(accountInfoVO);
         }
         return ActionResult.getSuccessResult(accountInfoVOList);
@@ -96,6 +105,15 @@ public class AccountController {
         }
         accountInfoVO.setBillTimeMap(new HashMap<>(account.getBillTimeMap()));
         accountInfoVO.setServerPoints(liveManSetting.getServerPoints());
+        // 查找该账号下的所有共享号
+        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+        List<String> shardAccountIds = new ArrayList<>();
+        for (AccountInfo shardAccountInfo : accounts) {
+            if (account.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
+                shardAccountIds.add(shardAccountInfo.getAccountId());
+            }
+        }
+        accountInfoVO.setShardAccountIds(shardAccountIds);
         return ActionResult.getSuccessResult(accountInfoVO);
     }
 
@@ -119,6 +137,92 @@ public class AccountController {
         } catch (Exception e) {
             log.error("保存系统配置信息失败", e);
             return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+        }
+        return ActionResult.getSuccessResult(null);
+    }
+
+    @RequestMapping("/createShareCode.json")
+    public ActionResult createShareCode() {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
+        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId());
+        byAccountId.setShareCode(UUID.randomUUID().toString());
+        try {
+            settingConfig.saveSetting(liveManSetting);
+        } catch (Exception e) {
+            log.error("保存系统配置信息失败", e);
+            return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+        }
+        return ActionResult.getSuccessResult(byAccountId.getShareCode());
+    }
+
+    @RequestMapping("/bindShareCode.json")
+    public ActionResult bindShareCode(String shareCode, String bindAccountId) {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
+        if (account.getAccountId().equals(bindAccountId)) {
+            return ActionResult.getErrorResult("不能和自己建立绑定关系！");
+        }
+        if (account.getParentAccountId() != null) {
+            return ActionResult.getErrorResult("该账号已绑定其他父账号，请先解除绑定！");
+        }
+        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+        for (AccountInfo accountInfo : accounts) {
+            if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
+                return ActionResult.getErrorResult("该账号已被其他子账号绑定，请先解除绑定！");
+            }
+        }
+        if (account.getPoint() != 0) {
+            return ActionResult.getErrorResult("账户剩余AP点数不为0，无法绑定父账号！");
+        }
+        AccountInfo byAccountId = liveManSetting.findByAccountId(bindAccountId);
+        if (byAccountId == null) {
+            return ActionResult.getErrorResult("父账号ID错误或共享码不存在！");
+        }
+        if (shareCode == null || !shareCode.equals(byAccountId.getShareCode())) {
+            return ActionResult.getErrorResult("父账号ID错误或共享码不存在！");
+        }
+        log.info("账号[" + account.getAccountId() + "]与父账号[" + bindAccountId + "]建立绑定关系");
+        account.setParentAccountId(bindAccountId);
+        account.setParentAccountInfo(byAccountId);
+        try {
+            settingConfig.saveSetting(liveManSetting);
+        } catch (Exception e) {
+            log.error("保存系统配置信息失败", e);
+            return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+        }
+        return ActionResult.getSuccessResult(null);
+    }
+
+    @RequestMapping("/unbindParent.json")
+    public ActionResult unbind() {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
+        if (account.getParentAccountId() != null) {
+            log.info(account.getAccountId() + "解除了与账号[" + account.getParentAccountId() + "]的共享关系");
+            account.setParentAccountId(null);
+            account.setParentAccountInfo(null);
+            try {
+                settingConfig.saveSetting(liveManSetting);
+            } catch (Exception e) {
+                log.error("保存系统配置信息失败", e);
+                return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+            }
+        }
+        return ActionResult.getSuccessResult(null);
+    }
+
+    @RequestMapping("/unbindSubAccount.json")
+    public ActionResult unbindSubAccount(String accountId) {
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
+        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
+        if (byAccountId != null && account.getAccountId().equals(byAccountId.getParentAccountId())) {
+            log.info(account.getAccountId() + "解除了与账号[" + accountId + "]的共享关系");
+            byAccountId.setParentAccountId(null);
+            byAccountId.setParentAccountInfo(null);
+            try {
+                settingConfig.saveSetting(liveManSetting);
+            } catch (Exception e) {
+                log.error("保存系统配置信息失败", e);
+                return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+            }
         }
         return ActionResult.getSuccessResult(null);
     }

@@ -167,6 +167,7 @@ public class SecurityUtils {
         return aesDecryptByBytes(base64Decode(encryptStr));
     }
 
+
     private static final char[] hexadecimal = {'0', '1', '2', '3', '4', '5',
                                                '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 

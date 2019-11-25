@@ -22,6 +22,7 @@ import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.model.BroadcastError;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class AccountInfoVO {
     private String                 accountId;
@@ -41,6 +42,15 @@ public class AccountInfoVO {
     private int[]                  serverPoints;
     private BroadcastError         broadcastError;
     private long                   timestamp = System.currentTimeMillis();
+    private List<String>           shardAccountIds;
+
+    public List<String> getShardAccountIds() {
+        return shardAccountIds;
+    }
+
+    public void setShardAccountIds(List<String> shardAccountIds) {
+        this.shardAccountIds = shardAccountIds;
+    }
 
     public String getAccountId() {
         return accountId;
