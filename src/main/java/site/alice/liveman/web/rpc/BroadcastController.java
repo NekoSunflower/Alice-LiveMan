@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @RestController
@@ -76,14 +75,14 @@ public class BroadcastController {
         for (MediaProxyTask mediaProxyTask : executedProxyTaskMap.values()) {
             VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
             if (videoInfo != null && videoInfo.getChannelInfo() != null) {
-                if (videoInfo.getVideoUnionId().endsWith("_low")) {
+                if (videoInfo.isLowVideoInfo()) {
                     continue;
                 }
-                if (videoInfo.getPrivateAccount() != null && !videoInfo.getPrivateAccount().getAccountId().equals(account.getAccountId())) {
+                if (!account.isAdmin() && videoInfo.getAccountInfo() != null && !videoInfo.getAccountInfo().getAccountId().equals(account.getAccountId())) {
                     continue;
                 }
                 BroadcastTaskVO broadcastTaskVO = new BroadcastTaskVO();
-                BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
+                BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
                 if (broadcastTask != null) {
                     broadcastTaskVO.setHealth(broadcastTask.getHealth());
                     AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
@@ -97,15 +96,14 @@ public class BroadcastController {
                 if (channelInfo != null) {
                     broadcastTaskVO.setChannelName(channelInfo.getChannelName());
                 }
-                BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(account);
+                BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
                 if (broadcastConfig == null) {
                     // 从频道中拷贝默认配置信息
-                    BroadcastConfig defaultBroadcastConfig = videoInfo.getChannelInfo().getDefaultBroadcastConfig(account);
+                    BroadcastConfig defaultBroadcastConfig = videoInfo.getChannelInfo().getDefaultBroadcastConfig();
                     if (defaultBroadcastConfig != null) {
                         broadcastConfig = new BroadcastConfig();
                         BeanUtils.copyProperties(defaultBroadcastConfig, broadcastConfig);
-                        broadcastConfig.setAccountId(account.getAccountId());
-                        videoInfo.addBroadcastConfig(broadcastConfig);
+                        videoInfo.setBroadcastConfig(broadcastConfig);
                     }
                 }
                 if (broadcastConfig != null) {
@@ -146,7 +144,7 @@ public class BroadcastController {
             return ActionResult.getErrorResult("17Live账号不允许手动推流，请联系管理员添加相应频道！");
         }
         log.info(account.getAccountId() + "认领了转播任务[videoId=" + videoId + ", title=" + videoInfo.getTitle() + "]");
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
             if (broadcastAccount != null) {
@@ -157,7 +155,7 @@ public class BroadcastController {
             }
         }
         try {
-            BroadcastConfig cropConf = videoInfo.getBroadcastConfig(account);
+            BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
             if (cropConf != null) {
                 if (cropConf.getBroadcastResolution() != null && cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
                     if (account.getAccountSite().equals("17live")) {
@@ -189,10 +187,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastConfig cropConf = mediaProxyTask.getVideoInfo().getBroadcastConfig(account);
-        if (cropConf == null) {
-
-        }
+        BroadcastConfig cropConf = mediaProxyTask.getVideoInfo().getBroadcastConfig();
         return ActionResult.getSuccessResult(cropConf);
     }
 
@@ -207,7 +202,7 @@ public class BroadcastController {
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
         VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
         AccountInfo broadcastAccount = null;
         if (broadcastTask != null) {
             broadcastAccount = broadcastTask.getBroadcastAccount();
@@ -218,7 +213,7 @@ public class BroadcastController {
                 }
             }
         }
-        BroadcastConfig _cropConf = videoInfo.getBroadcastConfig(account);
+        BroadcastConfig _cropConf = videoInfo.getBroadcastConfig();
         if (cropConf != null) {
             boolean needRestart = false;
             if (cropConf.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
@@ -248,10 +243,10 @@ public class BroadcastController {
             } else if (CollectionUtils.isNotEmpty(cropConf.getLayouts())) {
                 cropConf.getLayouts().clear();
             }
-            videoInfo.addBroadcastConfig(cropConf);
+            videoInfo.setBroadcastConfig(cropConf);
             MediaProxyTask lowMediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId + "_low");
             if (lowMediaProxyTask != null) {
-                lowMediaProxyTask.getVideoInfo().addBroadcastConfig(cropConf);
+                lowMediaProxyTask.getVideoInfo().setBroadcastConfig(cropConf);
             }
             try {
                 settingConfig.saveSetting(liveManSetting);
@@ -278,7 +273,7 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask(account);
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
         if (broadcastTask == null) {
             log.info("此转播任务尚未运行，或已停止[BroadcastTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -313,8 +308,8 @@ public class BroadcastController {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
-        Set<BroadcastTask> broadcastTasks = mediaProxyTask.getVideoInfo().getBroadcastTasks();
-        for (BroadcastTask broadcastTask : broadcastTasks) {
+        BroadcastTask broadcastTask = mediaProxyTask.getVideoInfo().getBroadcastTask();
+        if (broadcastTask != null) {
             broadcastTask.terminateTask();
             broadcastTask.waitForTerminate();
         }
@@ -333,7 +328,7 @@ public class BroadcastController {
             }
             ChannelInfo channelInfo = new ChannelInfo();
             channelInfo.setChannelName("手动推流");
-            VideoInfo liveVideoInfo = liveServiceFactory.getLiveService(videoUrl).getLiveVideoInfo(new URI(videoUrl), channelInfo, cookies, liveManSetting.getDefaultResolution());
+            VideoInfo liveVideoInfo = liveServiceFactory.getLiveService(videoUrl).getLiveVideoInfo(new URI(videoUrl), channelInfo, account, liveManSetting.getDefaultResolution());
             if (liveVideoInfo == null) {
                 return ActionResult.getErrorResult("当前节目尚未开播");
             }
@@ -345,7 +340,7 @@ public class BroadcastController {
                 broadcastTask = broadcastServiceManager.createSingleBroadcastTask(mediaProxyTask.getVideoInfo(), account);
             } else {
                 // 如果公共的推流任务没有，则创建私有的推流任务
-                liveVideoInfo.setPrivateAccount(account);
+                liveVideoInfo.setAccountInfo(account);
                 broadcastTask = broadcastServiceManager.createSingleBroadcastTask(liveVideoInfo, account);
             }
             if (broadcastTask == null) {
@@ -373,8 +368,8 @@ public class BroadcastController {
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
         VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
-        BroadcastTask broadcastTask = videoInfo.getBroadcastTask(account);
-        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(account);
+        BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
         if (broadcastTask != null) {
             AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
             if (broadcastAccount != null) {
@@ -397,7 +392,7 @@ public class BroadcastController {
         broadcastConfig.setNeedRecord(broadcastTaskVO.isNeedRecord());
         MediaHistory mediaHistory = mediaHistoryService.getMediaHistory(videoId);
         if (mediaHistory != null) {
-            mediaHistory.setNeedRecord(broadcastTaskVO.isNeedRecord() || checkNeedRecord(videoInfo, account));
+            mediaHistory.setNeedRecord(broadcastTaskVO.isNeedRecord());
         }
         if (broadcastConfig.isAudioBanned() != broadcastTaskVO.isAudioBanned()) {
             broadcastConfig.setAudioBanned(broadcastTaskVO.isAudioBanned());
@@ -406,29 +401,6 @@ public class BroadcastController {
             }
         }
         return ActionResult.getSuccessResult(null);
-    }
-
-    private boolean checkNeedRecord(VideoInfo videoInfo, AccountInfo currentAccount) {
-        // 如果设置为不需要录像，则需要先检查其他用户及默认的频道是否需要录像
-        CopyOnWriteArraySet<BroadcastConfig> broadcastConfigs = videoInfo.getBroadcastConfigs();
-        for (BroadcastConfig config : broadcastConfigs) {
-            if (config.getAccountId().equals(currentAccount.getAccountId())) {
-                continue;
-            }
-            if (config.isNeedRecord()) {
-                return true;
-            }
-        }
-        CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = videoInfo.getChannelInfo().getDefaultBroadcastConfigs();
-        for (BroadcastConfig config : defaultBroadcastConfigs) {
-            if (config.getAccountId().equals(currentAccount.getAccountId())) {
-                continue;
-            }
-            if (config.isNeedRecord()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @RequestMapping("/getAreaList.json")

@@ -81,7 +81,7 @@ public class DrawingController {
         }
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setAccountId(accountId);
-        BroadcastConfig cropConf = videoInfo.getBroadcastConfig(accountInfo);
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {
             log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
             return;
@@ -157,7 +157,7 @@ public class DrawingController {
         }
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setAccountId(accountId);
-        BroadcastConfig cropConf = videoInfo.getBroadcastConfig(accountInfo);
+        BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {
             log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
             return;

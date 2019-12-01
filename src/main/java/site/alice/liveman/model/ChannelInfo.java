@@ -24,22 +24,23 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ChannelInfo implements Serializable {
-    private String                               channelUrl;
-    private String                               channelName;
-    private CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs;
+    private String          channelUrl;
+    private String          channelName;
+    private String          cookies;
+    private BroadcastConfig defaultBroadcastConfig;
     @JSONField(serialize = false)
-    private Long                                 startAt;
+    private Long            startAt;
     @JSONField(serialize = false)
-    private Long                                 endAt;
+    private Long            endAt;
 
     public ChannelInfo() {
-        this.defaultBroadcastConfigs = new CopyOnWriteArraySet<>();
+        this.defaultBroadcastConfig = new BroadcastConfig();
     }
 
     public ChannelInfo(String channelName, String channelUrl) {
         this.channelName = channelName;
         this.channelUrl = channelUrl;
-        this.defaultBroadcastConfigs = new CopyOnWriteArraySet<>();
+        this.defaultBroadcastConfig = new BroadcastConfig();
     }
 
     public String getChannelName() {
@@ -62,7 +63,6 @@ public class ChannelInfo implements Serializable {
         }
     }
 
-
     public Long getStartAt() {
         return startAt;
     }
@@ -79,28 +79,20 @@ public class ChannelInfo implements Serializable {
         this.endAt = endAt;
     }
 
-    public CopyOnWriteArraySet<BroadcastConfig> getDefaultBroadcastConfigs() {
-        return defaultBroadcastConfigs;
+    public String getCookies() {
+        return cookies;
     }
 
-    public void setDefaultBroadcastConfigs(CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs) {
-        this.defaultBroadcastConfigs = defaultBroadcastConfigs;
+    public void setCookies(String cookies) {
+        this.cookies = cookies;
     }
 
-    public BroadcastConfig getDefaultBroadcastConfig(AccountInfo accountInfo) {
-        for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
-            if (accountInfo.getAccountId().equals(defaultBroadcastConfig.getAccountId())) {
-                return defaultBroadcastConfig;
-            }
-        }
-        return null;
+    public BroadcastConfig getDefaultBroadcastConfig() {
+        return defaultBroadcastConfig;
     }
 
-    public void addDefaultBroadcastConfig(BroadcastConfig broadcastConfig) {
-        if (!this.defaultBroadcastConfigs.add(broadcastConfig)) {
-            this.defaultBroadcastConfigs.remove(broadcastConfig);
-            this.defaultBroadcastConfigs.add(broadcastConfig);
-        }
+    public void setDefaultBroadcastConfig(BroadcastConfig defaultBroadcastConfig) {
+        this.defaultBroadcastConfig = defaultBroadcastConfig;
     }
 
     @Override

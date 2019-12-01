@@ -40,7 +40,6 @@ import site.alice.liveman.utils.ThreadPoolUtil;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -72,11 +71,11 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                 MediaProxyTask mediaProxyTask = e.getMediaProxyTask();
                 VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
                 if (videoInfo != null) {
-                    if (mediaProxyTask.isShadowProxyTask()) {
+                    if (videoInfo.isLowVideoInfo()) {
                         return;
                     }
-                    List<AccountInfo> broadcastAccounts = getBroadcastAccount(videoInfo);
-                    for (AccountInfo broadcastAccount : broadcastAccounts) {
+                    AccountInfo broadcastAccount = getBroadcastAccount(videoInfo);
+                    if (broadcastAccount != null) {
                         // 添加默认推流账号的推流任务
                         try {
                             createBroadcastTask(videoInfo, broadcastAccount, false);
@@ -94,19 +93,17 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                     if (videoInfo.getChannelInfo() == null) {
                         return;
                     }
-                    final Set<BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
-                    if (broadcastTasks.isEmpty()) {
+                    final BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+                    if (broadcastTask == null) {
                         return;
                     }
-                    for (BroadcastTask broadcastTask : broadcastTasks) {
-                        AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
-                        if (broadcastAccount != null) {
-                            broadcastAccount.removeCurrentVideo(videoInfo);
-                        }
-                        videoInfo.removeBroadcastTask(broadcastTask);
-                        if (!broadcastTask.isTerminate()) {
-                            broadcastTask.terminateTask();
-                        }
+                    AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
+                    if (broadcastAccount != null) {
+                        broadcastAccount.removeCurrentVideo(videoInfo);
+                    }
+                    videoInfo.removeBroadcastTask(broadcastTask);
+                    if (!broadcastTask.isTerminate()) {
+                        broadcastTask.terminateTask();
                     }
                     ThreadPoolUtil.schedule(new Runnable() {
                         @Override
@@ -114,32 +111,24 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                             try {
                                 log.info("检查节目[" + videoInfo.getVideoInfoUrl() + "]是否仍然在直播中...");
                                 VideoInfo liveVideoInfo;
-                                AccountInfo privateAccount = videoInfo.getPrivateAccount();
-                                if (privateAccount == null) {
-                                    liveVideoInfo = liveServiceFactory.getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), null, liveManSetting.getDefaultResolution());
-                                } else {
-                                    BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(privateAccount);
-                                    liveVideoInfo = liveServiceFactory.getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), broadcastConfig.getCookies(), liveManSetting.getDefaultResolution());
-                                }
+                                AccountInfo privateAccount = videoInfo.getAccountInfo();
+                                liveVideoInfo = liveServiceFactory.getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), broadcastAccount, liveManSetting.getDefaultResolution());
                                 if (liveVideoInfo == null) {
                                     log.info("节目[" + videoInfo.getVideoInfoUrl() + "]当前已停止直播！");
                                 } else {
                                     log.info("节目[" + videoInfo.getVideoInfoUrl() + "]当前依然在直播中！");
-                                    liveVideoInfo.setPrivateAccount(privateAccount);
+                                    liveVideoInfo.setAccountInfo(privateAccount);
                                     liveVideoInfo.setTextLocations(videoInfo.getTextLocations());
-                                    liveVideoInfo.setBroadcastConfigs(videoInfo.getBroadcastConfigs());
-                                    for (BroadcastTask broadcastTask : broadcastTasks) {
-                                        AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
-                                        try {
-                                            if (broadcastAccount != null) {
-                                                log.info("节目[" + videoInfo.getVideoInfoUrl() + "]推流账号[" + broadcastAccount.getAccountId() + "]中断自动恢复...");
-                                                createSingleBroadcastTask(liveVideoInfo, broadcastAccount);
-                                            }
-                                        } catch (Exception e) {
-                                            log.error("节目[" + videoInfo.getVideoInfoUrl() + "]推流账号[" + broadcastAccount.getAccountId() + "]中断自动恢复操作失败", e);
+                                    liveVideoInfo.setBroadcastConfig(videoInfo.getBroadcastConfig());
+                                    AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
+                                    try {
+                                        if (broadcastAccount != null) {
+                                            log.info("节目[" + videoInfo.getVideoInfoUrl() + "]推流账号[" + broadcastAccount.getAccountId() + "]中断自动恢复...");
+                                            createSingleBroadcastTask(liveVideoInfo, broadcastAccount);
                                         }
+                                    } catch (Exception e) {
+                                        log.error("节目[" + videoInfo.getVideoInfoUrl() + "]推流账号[" + broadcastAccount.getAccountId() + "]中断自动恢复操作失败", e);
                                     }
-
                                 }
                             } catch (Throwable e) {
                                 log.info("节目[" + videoInfo.getVideoInfoUrl() + "]中断自动恢复操作失败", e);
@@ -163,7 +152,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
                 BroadcastTask broadcastTask = new BroadcastTask(this, videoInfo, broadcastAccount);
                 broadcastTask.setSingleTask(singleTask);
                 // 创建媒体流代理任务
-                if (!videoInfo.addBroadcastTask(broadcastTask)) {
+                if (!videoInfo.setBroadcastTask(broadcastTask)) {
                     throw new RuntimeException("试图创建推流任务的媒体资源已存在相同推流任务[accountId=" + broadcastAccount.getAccountId() + ", videoId=" + videoInfo.getVideoUnionId() + "]");
                 }
                 // 如果要推流的媒体不存在，则创建媒体流代理任务
@@ -183,7 +172,7 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         } else {
             VideoInfo currentVideo = broadcastAccount.getCurrentVideo();
             if (currentVideo != null) {
-                BroadcastTask broadcastTask = currentVideo.getBroadcastTask(broadcastAccount);
+                BroadcastTask broadcastTask = currentVideo.getBroadcastTask();
                 if (broadcastTask != null && !broadcastTask.isTerminate()) {
                     throw new RuntimeException("无法创建转播任务，直播间已被节目[" + currentVideo.getTitle() + "]占用！");
                 }
@@ -194,30 +183,20 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         }
     }
 
-    public List<AccountInfo> getBroadcastAccount(VideoInfo videoInfo) {
+    public AccountInfo getBroadcastAccount(VideoInfo videoInfo) {
         ChannelInfo channelInfo = videoInfo.getChannelInfo();
-        List<AccountInfo> accountInfoList = new ArrayList<>();
-        CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = channelInfo.getDefaultBroadcastConfigs();
-        for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
-            if (defaultBroadcastConfig.isAutoBroadcast()) {
-                AccountInfo accountInfo = liveManSetting.findByAccountId(defaultBroadcastConfig.getAccountId());
-                String logInfo = "频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "的默认直播间[" + defaultBroadcastConfig.getAccountId() + "]";
-                if (accountInfo == null) {
-                    log.info(logInfo + "账号信息不存在");
-                } else if (accountInfo.isDisable()) {
-                    log.info(logInfo + "的账号信息不可用");
-                } else if (!accountInfo.setCurrentVideo(videoInfo)) {
-                    log.info(logInfo + "已被占用[videoInfo=" + accountInfo.getCurrentVideo().getVideoUnionId() + "]");
-                } else {
-                    log.info(logInfo + "已添加到推流账户列表中");
-                    accountInfoList.add(accountInfo);
-                }
+        BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
+        if (defaultBroadcastConfig.isAutoBroadcast()) {
+            AccountInfo accountInfo = videoInfo.getAccountInfo();
+            String logInfo = "频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "的默认直播间[" + accountInfo.getAccountId() + "]";
+            if (accountInfo.isDisable()) {
+                log.info(logInfo + "的账号信息不可用");
+            } else if (!accountInfo.setCurrentVideo(videoInfo)) {
+                log.info(logInfo + "已被占用[videoInfo=" + accountInfo.getCurrentVideo().getVideoUnionId() + "]");
             }
+            return accountInfo;
         }
-        if (accountInfoList.isEmpty()) {
-            log.info("频道[" + channelInfo.getChannelName() + "], videoId=" + videoInfo.getVideoUnionId() + "没有找到可以推流的直播间");
-        }
-        return accountInfoList;
+        return null;
     }
 
     @Override

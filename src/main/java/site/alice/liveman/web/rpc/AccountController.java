@@ -57,6 +57,9 @@ public class AccountController {
     @RequestMapping("/accountList.json")
     public ActionResult<List<AccountInfoVO>> accountList() {
         AccountInfo currentAccount = (AccountInfo) session.getAttribute("account");
+        if (!currentAccount.isAdmin()) {
+            return ActionResult.getErrorResult("权限不足");
+        }
         Set<AccountInfo> accounts = liveManSetting.getAccounts();
         List<AccountInfoVO> accountInfoVOList = new ArrayList<>();
         for (AccountInfo account : accounts) {
@@ -237,7 +240,7 @@ public class AccountController {
                     return ActionResult.getErrorResult("账户AP点数非零，无法删除！");
                 }
                 if (byAccountId.getCurrentVideo() != null) {
-                    BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask(byAccountId);
+                    BroadcastTask broadcastTask = byAccountId.getCurrentVideo().getBroadcastTask();
                     if (broadcastTask != null) {
                         if (!broadcastTask.terminateTask()) {
                             log.info("删除账户信息失败：无法终止转播任务，CAS操作失败");
@@ -265,7 +268,7 @@ public class AccountController {
     public synchronized ActionResult<Integer> useCard(String cards) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         if (liveManSetting.findByAccountId(account.getAccountId()) == null) {
-            return ActionResult.getErrorResult("请先前往[账户管理]菜单保存账号!");
+            return ActionResult.getErrorResult("请先前往[我的账户]菜单保存账号!");
         }
         int totalPoint = 0;
         try {
@@ -308,10 +311,10 @@ public class AccountController {
     @RequestMapping("/apPointChange.json")
     public ActionResult apPointChange(String accountId, int point) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        log.info("apPointChange() operator=" + account.getAccountId() + ", accountId=" + accountId + ", point=" + point);
         if (!account.isAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
+        log.info("apPointChange() operator=" + account.getAccountId() + ", accountId=" + accountId + ", point=" + point);
         AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
         long result = byAccountId.changePoint(point, "管理员操作");
         settingConfig.saveSetting(liveManSetting);

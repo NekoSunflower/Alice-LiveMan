@@ -19,6 +19,7 @@
 package site.alice.liveman.service.live.impl;
 
 import org.springframework.stereotype.Service;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.live.LiveService;
@@ -32,15 +33,15 @@ import java.util.UUID;
 @Service
 public class M3U8LinkLiveService extends LiveService {
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
-        String m3u8 = HttpRequestUtil.downloadUrl(videoInfoUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
+        String m3u8 = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
         if (m3u8.contains("#EXTM3U")) {
-            return new VideoInfo(channelInfo, UUID.randomUUID().toString(), videoInfoUrl.toString(), videoInfoUrl, videoInfoUrl, "m3u8");
+            return new VideoInfo(channelInfo, accountInfo, UUID.randomUUID().toString(), videoInfoUrl.toString(), videoInfoUrl, videoInfoUrl, "m3u8");
         } else {
             throw new RuntimeException(videoInfoUrl + "文件无效");
         }

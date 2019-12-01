@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
@@ -46,23 +47,23 @@ public class ShowRoomLiveService extends LiveService {
     private static final String         STREAMING_URL   = "https://www.showroom-live.com/api/live/streaming_url?ignore_low_stream=1&room_id=";
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
-        String channelHtml = HttpRequestUtil.downloadUrl(videoInfoUrl, cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
+        String channelHtml = HttpRequestUtil.downloadUrl(videoInfoUrl, channelInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
         Matcher matcher = initDataPattern.matcher(channelHtml);
         if (matcher.find()) {
             JSONObject liveDataObj = JSON.parseObject(StringEscapeUtils.unescapeHtml(matcher.group(1)));
             if (liveDataObj.getBoolean("isLive")) {
                 String videoId = liveDataObj.getString("liveId");
                 String videoTitle = liveDataObj.getString("roomName");
-                String streamingUrlJSON = HttpRequestUtil.downloadUrl(URI.create(STREAMING_URL + liveDataObj.getString("roomId")), cookies, Collections.emptyMap(), StandardCharsets.UTF_8);
+                String streamingUrlJSON = HttpRequestUtil.downloadUrl(URI.create(STREAMING_URL + liveDataObj.getString("roomId")), channelInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
                 Optional<String> hlsUrlOptional = JSON.parseObject(streamingUrlJSON).getJSONArray("streaming_url_list").stream().filter(url -> "hls".equals(((JSONObject) url).getString("type"))).map(url -> ((JSONObject) url).getString("url")).findFirst();
                 if (hlsUrlOptional.isPresent()) {
                     URI m3u8ListUrl = new URI(hlsUrlOptional.get());
@@ -77,7 +78,7 @@ public class ShowRoomLiveService extends LiveService {
                     if (mediaUrl == null) {
                         mediaUrl = m3u8List[3];
                     }
-                    return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+                    return new VideoInfo(channelInfo, accountInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
                 } else {
                     log.warn("没有找到节目[" + videoInfoUrl + "]的HLS媒体流信息:\n" + streamingUrlJSON);
                 }

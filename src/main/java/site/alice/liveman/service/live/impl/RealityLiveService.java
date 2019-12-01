@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
@@ -65,12 +66,12 @@ public class RealityLiveService extends LiveService {
     }
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
         return new URI(channelInfo.getChannelUrl());
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -85,7 +86,7 @@ public class RealityLiveService extends LiveService {
             log.warn(nickname + "的用户信息不存在，请核对！");
             return null;
         }
-        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), cookies, "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
+        String liveDetailJson = HttpRequestUtil.downloadUrl(new URI(GET_FROM_VLID), channelInfo.getCookies(), "{\"state\":30,\"vlive_id\":\"" + streamUser.getString("vlive_id") + "\"}", StandardCharsets.UTF_8);
         JSONObject liveDetailObj = JSON.parseObject(liveDetailJson);
         JSONArray lives = liveDetailObj.getJSONArray("payload");
         if (!lives.isEmpty()) {
@@ -112,7 +113,7 @@ public class RealityLiveService extends LiveService {
                 }
             } catch (Exception ignore) {
             }
-            return new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
+            return new VideoInfo(channelInfo, accountInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUrl.resolve(mediaUrl), "m3u8");
         }
         return null;
     }

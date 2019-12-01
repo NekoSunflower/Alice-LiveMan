@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.live.LiveService;
@@ -42,7 +43,7 @@ public class ColonLiveService extends LiveService {
 
 
     @Override
-    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception {
+    public URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception {
         String channelUrl = channelInfo.getChannelUrl();
         if (channelUrl.startsWith(VTUBER_PROFILE_URL)) {
             String uuid = channelUrl.replace(VTUBER_PROFILE_URL, "");
@@ -57,7 +58,7 @@ public class ColonLiveService extends LiveService {
     }
 
     @Override
-    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
+    public VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
         if (videoInfoUrl == null) {
             return null;
         }
@@ -103,7 +104,7 @@ public class ColonLiveService extends LiveService {
                 }
             }
         }
-        VideoInfo videoInfo = new VideoInfo(channelInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUri.resolve(m3u8FileUrl), "m3u8");
+        VideoInfo videoInfo = new VideoInfo(channelInfo, accountInfo, videoId, videoTitle, videoInfoUrl, m3u8ListUri.resolve(m3u8FileUrl), "m3u8");
         if (streamInfo != null) {
             videoInfo.setRealResolution(streamInfo.getResolution());
             videoInfo.setFrameRate(streamInfo.getFrameRate());

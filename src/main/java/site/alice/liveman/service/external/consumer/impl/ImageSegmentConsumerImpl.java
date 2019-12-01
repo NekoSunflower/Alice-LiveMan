@@ -45,7 +45,7 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
     public void accept(BufferedImage resultImage, BufferedImage originalImage) {
         VideoInfo videoInfo = broadcastTask.getVideoInfo();
         AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
-        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(broadcastAccount);
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
         try {
             double scale = 720.0 / originalImage.getHeight();
             CopyOnWriteArrayList<CustomLayout> customLayouts = broadcastConfig.getLayouts();
@@ -62,8 +62,8 @@ public class ImageSegmentConsumerImpl implements ImageSegmentConsumer {
             broadcastConfig.setCachedBlurBytes(null);
             VideoInfo lowVideoInfo = broadcastTask.getLowVideoInfo();
             if (lowVideoInfo != null) {
-                lowVideoInfo.getBroadcastConfig(broadcastAccount).setLayouts(customLayouts);
-                lowVideoInfo.getBroadcastConfig(broadcastAccount).setCachedBlurBytes(null);
+                lowVideoInfo.getBroadcastConfig().setLayouts(customLayouts);
+                lowVideoInfo.getBroadcastConfig().setCachedBlurBytes(null);
             }
             log.info("Accepted image segment[videoId=" + videoInfo.getVideoUnionId() + "]");
         } catch (Throwable e) {

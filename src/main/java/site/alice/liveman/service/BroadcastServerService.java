@@ -52,7 +52,7 @@ public class BroadcastServerService {
         try {
             // 获取服务器之前先释放掉所有被占用的服务器
             releaseServer(broadcastTask);
-            BroadcastConfig broadcastConfig = broadcastTask.getVideoInfo().getBroadcastConfig(broadcastTask.getBroadcastAccount());
+            BroadcastConfig broadcastConfig = broadcastTask.getVideoInfo().getBroadcastConfig();
             // 查找已经可用的服务器
             List<ServerInfo> availableServers = servers.stream().filter(server -> server.getBroadcastTask() == null && server.getPerformance() == broadcastConfig.getBroadcastResolution().getPerformance() && server.isAvailable()).collect(Collectors.toList());
             while (!availableServers.isEmpty()) {

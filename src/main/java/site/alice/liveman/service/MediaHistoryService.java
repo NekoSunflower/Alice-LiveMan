@@ -83,16 +83,9 @@ public class MediaHistoryService {
                     if (channelInfo == null) {
                         return;
                     }
-                    boolean needRecord = false;
-                    CopyOnWriteArraySet<BroadcastConfig> defaultBroadcastConfigs = channelInfo.getDefaultBroadcastConfigs();
-                    for (BroadcastConfig defaultBroadcastConfig : defaultBroadcastConfigs) {
-                        if (defaultBroadcastConfig.isNeedRecord()) {
-                            needRecord = true;
-                            break;
-                        }
-                    }
                     MediaHistory mediaHistory = new MediaHistory();
-                    mediaHistory.setNeedRecord(needRecord);
+                    BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
+                    mediaHistory.setNeedRecord(defaultBroadcastConfig.isNeedRecord());
                     mediaHistory.setVideoId(videoInfo.getVideoId());
                     mediaHistory.setVideoTitle(videoInfo.getTitle());
                     mediaHistory.setChannelName(channelInfo.getChannelName());

@@ -65,16 +65,15 @@ public class BroadcastTask implements Runnable {
         this.videoInfo = videoInfo;
         this.broadcastAccount = broadcastAccount;
         // 从频道中拷贝默认配置信息
-        BroadcastConfig defaultBroadcastConfig = videoInfo.getChannelInfo().getDefaultBroadcastConfig(broadcastAccount);
-        if (videoInfo.getBroadcastConfig(broadcastAccount) == null && defaultBroadcastConfig != null) {
+        BroadcastConfig defaultBroadcastConfig = videoInfo.getChannelInfo().getDefaultBroadcastConfig();
+        if (videoInfo.getBroadcastConfig() == null && defaultBroadcastConfig != null) {
             BroadcastConfig broadcastConfig = new BroadcastConfig();
             BeanUtils.copyProperties(defaultBroadcastConfig, broadcastConfig);
-            videoInfo.addBroadcastConfig(broadcastConfig);
+            videoInfo.setBroadcastConfig(broadcastConfig);
         }
-        if (videoInfo.getBroadcastConfig(broadcastAccount) == null) {
+        if (videoInfo.getBroadcastConfig() == null) {
             BroadcastConfig broadcastConfig = new BroadcastConfig();
-            broadcastConfig.setAccountId(broadcastAccount.getAccountId());
-            videoInfo.addBroadcastConfig(broadcastConfig);
+            videoInfo.setBroadcastConfig(broadcastConfig);
         }
     }
 
@@ -109,7 +108,7 @@ public class BroadcastTask implements Runnable {
                 @Override
                 public void run() {
                     try {
-                        if (broadcastAccount != null && videoInfo.getBroadcastConfig(broadcastAccount).getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig(broadcastAccount).isAutoBlur()) {
+                        if (broadcastAccount != null && videoInfo.getBroadcastConfig().getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig().isAutoBlur()) {
                             MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
                             if (mediaProxyTask != null) {
                                 broadcastServiceManager.getTextLocationService().requireTextLocation(mediaProxyTask.getKeyFrame().getFrameImage(), new TextLocationConsumerImpl(BroadcastTask.this));
@@ -127,13 +126,13 @@ public class BroadcastTask implements Runnable {
                 @Override
                 public void run() {
                     try {
-                        if (broadcastAccount != null && videoInfo.getBroadcastConfig(broadcastAccount).getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig(broadcastAccount).isAutoImageSegment()) {
+                        if (broadcastAccount != null && videoInfo.getBroadcastConfig().getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig().isAutoImageSegment()) {
                             MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
                             if (mediaProxyTask != null) {
                                 broadcastServiceManager.getImageSegmentService().imageSegment(mediaProxyTask.getKeyFrame().getFrameImage(), new ImageSegmentConsumerImpl(BroadcastTask.this));
                             }
                         } else {
-                            CopyOnWriteArrayList<CustomLayout> layouts = videoInfo.getBroadcastConfig(broadcastAccount).getLayouts();
+                            CopyOnWriteArrayList<CustomLayout> layouts = videoInfo.getBroadcastConfig().getLayouts();
                             if (layouts != null) {
                                 layouts.removeIf(layout -> layout instanceof ImageSegmentBlurLayout);
                             }
@@ -173,7 +172,7 @@ public class BroadcastTask implements Runnable {
                             // 如果是区域打码或自定义的，创建低分辨率媒体代理服务
                             pid = 0;
                             ServerInfo availableServer = null;
-                            BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(broadcastAccount);
+                            BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
                             switch (broadcastConfig.getVideoBannedType()) {
                                 case CUSTOM_SCREEN: {
                                     health = -1;
@@ -193,20 +192,26 @@ public class BroadcastTask implements Runnable {
                                         terminateTask();
                                         throw new RuntimeException("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.getPoint() + ", need=" + serverPoint + "]");
                                     }
-                                    VideoInfo _lowVideoInfo = broadcastServiceManager.getLiveServiceFactory().getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), broadcastConfig.getCookies(), broadcastResolution.getResolution() + "");
+                                    VideoInfo _lowVideoInfo = broadcastServiceManager.getLiveServiceFactory().getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), broadcastAccount, broadcastResolution.getResolution() + "");
                                     if (_lowVideoInfo == null) {
                                         throw new RuntimeException("获取低清晰度视频源信息失败");
                                     }
-                                    MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(_lowVideoInfo.getVideoUnionId());
-                                    if (mediaProxyTask != null) {
-                                        lowVideoInfo = mediaProxyTask.getVideoInfo();
+                                    _lowVideoInfo.setAccountInfo(videoInfo.getAccountInfo());
+                                    if (!_lowVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) {
+                                        MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(_lowVideoInfo.getVideoUnionId());
+                                        if (mediaProxyTask != null) {
+                                            lowVideoInfo = mediaProxyTask.getVideoInfo();
+                                        } else {
+                                            lowVideoInfo = _lowVideoInfo;
+                                            MediaProxyManager.createProxy(lowVideoInfo);
+                                        }
+                                        lowVideoInfo.setBroadcastTask(this);
+                                        lowVideoInfo.setBroadcastConfig(broadcastConfig);
+                                        ffmpegCmdLine = FfmpegUtil.buildFfmpegCmdLine(lowVideoInfo, broadcastConfig, broadcastAddress);
                                     } else {
-                                        lowVideoInfo = _lowVideoInfo;
-                                        MediaProxyManager.createProxy(lowVideoInfo, true);
+                                        deleteLowVideoTask();
+                                        ffmpegCmdLine = FfmpegUtil.buildFfmpegCmdLine(videoInfo, broadcastConfig, broadcastAddress);
                                     }
-                                    lowVideoInfo.addBroadcastTask(this);
-                                    lowVideoInfo.addBroadcastConfig(broadcastConfig);
-                                    ffmpegCmdLine = FfmpegUtil.buildFfmpegCmdLine(lowVideoInfo, broadcastConfig, broadcastAddress);
                                     // pid = ProcessUtil.createProcess(ffmpegCmdLine, videoInfo.getVideoUnionId());
                                     availableServer = broadcastServiceManager.getBroadcastServerService().getAvailableServer(this);
                                     if (availableServer != null) {
@@ -218,22 +223,17 @@ public class BroadcastTask implements Runnable {
                                 }
                                 default: {
                                     // 如果不是区域打码了自动终止创建的低清晰度媒体代理任务
-                                    MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoInfo.getVideoUnionId() + "_low");
-                                    if (mediaProxyTask != null) {
-                                        mediaProxyTask.terminate();
-                                        mediaProxyTask.waitForTerminate();
-                                        FileUtils.deleteQuietly(new File(mediaProxyTask.getTempPath()));
-                                    }
+                                    deleteLowVideoTask();
                                     ffmpegCmdLine = FfmpegUtil.buildFfmpegCmdLine(videoInfo, broadcastConfig, broadcastAddress);
                                     pid = ProcessUtil.createProcess(ffmpegCmdLine, videoInfo.getVideoUnionId());
                                 }
                             }
                             log.info("[" + broadcastAccount.getRoomId() + "@" + broadcastAccount.getAccountSite() + ", videoId=" + videoInfo.getVideoUnionId() + "]推流进程已启动[PID:" + pid + "]");
-                            // 等待进程退出或者任务结束
                             health = 0;
                             long lastHitTime = 0;
                             int lowHealthCount = 0;
                             long lastLogLength = 0;
+                            // 等待进程退出或者任务结束
                             while (broadcastAccount.getCurrentVideo() == videoInfo && !ProcessUtil.waitProcess(pid, 1000)) {
                                 ProcessUtil.AliceProcess aliceProcess = ProcessUtil.getAliceProcess(pid);
                                 if (aliceProcess == null) {
@@ -309,16 +309,7 @@ public class BroadcastTask implements Runnable {
                         }
                     }
                     // 终止推流时自动终止创建的低清晰度媒体代理任务
-                    if (lowVideoInfo != null) {
-                        lowVideoInfo.removeBroadcastTask(this);
-                        MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(lowVideoInfo.getVideoUnionId());
-                        if (mediaProxyTask != null && lowVideoInfo.getBroadcastTasks().isEmpty()) {
-                            mediaProxyTask.terminate();
-                            // 这里需要等待任务停止
-                            mediaProxyTask.waitForTerminate();
-                            FileUtils.deleteQuietly(new File(mediaProxyTask.getTempPath()));
-                        }
-                    }
+                    deleteLowVideoTask();
                     if (broadcastAccount.isDisable() && singleTask) {
                         log.warn("手动推流的直播账号[" + broadcastAccount.getAccountId() + "]不可用，已终止推流任务[videoId=" + videoInfo.getVideoUnionId() + "]。");
                         terminate = true;
@@ -341,10 +332,28 @@ public class BroadcastTask implements Runnable {
         } catch (InterruptedException ignore) {
         } finally {
             log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]的推流任务[roomId=" + (broadcastAccount != null ? broadcastAccount.getRoomId() : "(无)") + "]已停止");
-            if (videoInfo.getBroadcastTask(broadcastAccount) != null && !videoInfo.removeBroadcastTask(this)) {
+            if (videoInfo.getBroadcastTask() != null && !videoInfo.removeBroadcastTask(this)) {
                 log.warn("警告：无法移除[videoId=" + videoInfo.getVideoUnionId() + "]的推流任务，CAS操作失败");
             }
             terminate = true;
+        }
+    }
+
+    /**
+     * 终止创建的低清晰度媒体代理任务
+     */
+    private void deleteLowVideoTask() {
+        if (lowVideoInfo != null) {
+            lowVideoInfo.removeBroadcastTask(this);
+            Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
+            MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(lowVideoInfo.getVideoUnionId());
+            if (mediaProxyTask != null) {
+                mediaProxyTask.terminate();
+                // 这里需要等待任务停止
+                mediaProxyTask.waitForTerminate();
+                FileUtils.deleteQuietly(new File(mediaProxyTask.getTempPath()));
+            }
+            lowVideoInfo = null;
         }
     }
 

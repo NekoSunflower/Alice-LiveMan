@@ -19,6 +19,7 @@ package site.alice.liveman.service.live;
 
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
@@ -27,8 +28,8 @@ import java.net.URI;
 
 public abstract class LiveService {
 
-    public MediaProxyTask createMediaProxyTask(ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
-        VideoInfo videoInfo = getLiveVideoInfo(getLiveVideoInfoUrl(channelInfo, cookies), channelInfo, cookies, resolution);
+    public MediaProxyTask createMediaProxyTask(ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
+        VideoInfo videoInfo = getLiveVideoInfo(getLiveVideoInfoUrl(channelInfo), channelInfo, accountInfo, resolution);
         if (videoInfo != null) {
             return MediaProxyManager.createProxy(videoInfo);
         } else {
@@ -36,12 +37,12 @@ public abstract class LiveService {
         }
     }
 
-    public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo, String cookies) throws Exception;
+    public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception;
 
-    public abstract VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception;
+    public abstract VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception;
 
-    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, String cookies, String resolution) throws Exception {
-        VideoInfo videoInfo = getLiveVideoInfo0(videoInfoUrl, channelInfo, cookies, resolution);
+    public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
+        VideoInfo videoInfo = getLiveVideoInfo0(videoInfoUrl, channelInfo, accountInfo, resolution);
         if (videoInfo != null) {
             videoInfo.setRequiredResolution(resolution);
         }

@@ -36,7 +36,6 @@ public class LiveManSetting {
     private String                                   oneDriveClientSecret;
     private String                                   oneDriveToken;
     private CopyOnWriteArraySet<AccountInfo>         accounts;
-    private CopyOnWriteArraySet<ChannelInfo>         channels;
     private CopyOnWriteArraySet<ServerInfo>          servers;
     private CopyOnWriteArraySet<ExternalAppSecretDO> externalAppSecretDOS;
     private String                                   encodeKey;
@@ -91,14 +90,6 @@ public class LiveManSetting {
 
     public void setAccounts(CopyOnWriteArraySet<AccountInfo> accounts) {
         this.accounts = accounts;
-    }
-
-    public CopyOnWriteArraySet<ChannelInfo> getChannels() {
-        return channels;
-    }
-
-    public void setChannels(CopyOnWriteArraySet<ChannelInfo> channels) {
-        this.channels = channels;
     }
 
     public String getBaseUrl() {

@@ -64,7 +64,6 @@ public class SettingConfig {
         } else {
             liveManSetting = new LiveManSetting();
             liveManSetting.setAccounts(new CopyOnWriteArraySet<>());
-            liveManSetting.setChannels(new CopyOnWriteArraySet<>());
             liveManSetting.setServers(new CopyOnWriteArraySet<>());
             liveManSetting.setExternalAppSecretDOS(new CopyOnWriteArraySet<>());
             liveManSetting.setBannedKeywords(new String[0]);

@@ -40,7 +40,6 @@ public class BroadcastConfig implements Serializable {
     private boolean                            needRecord;
     private boolean                            autoBroadcast;
     private String                             cookies;
-    private String                             accountId;
     @JsonIgnore
     private byte[]                             cachedDrawBytes;
     @JsonIgnore
@@ -138,14 +137,6 @@ public class BroadcastConfig implements Serializable {
         this.autoBroadcast = autoBroadcast;
     }
 
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
     public boolean isAudioBanned() {
         return isAudioBanned;
     }
@@ -168,19 +159,6 @@ public class BroadcastConfig implements Serializable {
 
     public void setCookies(String cookies) {
         this.cookies = cookies;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BroadcastConfig that = (BroadcastConfig) o;
-        return Objects.equals(accountId, that.accountId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(accountId);
     }
 
     @Override

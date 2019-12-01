@@ -60,13 +60,8 @@ public class MediaProxyManager implements ApplicationContextAware {
     }
 
     public static MediaProxyTask createProxy(VideoInfo videoInfo) throws Exception {
-        return createProxy(videoInfo, false);
-    }
-
-    public static MediaProxyTask createProxy(VideoInfo videoInfo, boolean shadowProxyTask) throws Exception {
         MediaProxyTask mediaProxyTask = createProxyTask(videoInfo, videoInfo.getMediaUrl(), videoInfo.getMediaFormat());
         mediaProxyTask.setVideoInfo(videoInfo);
-        mediaProxyTask.setShadowProxyTask(shadowProxyTask);
         videoInfo.setMediaProxyUrl(mediaProxyTask.getTargetUrl());
         runProxy(mediaProxyTask);
         return mediaProxyTask;

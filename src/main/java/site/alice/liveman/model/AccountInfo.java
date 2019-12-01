@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,10 +46,12 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private boolean                          disable;
     private boolean                          postBiliDynamic;
     private boolean                          autoRoomTitle;
+    private boolean                          saveCookies;
     private AtomicLong                       point;
     private ConcurrentHashMap<Integer, Long> billTimeMap;
     private CopyOnWriteArrayList<BillRecord> billRecords;
     private List<DynamicPostSetting>         dynamicPostSettings;
+    private CopyOnWriteArraySet<ChannelInfo> channels;
     private VideoResolutionEnum              broadcastResolution;
     private BroadcastError                   broadcastError;
     @JSONField(serialize = false)
@@ -115,6 +118,14 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.cookies = cookies;
     }
 
+    public CopyOnWriteArraySet<ChannelInfo> getChannels() {
+        return channels;
+    }
+
+    public void setChannels(CopyOnWriteArraySet<ChannelInfo> channels) {
+        this.channels = channels;
+    }
+
     public String getNickname() {
         return nickname;
     }
@@ -137,6 +148,14 @@ public class AccountInfo implements Comparable<AccountInfo> {
 
     public void setRoomUrl(String roomUrl) {
         this.roomUrl = roomUrl;
+    }
+
+    public boolean isSaveCookies() {
+        return saveCookies;
+    }
+
+    public void setSaveCookies(boolean saveCookies) {
+        this.saveCookies = saveCookies;
     }
 
     public String getShareCode() {

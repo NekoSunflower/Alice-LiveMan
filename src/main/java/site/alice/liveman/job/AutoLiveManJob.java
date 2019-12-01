@@ -27,7 +27,9 @@ import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.service.live.LiveServiceFactory;
 
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 @Component
 public class AutoLiveManJob {
@@ -39,11 +41,8 @@ public class AutoLiveManJob {
 
     @Scheduled(cron = "0/5 * * * * ?")
     public void aliceLiveJob() {
-        if (liveManSetting.getChannels().isEmpty()) {
-            LOGGER.warn("频道列表为空！");
-        }
         /* 获取频道状态信息 */
-        CopyOnWriteArraySet<ChannelInfo> channels = liveManSetting.getChannels();
+        Set<ChannelInfo> channels = liveManSetting.getAccounts().stream().flatMap(accountInfo -> accountInfo.getChannels().stream()).collect(Collectors.toSet());
         channels.parallelStream().forEach(channelInfo -> {
             MediaProxyTask mediaProxyTask;
             try {

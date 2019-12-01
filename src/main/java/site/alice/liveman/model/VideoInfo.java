@@ -26,48 +26,48 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoInfo implements Serializable {
 
-    private ChannelInfo                          channelInfo;
-    private String                               videoId;
-    private AccountInfo                          privateAccount;
-    private String                               part;
-    private String                               title;
-    private String                               description;
-    private URI                                  videoInfoUrl;
-    private URI                                  mediaProxyUrl;
-    private URI                                  mediaUrl;
-    private String                               mediaFormat;
-    private String                               encodeMethod;
-    private byte[]                               encodeKey;
-    private byte[]                               encodeIV;
-    private CopyOnWriteArraySet<BroadcastTask>   broadcastTasks;
-    private CopyOnWriteArraySet<BroadcastConfig> broadcastConfigs;
-    private Double                               frameRate;
-    private String                               requiredResolution;
-    private String                               realResolution;
-    private List<TextLocation>                   textLocations;
+    private ChannelInfo                    channelInfo;
+    private String                         videoId;
+    private AccountInfo                    accountInfo;
+    private String                         part;
+    private String                         title;
+    private String                         description;
+    private URI                            videoInfoUrl;
+    private URI                            mediaProxyUrl;
+    private URI                            mediaUrl;
+    private String                         mediaFormat;
+    private String                         encodeMethod;
+    private byte[]                         encodeKey;
+    private byte[]                         encodeIV;
+    private AtomicReference<BroadcastTask> broadcastTask;
+    private BroadcastConfig                broadcastConfig;
+    private Double                         frameRate;
+    private String                         requiredResolution;
+    private String                         realResolution;
+    private List<TextLocation>             textLocations;
+    private boolean                        isLowVideoInfo;
 
-    public VideoInfo(ChannelInfo channelInfo, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
+    public VideoInfo(ChannelInfo channelInfo, AccountInfo accountInfo, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
         this.channelInfo = channelInfo;
         this.videoId = videoId;
         this.title = title;
         this.videoInfoUrl = videoInfoUrl;
         this.mediaUrl = mediaUrl;
         this.mediaFormat = mediaFormat;
-        this.broadcastTasks = new CopyOnWriteArraySet<>();
-        this.broadcastConfigs = new CopyOnWriteArraySet<>();
+        this.accountInfo = accountInfo;
+        this.broadcastTask = new AtomicReference<>();
     }
 
-    public AccountInfo getPrivateAccount() {
-        return privateAccount;
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
     }
 
-    public void setPrivateAccount(AccountInfo privateAccount) {
-        this.privateAccount = privateAccount;
+    public void setAccountInfo(AccountInfo accountInfo) {
+        this.accountInfo = accountInfo;
     }
 
     public URI getVideoInfoUrl() {
@@ -87,7 +87,7 @@ public class VideoInfo implements Serializable {
     }
 
     public String getVideoUnionId() {
-        return videoId + (part == null ? "" : "." + part) + (privateAccount == null ? "" : "." + SecurityUtils.md5Encode(privateAccount.getAccountId().getBytes(StandardCharsets.UTF_8)) + "." + requiredResolution);
+        return videoId + (part == null ? "" : "." + part) + (accountInfo == null ? "" : "." + SecurityUtils.md5Encode(accountInfo.getAccountId().getBytes(StandardCharsets.UTF_8)) + "." + requiredResolution);
     }
 
     public ChannelInfo getChannelInfo() {
@@ -146,27 +146,6 @@ public class VideoInfo implements Serializable {
         this.mediaFormat = mediaFormat;
     }
 
-    public Set<BroadcastTask> getBroadcastTasks() {
-        return broadcastTasks;
-    }
-
-    public boolean addBroadcastTask(BroadcastTask broadcastTask) {
-        return this.broadcastTasks.add(broadcastTask);
-    }
-
-    public boolean removeBroadcastTask(BroadcastTask broadcastTask) {
-        return this.broadcastTasks.remove(broadcastTask);
-    }
-
-    public BroadcastTask getBroadcastTask(AccountInfo accountInfo) {
-        for (BroadcastTask broadcastTask : broadcastTasks) {
-            if (accountInfo.equals(broadcastTask.getBroadcastAccount())) {
-                return broadcastTask;
-            }
-        }
-        return null;
-    }
-
     public String getEncodeMethod() {
         return encodeMethod;
     }
@@ -199,28 +178,25 @@ public class VideoInfo implements Serializable {
         this.part = part;
     }
 
-    public CopyOnWriteArraySet<BroadcastConfig> getBroadcastConfigs() {
-        return broadcastConfigs;
+
+    public BroadcastTask getBroadcastTask() {
+        return broadcastTask.get();
     }
 
-    public void setBroadcastConfigs(CopyOnWriteArraySet<BroadcastConfig> broadcastConfigs) {
-        this.broadcastConfigs = broadcastConfigs;
+    public boolean setBroadcastTask(BroadcastTask broadcastTask) {
+        return this.broadcastTask.compareAndSet(null, broadcastTask);
     }
 
-    public BroadcastConfig getBroadcastConfig(AccountInfo accountInfo) {
-        for (BroadcastConfig broadcastConfig : broadcastConfigs) {
-            if (accountInfo.getAccountId().equals(broadcastConfig.getAccountId())) {
-                return broadcastConfig;
-            }
-        }
-        return null;
+    public boolean removeBroadcastTask(BroadcastTask broadcastTask) {
+        return this.broadcastTask.compareAndSet(broadcastTask, null);
     }
 
-    public void addBroadcastConfig(BroadcastConfig broadcastConfig) {
-        if (!this.broadcastConfigs.add(broadcastConfig)) {
-            this.broadcastConfigs.remove(broadcastConfig);
-            this.broadcastConfigs.add(broadcastConfig);
-        }
+    public BroadcastConfig getBroadcastConfig() {
+        return broadcastConfig;
+    }
+
+    public void setBroadcastConfig(BroadcastConfig broadcastConfig) {
+        this.broadcastConfig = broadcastConfig;
     }
 
     public Double getFrameRate() {
@@ -245,6 +221,14 @@ public class VideoInfo implements Serializable {
 
     public void setTextLocations(List<TextLocation> textLocations) {
         this.textLocations = textLocations;
+    }
+
+    public boolean isLowVideoInfo() {
+        return isLowVideoInfo;
+    }
+
+    public void setLowVideoInfo(boolean lowVideoInfo) {
+        isLowVideoInfo = lowVideoInfo;
     }
 
     @Override

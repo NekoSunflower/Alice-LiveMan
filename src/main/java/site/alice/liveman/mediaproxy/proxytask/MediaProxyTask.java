@@ -50,7 +50,6 @@ public abstract class MediaProxyTask implements Runnable, Serializable {
     private volatile  Boolean   terminated;
     private           long      lastKeyFrameTime;
     private           KeyFrame  cachedKeyFrame;
-    private           boolean   shadowProxyTask;
 
     protected MediaProxyTask(String videoId, URI sourceUrl) {
         this.videoId = videoId;
@@ -123,14 +122,6 @@ public abstract class MediaProxyTask implements Runnable, Serializable {
             new File(fileName).delete();
         }
         return null;
-    }
-
-    public boolean isShadowProxyTask() {
-        return shadowProxyTask;
-    }
-
-    public void setShadowProxyTask(boolean shadowProxyTask) {
-        this.shadowProxyTask = shadowProxyTask;
     }
 
     @Override

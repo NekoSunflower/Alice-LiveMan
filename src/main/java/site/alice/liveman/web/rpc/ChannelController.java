@@ -55,13 +55,13 @@ public class ChannelController {
     @RequestMapping("/channelList.json")
     public ActionResult<List<ChannelInfoVO>> channelList() {
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
-        Set<ChannelInfo> channels = liveManSetting.getChannels();
+        Set<ChannelInfo> channels = accountInfo.getChannels();
         List<ChannelInfoVO> channelInfoVOList = new ArrayList<>();
         for (ChannelInfo channel : channels) {
             ChannelInfoVO channelInfoVO = new ChannelInfoVO();
             channelInfoVO.setChannelName(channel.getChannelName());
             channelInfoVO.setChannelUrl(channel.getChannelUrl());
-            BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
+            BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig();
             if (defaultBroadcastConfig == null) {
                 defaultBroadcastConfig = new BroadcastConfig();
             }
@@ -75,9 +75,6 @@ public class ChannelController {
     @RequestMapping("/addChannel.json")
     public ActionResult addChannel(@RequestBody ChannelInfo channelInfo) {
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
-        if (!accountInfo.isAdmin()) {
-            return ActionResult.getErrorResult("只有管理员才能添加频道");
-        }
         try {
             Assert.hasText(channelInfo.getChannelName(), "频道名称不能为空");
             Assert.hasText(channelInfo.getChannelUrl(), "频道地址不能为空");
@@ -86,7 +83,7 @@ public class ChannelController {
         }
         channelInfo.setChannelName(channelInfo.getChannelName().trim());
         channelInfo.setChannelUrl(channelInfo.getChannelUrl().trim());
-        if (!liveManSetting.getChannels().add(channelInfo)) {
+        if (!accountInfo.getChannels().add(channelInfo)) {
             return ActionResult.getErrorResult("尝试添加的频道已存在");
         }
         try {
@@ -108,19 +105,18 @@ public class ChannelController {
             return ActionResult.getErrorResult(e.getMessage());
         }
         log.info("accountId=" + accountInfo.getAccountId() + "编辑频道channelInfo=" + JSON.toJSONString(channelInfoVO));
-        Set<ChannelInfo> channels = liveManSetting.getChannels();
+        Set<ChannelInfo> channels = accountInfo.getChannels();
         for (ChannelInfo channel : channels) {
             if (channel.getChannelUrl().equals(channelInfoVO.getChannelUrl())) {
                 if (accountInfo.isAdmin()) {
                     channel.setChannelName(channelInfoVO.getChannelName());
                 }
-                BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig(accountInfo);
+                BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig();
                 if (defaultBroadcastConfig == null) {
                     defaultBroadcastConfig = new BroadcastConfig();
-                    channel.addDefaultBroadcastConfig(defaultBroadcastConfig);
+                    channel.setDefaultBroadcastConfig(defaultBroadcastConfig);
                 }
                 BeanUtils.copyProperties(channelInfoVO.getDefaultBroadcastConfig(), defaultBroadcastConfig);
-                defaultBroadcastConfig.setAccountId(accountInfo.getAccountId());
                 try {
                     settingConfig.saveSetting(liveManSetting);
                 } catch (Exception e) {
@@ -136,16 +132,13 @@ public class ChannelController {
     @RequestMapping("/removeChannel.json")
     public ActionResult removeChannel(@RequestBody ChannelInfo channelInfo) {
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
-        if (!accountInfo.isAdmin()) {
-            return ActionResult.getErrorResult("只有管理员才能删除频道");
-        }
         try {
             Assert.hasText(channelInfo.getChannelName(), "频道名称不能为空");
             Assert.hasText(channelInfo.getChannelUrl(), "频道地址不能为空");
         } catch (IllegalArgumentException e) {
             return ActionResult.getErrorResult(e.getMessage());
         }
-        if (!liveManSetting.getChannels().remove(channelInfo)) {
+        if (!accountInfo.getChannels().remove(channelInfo)) {
             return ActionResult.getErrorResult("尝试删除的频道不存在，无法删除");
         }
         try {

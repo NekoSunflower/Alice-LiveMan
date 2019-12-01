@@ -71,7 +71,7 @@ public class BilibiliBroadcastService implements BroadcastService {
     public String getBroadcastAddress(AccountInfo accountInfo) throws Exception {
         VideoInfo videoInfo = accountInfo.getCurrentVideo();
         int area = 199;
-        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(accountInfo);
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
         if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
             area = 33;
         } else if (broadcastConfig.getArea() != null) {

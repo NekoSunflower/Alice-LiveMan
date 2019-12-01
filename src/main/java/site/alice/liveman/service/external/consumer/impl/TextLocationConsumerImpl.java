@@ -56,7 +56,7 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
     public void accept(List<TextLocation> textLocations, BufferedImage bufferedImage) {
         VideoInfo videoInfo = broadcastTask.getVideoInfo();
         AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
-        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig(broadcastAccount);
+        BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
         log.info("评论区识别[" + videoInfo.getVideoUnionId() + "]:" + textLocations);
         try {
             File easyDlDir = new File("./easydl/");
@@ -130,7 +130,7 @@ public class TextLocationConsumerImpl implements TextLocationConsumer {
             broadcastConfig.setCachedBlurBytes(null);
             VideoInfo lowVideoInfo = broadcastTask.getLowVideoInfo();
             if (lowVideoInfo != null) {
-                BroadcastConfig lowBroadcastConfig = lowVideoInfo.getBroadcastConfig(broadcastAccount);
+                BroadcastConfig lowBroadcastConfig = lowVideoInfo.getBroadcastConfig();
                 lowBroadcastConfig.setLayouts(customLayouts);
                 lowBroadcastConfig.setCachedBlurBytes(null);
                 if (lowBroadcastConfig.getBlurSize() != 5) {

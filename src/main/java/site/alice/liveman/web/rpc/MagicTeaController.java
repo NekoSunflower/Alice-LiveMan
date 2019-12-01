@@ -58,8 +58,8 @@ public class MagicTeaController {
                     liveNowVO.setChannelName(channelInfo.getChannelName());
                 }
                 liveNowVO.setVideoTitle(videoInfo.getTitle());
-                Set<BroadcastTask> broadcastTasks = videoInfo.getBroadcastTasks();
-                for (BroadcastTask broadcastTask : broadcastTasks) {
+                BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
+                if (broadcastTask != null) {
                     AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
                     if (broadcastAccount != null) {
                         liveNowVO.setRoomId(broadcastAccount.getRoomId());

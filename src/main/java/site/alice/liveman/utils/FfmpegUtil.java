@@ -38,8 +38,8 @@ import static site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.*;
 public class FfmpegUtil {
     @Autowired
     private static       LiveManSetting liveManSetting;
-    private static final String         CUSTOM_SCREEN_URL = "http://" + MediaProxyManager.getIpAddress() + ":8080/api/drawing/screen/%s/%s";
-    private static final String         BOXBLUR_MASK_URL  = "http://" + MediaProxyManager.getIpAddress() + ":8080/api/drawing/mask/%s/%s";
+    private static final String         CUSTOM_SCREEN_URL = "http://" + MediaProxyManager.getIpAddress() + ":8080/api/drawing/screen/%s";
+    private static final String         BOXBLUR_MASK_URL  = "http://" + MediaProxyManager.getIpAddress() + ":8080/api/drawing/mask/%s";
 
     @Autowired
     public void setLiveManSetting(LiveManSetting liveManSetting) {
@@ -69,7 +69,7 @@ public class FfmpegUtil {
                 long height = Math.round(keyFrame.getHeight() * scale / 2) * 2;
                 String filter;
                 if (broadcastConfig.getBlurSize() > 0) {
-                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountId()) + "\"";
+                    cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(BOXBLUR_MASK_URL, videoInfo.getVideoUnionId()) + "\"";
                     if (scale == 1 && broadcastResolution.getFrameRate().equals(keyFrame.getFps()) && broadcastResolution != VideoResolutionEnum.R1080F60) {
                         filter = "[0:v]smartblur=" + broadcastConfig.getBlurSize() + ":1[blur];[1:v]fps=30,scale=" + width + "x" + height + "[mask];[2:v]scale=" + width + "x" + height + "[screen];[blur][mask]alphamerge[alf];[0:v][alf]overlay[v];[v][screen]overlay";
                     } else {
@@ -78,7 +78,7 @@ public class FfmpegUtil {
                 } else {
                     filter = "[0:v]fps=" + broadcastResolution.getFrameRate() + ",scale=" + width + "x" + height + "[v];[1:v]scale=" + width + "x" + height + "[screen];[v][screen]overlay";
                 }
-                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoUnionId(), broadcastConfig.getAccountId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
+                cmdLine += "\t-framerate\t1\t-loop\t1\t-i\t\"" + String.format(CUSTOM_SCREEN_URL, videoInfo.getVideoUnionId()) + "\"\t-filter_complex\t\"" + filter + "\"\t-vcodec\th264\t-preset\tultrafast";
             } else {
                 log.error("无法获取节目[" + videoInfo.getVideoUnionId() + "]的视频源信息");
                 return null;
