@@ -163,10 +163,13 @@ public class BroadcastConfig implements Serializable {
 
     @Override
     public String toString() {
-        return "VideoCropConf{" +
+        return "BroadcastConfig{" +
                 "videoBannedType=" + videoBannedType +
-                ", blurSize=" + blurSize +
-                ", layouts=" + layouts +
+                ", autoBlur=" + autoBlur +
+                ", autoImageSegment=" + autoImageSegment +
+                ", isAudioBanned=" + isAudioBanned +
+                ", needRecord=" + needRecord +
+                ", autoBroadcast=" + autoBroadcast +
                 '}';
     }
 }

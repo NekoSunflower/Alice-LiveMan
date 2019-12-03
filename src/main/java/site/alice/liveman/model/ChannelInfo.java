@@ -29,6 +29,8 @@ public class ChannelInfo implements Serializable {
     private String          cookies;
     private BroadcastConfig defaultBroadcastConfig;
     @JSONField(serialize = false)
+    private VideoInfo       videoInfo;
+    @JSONField(serialize = false)
     private Long            startAt;
     @JSONField(serialize = false)
     private Long            endAt;
@@ -61,6 +63,14 @@ public class ChannelInfo implements Serializable {
         } else {
             this.channelUrl = null;
         }
+    }
+
+    public VideoInfo getVideoInfo() {
+        return videoInfo;
+    }
+
+    public void setVideoInfo(VideoInfo videoInfo) {
+        this.videoInfo = videoInfo;
     }
 
     public Long getStartAt() {

@@ -22,9 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.model.*;
+import site.alice.liveman.service.broadcast.BroadcastTask;
+import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.service.live.LiveServiceFactory;
 
 import java.util.Set;
@@ -42,19 +44,41 @@ public class AutoLiveManJob {
     @Scheduled(cron = "0/5 * * * * ?")
     public void aliceLiveJob() {
         /* 获取频道状态信息 */
-        Set<ChannelInfo> channels = liveManSetting.getAccounts().stream().flatMap(accountInfo -> accountInfo.getChannels().stream()).collect(Collectors.toSet());
-        channels.parallelStream().forEach(channelInfo -> {
-            MediaProxyTask mediaProxyTask;
-            try {
-                mediaProxyTask = liveServiceFactory.getLiveService(channelInfo.getChannelUrl()).createMediaProxyTask(channelInfo, null, liveManSetting.getDefaultResolution());
-                if (mediaProxyTask != null) {
-                    LOGGER.info(channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]正在直播，媒体地址:" + mediaProxyTask.getSourceUrl());
-                } else {
-                    LOGGER.info(channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]没有正在直播的节目");
+        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+        accounts.parallelStream().forEach(accountInfo -> {
+            CopyOnWriteArraySet<ChannelInfo> channels = accountInfo.getChannels();
+            for (ChannelInfo channelInfo : channels) {
+                try {
+                    LiveService liveService = liveServiceFactory.getLiveService(channelInfo.getChannelUrl());
+                    VideoInfo videoInfo = liveService.getLiveVideoInfo(liveService.getLiveVideoInfoUrl(channelInfo), channelInfo, accountInfo, liveManSetting.getDefaultResolution());
+                    VideoInfo currentVideoInfo = channelInfo.getVideoInfo();
+                    if (currentVideoInfo == null) {
+                        channelInfo.setVideoInfo(videoInfo);
+                    } else {
+                        BroadcastTask broadcastTask = currentVideoInfo.getBroadcastTask();
+                        if (broadcastTask == null || broadcastTask.isTerminate()) {
+                            if (currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) {
+                                videoInfo.setBroadcastConfig(currentVideoInfo.getBroadcastConfig());
+                                videoInfo.setTextLocations(currentVideoInfo.getTextLocations());
+                            }
+                            channelInfo.setVideoInfo(videoInfo);
+                        }
+                    }
+                    if (videoInfo != null) {
+                        LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]正在直播，媒体地址:" + videoInfo.getVideoInfoUrl());
+                        BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
+                        // 开始直播时，判断是否需要启动媒体代理服务器
+                        if ((currentVideoInfo == null || !currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) && defaultBroadcastConfig != null && (defaultBroadcastConfig.isAutoBroadcast() || defaultBroadcastConfig.isNeedRecord())) {
+                            LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动媒体代理服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
+                            MediaProxyManager.createProxy(videoInfo);
+                        }
+                    } else {
+                        LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]没有正在直播的节目");
+                    }
+                    Thread.sleep(1000);
+                } catch (Throwable e) {
+                    LOGGER.error(accountInfo.getAccountId() + "@" + "获取 " + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "] 频道信息失败", e);
                 }
-                Thread.sleep(1000);
-            } catch (Throwable e) {
-                LOGGER.error("获取 " + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "] 频道信息失败", e);
             }
         });
     }

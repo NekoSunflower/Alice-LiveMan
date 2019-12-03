@@ -26,6 +26,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoInfo implements Serializable {
@@ -229,6 +230,19 @@ public class VideoInfo implements Serializable {
 
     public void setLowVideoInfo(boolean lowVideoInfo) {
         isLowVideoInfo = lowVideoInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VideoInfo videoInfo = (VideoInfo) o;
+        return Objects.equals(getVideoUnionId(), videoInfo.getVideoUnionId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getVideoUnionId());
     }
 
     @Override

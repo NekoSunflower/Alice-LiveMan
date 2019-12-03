@@ -28,18 +28,9 @@ import java.net.URI;
 
 public abstract class LiveService {
 
-    public MediaProxyTask createMediaProxyTask(ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
-        VideoInfo videoInfo = getLiveVideoInfo(getLiveVideoInfoUrl(channelInfo), channelInfo, accountInfo, resolution);
-        if (videoInfo != null) {
-            return MediaProxyManager.createProxy(videoInfo);
-        } else {
-            return null;
-        }
-    }
-
     public abstract URI getLiveVideoInfoUrl(ChannelInfo channelInfo) throws Exception;
 
-    public abstract VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception;
+    protected abstract VideoInfo getLiveVideoInfo0(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception;
 
     public VideoInfo getLiveVideoInfo(URI videoInfoUrl, ChannelInfo channelInfo, AccountInfo accountInfo, String resolution) throws Exception {
         VideoInfo videoInfo = getLiveVideoInfo0(videoInfoUrl, channelInfo, accountInfo, resolution);
