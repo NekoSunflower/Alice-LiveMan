@@ -18,6 +18,8 @@
 
 package site.alice.liveman.web.dataobject.vo;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.lang.StringUtils;
 import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.model.BroadcastError;
 
@@ -37,19 +39,40 @@ public class AccountInfoVO {
     private boolean                postBiliDynamic;
     private boolean                autoRoomTitle;
     private long                   point;
+    private boolean                saveCookies;
+    private String                 shareCode;
     private HashMap<Integer, Long> billTimeMap;
     private VideoResolutionEnum    broadcastResolution;
     private int[]                  serverPoints;
     private BroadcastError         broadcastError;
     private long                   timestamp = System.currentTimeMillis();
-    private List<String>           shardAccountIds;
+    private List<AccountInfoVO>    shardAccounts;
+    private String                 parentAccountName;
+    private String                 rtmpHost;
+    private String                 rtmpPassword;
 
-    public List<String> getShardAccountIds() {
-        return shardAccountIds;
+    public boolean isSaveCookies() {
+        return saveCookies;
     }
 
-    public void setShardAccountIds(List<String> shardAccountIds) {
-        this.shardAccountIds = shardAccountIds;
+    public void setSaveCookies(boolean saveCookies) {
+        this.saveCookies = saveCookies;
+    }
+
+    public String getShareCode() {
+        return shareCode;
+    }
+
+    public void setShareCode(String shareCode) {
+        this.shareCode = shareCode;
+    }
+
+    public List<AccountInfoVO> getShardAccounts() {
+        return shardAccounts;
+    }
+
+    public void setShardAccounts(List<AccountInfoVO> shardAccounts) {
+        this.shardAccounts = shardAccounts;
     }
 
     public String getAccountId() {
@@ -186,5 +209,33 @@ public class AccountInfoVO {
 
     public void setBroadcastError(BroadcastError broadcastError) {
         this.broadcastError = broadcastError;
+    }
+
+    public String getParentAccountName() {
+        return parentAccountName;
+    }
+
+    public void setParentAccountName(String parentAccountName) {
+        this.parentAccountName = parentAccountName;
+    }
+
+    public String getRtmpHost() {
+        return rtmpHost;
+    }
+
+    public void setRtmpHost(String rtmpHost) {
+        this.rtmpHost = rtmpHost;
+    }
+
+    public String getRtmpPassword() {
+        if (rtmpPassword == null) {
+            return rtmpPassword;
+        } else {
+            return "**************************";
+        }
+    }
+
+    public void setRtmpPassword(String rtmpPassword) {
+        this.rtmpPassword = rtmpPassword;
     }
 }

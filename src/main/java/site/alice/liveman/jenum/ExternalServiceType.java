@@ -20,7 +20,9 @@ package site.alice.liveman.jenum;
 
 public enum ExternalServiceType {
     BAIDU_API("baidu"),
-    VULTR_API("vultr");
+    VULTR_API("vultr"),
+    GOOGLE_OAUTH2("google_oauth2"),
+    QQ_OAUTH2("qq_oauth2");
 
     ExternalServiceType(String code) {
         this.code = code;

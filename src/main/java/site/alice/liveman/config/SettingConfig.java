@@ -99,15 +99,7 @@ public class SettingConfig {
                 IOUtils.write(encodedData, fileOutputStream);
             }
             if (tempFile.setLastModified((keyTimestamp / 1000) * 1000)) {
-                if (new Date().getHours() % 2 == 0) {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddhhmmss");
-                    File bakFile = new File(settingFile.toString() + "." + dateFormat.format(new Date()) + ".bak");
-                    if (!bakFile.exists()) {
-                        settingFile.renameTo(bakFile);
-                    }
-                } else {
-                    settingFile.delete();
-                }
+                settingFile.delete();
                 tempFile.renameTo(settingFile);
             }
         } catch (Exception e) {

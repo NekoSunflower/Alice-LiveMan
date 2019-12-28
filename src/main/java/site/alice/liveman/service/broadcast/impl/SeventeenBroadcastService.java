@@ -115,7 +115,7 @@ public class SeventeenBroadcastService implements BroadcastService {
     private Map<String, String> buildRequestHeader(AccountInfo accountInfo) {
         Map<String, String> headerMap = new HashMap<>();
         if (accountInfo != null) {
-            headerMap.put("accessToken", accountInfo.getCookies());
+            headerMap.put("accessToken", accountInfo.readCookies());
             if (accountInfo.getRoomId() != null) {
                 headerMap.put("deviceID", DigestUtils.md5Hex(accountInfo.getRoomId()).substring(16));
             }

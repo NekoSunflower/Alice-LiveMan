@@ -23,9 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
-import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.dynamic.post.DynamicPostService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
 import site.alice.liveman.utils.HttpRequestUtil;
@@ -47,7 +44,7 @@ public class BilibiliDynamicPostService implements DynamicPostService {
 
     @Override
     public void postDynamic(AccountInfo postAccount, String content) {
-        Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(postAccount.getCookies());
+        Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(postAccount.readCookies());
         String csrfToken = "";
         if (matcher.find()) {
             csrfToken = matcher.group(1);
@@ -56,7 +53,7 @@ public class BilibiliDynamicPostService implements DynamicPostService {
         try {
             broadcastServiceManager.getBroadcastService(postAccount.getAccountSite()).getBroadcastRoomId(postAccount);
             postData = String.format(DYNAMIC_POST_PARAM, content) + csrfToken;
-            String res = HttpRequestUtil.downloadUrl(new URI(DYNAMIC_POST_API), postAccount.getCookies(), postData, StandardCharsets.UTF_8);
+            String res = HttpRequestUtil.downloadUrl(new URI(DYNAMIC_POST_API), postAccount.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject jsonObject = JSONObject.parseObject(res);
             if (jsonObject.getInteger("code") != 0) {
                 log.error("发送B站动态失败[postData=" + postData + "]" + res);

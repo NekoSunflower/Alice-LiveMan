@@ -61,6 +61,10 @@ public class AccountInfo implements Comparable<AccountInfo> {
     @JSONField(serialize = false)
     private String                           rtmpUrl;
     @JSONField(serialize = false)
+    private String                           rtmpHost;
+    @JSONField(serialize = false)
+    private String                           rtmpPassword;
+    @JSONField(serialize = false)
     private AccountInfo                      parentAccountInfo;
 
     public AccountInfo() {
@@ -68,6 +72,7 @@ public class AccountInfo implements Comparable<AccountInfo> {
         billTimeMap = new ConcurrentHashMap<>();
         billRecords = new CopyOnWriteArrayList<>();
         dynamicPostSettings = new CopyOnWriteArrayList<>();
+        channels = new CopyOnWriteArraySet<>();
     }
 
     public String getParentAccountId() {
@@ -110,7 +115,20 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.roomId = roomId;
     }
 
+    /**
+     * 配置信息持久化使用
+     *
+     * @return
+     */
     public String getCookies() {
+        if (saveCookies) {
+            return cookies;
+        } else {
+            return null;
+        }
+    }
+
+    public String readCookies() {
         return cookies;
     }
 
@@ -304,18 +322,34 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.rtmpUrl = rtmpUrl;
     }
 
+    public String getRtmpHost() {
+        return rtmpHost;
+    }
+
+    public void setRtmpHost(String rtmpHost) {
+        this.rtmpHost = rtmpHost;
+    }
+
+    public String getRtmpPassword() {
+        return rtmpPassword;
+    }
+
+    public void setRtmpPassword(String rtmpPassword) {
+        this.rtmpPassword = rtmpPassword;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccountInfo that = (AccountInfo) o;
-        return Objects.equals(accountSite, that.accountSite) &&
-                Objects.equals(roomId, that.roomId);
+        return Objects.equals(accountId, that.accountId) &&
+                Objects.equals(accountSite, that.accountSite);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(accountSite, roomId);
+        return Objects.hash(accountId, accountSite);
     }
 
     @Override

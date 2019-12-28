@@ -20,27 +20,19 @@ package site.alice.liveman.service.broadcast.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.Md5Crypt;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import retrofit2.http.Url;
-import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.broadcast.BroadcastService;
 import site.alice.liveman.utils.HttpRequestUtil;
 import site.alice.liveman.utils.SecurityUtils;
@@ -54,7 +46,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -93,17 +84,17 @@ public class DouYuBroadcastService implements BroadcastService {
         Map<String, String> requestProperties = new HashMap<>();
         requestProperties.put("referer", "https://www.douyu.com/" + accountInfo.getRoomId());
         requestProperties.put("x-requested-with", "XMLHttpRequest");
-        Matcher matcher = Pattern.compile("acf_ccn=(.{32})").matcher(accountInfo.getCookies());
+        Matcher matcher = Pattern.compile("acf_ccn=(.{32})").matcher(accountInfo.readCookies());
         String csrfToken = "";
         if (matcher.find()) {
             csrfToken = matcher.group(1);
         }
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(URL_OPEN_SHOW), accountInfo.getCookies(), "ctn=" + csrfToken + "&notshowtip=1", requestProperties, StandardCharsets.UTF_8);
+        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(URL_OPEN_SHOW), accountInfo.readCookies(), "ctn=" + csrfToken + "&notshowtip=1", requestProperties, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("error") == 0 || startLiveObject.getString("msg").contains("重复")) {
             Thread.sleep(1000);
-            String getRtmpJson = HttpRequestUtil.downloadUrl(new URI(URL_GET_RTMP), accountInfo.getCookies(), "ctn=" + csrfToken + "&room_id=" + accountInfo.getRoomId(), requestProperties, StandardCharsets.UTF_8);
+            String getRtmpJson = HttpRequestUtil.downloadUrl(new URI(URL_GET_RTMP), accountInfo.readCookies(), "ctn=" + csrfToken + "&room_id=" + accountInfo.getRoomId(), requestProperties, StandardCharsets.UTF_8);
             rtmpObject = JSON.parseObject(getRtmpJson).getJSONObject("rtmp_send");
         } else {
             accountInfo.setDisable(true);
@@ -134,7 +125,7 @@ public class DouYuBroadcastService implements BroadcastService {
     @Override
     public String getBroadcastRoomId(AccountInfo accountInfo) throws Exception {
         if (StringUtils.isEmpty(accountInfo.getRoomId())) {
-            String liveInfoJson = HttpRequestUtil.downloadUrl(new URI(URL_ROOM_INFO), accountInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
+            String liveInfoJson = HttpRequestUtil.downloadUrl(new URI(URL_ROOM_INFO), accountInfo.readCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
             if (liveInfoJson.contains("申请主播")) {
                 throw new RuntimeException("此账号未开通斗鱼直播间");
             }
@@ -143,7 +134,7 @@ public class DouYuBroadcastService implements BroadcastService {
                 JSONObject data = liveInfoObject.getJSONObject("data");
                 String roomId = data.getString("roomID");
                 accountInfo.setRoomId(roomId);
-                String memberInfoJson = HttpRequestUtil.downloadUrl(new URI(URL_MEMBER_INFO), accountInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
+                String memberInfoJson = HttpRequestUtil.downloadUrl(new URI(URL_MEMBER_INFO), accountInfo.readCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
                 JSONObject memberInfoObj = JSON.parseObject(memberInfoJson);
                 if (memberInfoObj.getInteger("error") == 0) {
                     JSONObject msg = memberInfoObj.getJSONObject("msg");

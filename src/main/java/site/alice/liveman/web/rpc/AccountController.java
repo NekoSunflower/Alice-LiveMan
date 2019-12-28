@@ -70,13 +70,17 @@ public class AccountController {
                 accountInfoVO.setPoint(-1);
             }
             // 查找该账号下的所有共享号
-            List<String> shardAccountIds = new ArrayList<>();
-            for (AccountInfo accountInfo : accounts) {
-                if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
-                    shardAccountIds.add(accountInfo.getAccountId());
+            List<AccountInfoVO> shardAccounts = new ArrayList<>();
+            for (AccountInfo shardAccountInfo : accounts) {
+                if (account.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
+                    AccountInfoVO accountVO = new AccountInfoVO();
+                    accountVO.setAccountId(shardAccountInfo.getAccountId());
+                    accountVO.setNickname(shardAccountInfo.getNickname());
+                    accountVO.setAccountSite(shardAccountInfo.getAccountSite());
+                    shardAccounts.add(accountVO);
                 }
             }
-            accountInfoVO.setShardAccountIds(shardAccountIds);
+            accountInfoVO.setShardAccounts(shardAccounts);
             accountInfoVOList.add(accountInfoVO);
         }
         return ActionResult.getSuccessResult(accountInfoVOList);
@@ -110,13 +114,21 @@ public class AccountController {
         accountInfoVO.setServerPoints(liveManSetting.getServerPoints());
         // 查找该账号下的所有共享号
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
-        List<String> shardAccountIds = new ArrayList<>();
+        List<AccountInfoVO> shardAccounts = new ArrayList<>();
         for (AccountInfo shardAccountInfo : accounts) {
             if (account.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
-                shardAccountIds.add(shardAccountInfo.getAccountId());
+                AccountInfoVO accountVO = new AccountInfoVO();
+                accountVO.setAccountId(shardAccountInfo.getAccountId());
+                accountVO.setNickname(shardAccountInfo.getNickname());
+                accountVO.setAccountSite(shardAccountInfo.getAccountSite());
+                shardAccounts.add(accountVO);
             }
         }
-        accountInfoVO.setShardAccountIds(shardAccountIds);
+        accountInfoVO.setShardAccounts(shardAccounts);
+        AccountInfo parentAccountInfo = account.getParentAccountInfo();
+        if (parentAccountInfo != null) {
+            accountInfoVO.setParentAccountName(parentAccountInfo.getNickname());
+        }
         return ActionResult.getSuccessResult(accountInfoVO);
     }
 
@@ -159,32 +171,32 @@ public class AccountController {
     }
 
     @RequestMapping("/bindShareCode.json")
-    public ActionResult bindShareCode(String shareCode, String bindAccountId) {
+    public ActionResult bindShareCode(String shareCode) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (account.getAccountId().equals(bindAccountId)) {
-            return ActionResult.getErrorResult("不能和自己建立绑定关系！");
-        }
         if (account.getParentAccountId() != null) {
             return ActionResult.getErrorResult("该账号已绑定其他父账号，请先解除绑定！");
-        }
-        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
-        for (AccountInfo accountInfo : accounts) {
-            if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
-                return ActionResult.getErrorResult("该账号已被其他子账号绑定，请先解除绑定！");
-            }
         }
         if (account.getPoint() != 0) {
             return ActionResult.getErrorResult("账户剩余AP点数不为0，无法绑定父账号！");
         }
-        AccountInfo byAccountId = liveManSetting.findByAccountId(bindAccountId);
+        if (shareCode == null) {
+            return ActionResult.getErrorResult("共享码不存在！");
+        }
+        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+        AccountInfo byAccountId = null;
+        for (AccountInfo accountInfo : accounts) {
+            if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
+                return ActionResult.getErrorResult("该账号已被其他子账号绑定，请先解除绑定！");
+            }
+            if (shareCode.equals(accountInfo.getShareCode())) {
+                byAccountId = accountInfo;
+            }
+        }
         if (byAccountId == null) {
-            return ActionResult.getErrorResult("父账号ID错误或共享码不存在！");
+            return ActionResult.getErrorResult("共享码不存在！");
         }
-        if (shareCode == null || !shareCode.equals(byAccountId.getShareCode())) {
-            return ActionResult.getErrorResult("父账号ID错误或共享码不存在！");
-        }
-        log.info("账号[" + account.getAccountId() + "]与父账号[" + bindAccountId + "]建立绑定关系");
-        account.setParentAccountId(bindAccountId);
+        log.info("账号[" + account.getAccountId() + "]与父账号[" + byAccountId.getAccountId() + "]建立绑定关系");
+        account.setParentAccountId(byAccountId.getAccountId());
         account.setParentAccountInfo(byAccountId);
         try {
             settingConfig.saveSetting(liveManSetting);
@@ -270,6 +282,9 @@ public class AccountController {
         if (liveManSetting.findByAccountId(account.getAccountId()) == null) {
             return ActionResult.getErrorResult("请先前往[我的账户]菜单保存账号!");
         }
+        if (account.getParentAccountId() != null) {
+            return ActionResult.getErrorResult("该账号已绑定其他父账号，请先解除绑定！");
+        }
         int totalPoint = 0;
         try {
             File usedcardFile = new File("usedcard.txt");
@@ -330,6 +345,16 @@ public class AccountController {
             byAccountId.setPostBiliDynamic(accountInfoVO.isPostBiliDynamic());
             byAccountId.setAutoRoomTitle(accountInfoVO.isAutoRoomTitle());
             byAccountId.setBroadcastResolution(accountInfoVO.getBroadcastResolution());
+            byAccountId.setSaveCookies(accountInfoVO.isSaveCookies());
+            byAccountId.setRtmpHost(accountInfoVO.getRtmpHost());
+            if (!StringUtils.containsOnly(accountInfoVO.getRtmpPassword(), new char[]{'*'})) {
+                byAccountId.setRtmpPassword(accountInfoVO.getRtmpPassword());
+            }
+            if (byAccountId.isSaveCookies()) {
+                byAccountId.setCookies(account.readCookies());
+            } else {
+                byAccountId.setCookies(null);
+            }
         } else {
             return ActionResult.getErrorResult("尝试编辑的账户不存在，请刷新页面后重试");
         }

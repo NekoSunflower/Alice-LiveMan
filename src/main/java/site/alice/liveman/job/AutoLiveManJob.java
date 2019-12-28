@@ -47,6 +47,9 @@ public class AutoLiveManJob {
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
         accounts.parallelStream().forEach(accountInfo -> {
             CopyOnWriteArraySet<ChannelInfo> channels = accountInfo.getChannels();
+            if (channels == null) {
+                return;
+            }
             for (ChannelInfo channelInfo : channels) {
                 try {
                     LiveService liveService = liveServiceFactory.getLiveService(channelInfo.getChannelUrl());

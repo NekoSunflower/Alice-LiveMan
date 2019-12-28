@@ -77,12 +77,12 @@ public class BilibiliBroadcastService implements BroadcastService {
         } else if (broadcastConfig.getArea() != null) {
             area = broadcastConfig.getArea()[1];
         }
-        Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.getCookies());
+        Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.readCookies());
         String csrfToken = "";
         if (matcher.find()) {
             csrfToken = matcher.group(1);
         }
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.getCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
+        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("code") == 0) {
@@ -107,14 +107,14 @@ public class BilibiliBroadcastService implements BroadcastService {
             if (title == null && areaId == null) {
                 return;
             }
-            Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.getCookies());
+            Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.readCookies());
             String csrfToken = "";
             if (matcher.find()) {
                 csrfToken = matcher.group(1);
             }
             title = title != null && title.length() > 20 ? title.substring(0, 20) : title;
             postData = "room_id=" + getBroadcastRoomId(accountInfo) + (StringUtils.isNotBlank(title) ? "&title=" + title : "") + (areaId != null ? "&area_id=" + areaId : "") + "&csrf_token=" + csrfToken;
-            String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_UPDATE_URL), accountInfo.getCookies(), postData, StandardCharsets.UTF_8);
+            String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_UPDATE_URL), accountInfo.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject resObject = JSON.parseObject(resJson);
             if (resObject.getInteger("code") != 0) {
                 log.error("修改直播间信息失败[" + postData + "]" + resJson);
@@ -127,7 +127,7 @@ public class BilibiliBroadcastService implements BroadcastService {
     @Override
     public String getBroadcastRoomId(AccountInfo accountInfo) throws Exception {
         if (StringUtils.isEmpty(accountInfo.getRoomId())) {
-            String liveInfoJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_INFO_URL), accountInfo.getCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
+            String liveInfoJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_INFO_URL), accountInfo.readCookies(), Collections.emptyMap(), StandardCharsets.UTF_8);
             JSONObject liveInfoObject = JSON.parseObject(liveInfoJson);
             if (liveInfoObject.get("data") instanceof JSONObject) {
                 JSONObject data = liveInfoObject.getJSONObject("data");
@@ -187,13 +187,13 @@ public class BilibiliBroadcastService implements BroadcastService {
                     }
                 }
             }
-            Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.getCookies());
+            Matcher matcher = Pattern.compile("bili_jct=(.{32})").matcher(accountInfo.readCookies());
             String csrfToken = "";
             if (matcher.find()) {
                 csrfToken = matcher.group(1);
             }
             String postData = "room_id=" + getBroadcastRoomId(accountInfo) + "&platform=pc&csrf_token=" + csrfToken;
-            String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_STOP_LIVE_URL), accountInfo.getCookies(), postData, StandardCharsets.UTF_8);
+            String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_STOP_LIVE_URL), accountInfo.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject resObject = JSON.parseObject(resJson);
             if (resObject.getInteger("code") != 0) {
                 log.error("关闭直播间失败" + resJson);

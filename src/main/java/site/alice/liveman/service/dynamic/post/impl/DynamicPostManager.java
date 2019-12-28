@@ -72,7 +72,7 @@ public class DynamicPostManager implements ApplicationContextAware {
         List<DynamicPostSetting> dynamicPostSettings = account.getDynamicPostSettings();
         for (DynamicPostSetting dynamicPostSetting : dynamicPostSettings) {
             if ("channel".equals(dynamicPostSetting.getType())) {
-                if (videoInfo.getChannelInfo().getChannelName().equals(dynamicPostSetting.getSetting())) {
+                if (videoInfo.getChannelInfo().getChannelUrl().contains(dynamicPostSetting.getSetting())) {
                     return true;
                 }
             } else if ("account".equals(dynamicPostSetting.getType())) {
