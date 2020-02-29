@@ -27,7 +27,6 @@ import com.hiczp.bilibili.api.passport.model.LoginResponse;
 import com.hiczp.bilibili.api.passport.model.LoginResponse.Data.CookieInfo.Cookie;
 import com.hiczp.bilibili.api.retrofit.CommonResponse;
 import com.hiczp.bilibili.api.retrofit.exception.BilibiliApiException;
-import kotlin.Result;
 import kotlin.Result.Failure;
 import kotlin.coroutines.Continuation;
 import kotlin.coroutines.CoroutineContext;
