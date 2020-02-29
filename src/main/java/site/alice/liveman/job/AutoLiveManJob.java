@@ -41,7 +41,7 @@ public class AutoLiveManJob {
     @Autowired
     private              LiveManSetting     liveManSetting;
 
-    @Scheduled(cron = "0/5 * * * * ?")
+   @Scheduled(cron = "0/5 * * * * ?")
     public void aliceLiveJob() {
         /* 获取频道状态信息 */
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
