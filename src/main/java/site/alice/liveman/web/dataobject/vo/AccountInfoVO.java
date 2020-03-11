@@ -18,8 +18,7 @@
 
 package site.alice.liveman.web.dataobject.vo;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.model.BroadcastError;
 
@@ -233,6 +232,11 @@ public class AccountInfoVO {
         } else {
             return "**************************";
         }
+    }
+
+    @JsonIgnore
+    public String getRtmpPasswordReal() {
+        return rtmpPassword;
     }
 
     public void setRtmpPassword(String rtmpPassword) {

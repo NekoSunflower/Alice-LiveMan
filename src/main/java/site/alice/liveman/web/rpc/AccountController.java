@@ -195,6 +195,9 @@ public class AccountController {
         if (byAccountId == null) {
             return ActionResult.getErrorResult("共享码不存在！");
         }
+        if (account.getAccountId().equals(byAccountId.getAccountId())) {
+            return ActionResult.getErrorResult("不能和自己建立绑定关系！");
+        }
         log.info("账号[" + account.getAccountId() + "]与父账号[" + byAccountId.getAccountId() + "]建立绑定关系");
         account.setParentAccountId(byAccountId.getAccountId());
         account.setParentAccountInfo(byAccountId);
@@ -202,6 +205,8 @@ public class AccountController {
             settingConfig.saveSetting(liveManSetting);
         } catch (Exception e) {
             log.error("保存系统配置信息失败", e);
+            account.setParentAccountId(null);
+            account.setParentAccountInfo(null);
             return ActionResult.getErrorResult("系统内部错误，请联系管理员");
         }
         return ActionResult.getSuccessResult(null);
@@ -347,7 +352,7 @@ public class AccountController {
             byAccountId.setBroadcastResolution(accountInfoVO.getBroadcastResolution());
             byAccountId.setSaveCookies(accountInfoVO.isSaveCookies());
             byAccountId.setRtmpHost(accountInfoVO.getRtmpHost());
-            if (!StringUtils.containsOnly(accountInfoVO.getRtmpPassword(), new char[]{'*'})) {
+            if (!StringUtils.containsOnly(accountInfoVO.getRtmpPasswordReal(), new char[]{'*'})) {
                 byAccountId.setRtmpPassword(accountInfoVO.getRtmpPassword());
             }
             if (byAccountId.isSaveCookies()) {
