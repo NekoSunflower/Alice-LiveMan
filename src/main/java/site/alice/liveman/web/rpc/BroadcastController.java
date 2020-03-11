@@ -49,6 +49,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -86,7 +87,12 @@ public class BroadcastController {
                 videoInfos.add(videoInfo);
             }
         }
-        CopyOnWriteArraySet<ChannelInfo> channels = account.getChannels();
+        Set<ChannelInfo> channels;
+        if (account.isAdmin()) {
+            channels = liveManSetting.getAccounts().stream().flatMap(accountInfo -> accountInfo.getChannels().stream()).collect(Collectors.toSet());
+        } else {
+            channels = account.getChannels();
+        }
         for (ChannelInfo channel : channels) {
             if (channel.getVideoInfo() != null) {
                 videoInfos.add(channel.getVideoInfo());
@@ -277,7 +283,7 @@ public class BroadcastController {
     @RequestMapping("/stopTask.json")
     public ActionResult stopTask(String videoId) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        log.info("stopTask()[videoId=" + videoId + "][accountRoomId=" + account.getRoomId() + "]");
+        log.info("stopTask()[videoId=" + videoId + "][accountId=" + account.getAccountId() + "]");
         MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
         if (mediaProxyTask == null) {
             log.info("此转播任务尚未运行，或已停止[MediaProxyTask不存在][videoId=" + videoId + "]");
@@ -409,6 +415,12 @@ public class BroadcastController {
             MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
             if (mediaProxyTask != null) {
                 mediaProxyTask.terminate();
+            }
+        } else if (broadcastConfig.isNeedRecord()) {
+            try {
+                MediaProxyManager.createProxy(videoInfo);
+            } catch (Throwable e) {
+                log.error("启动媒体代理服务失败videoInfo=" + videoInfo, e);
             }
         }
         if (broadcastConfig.isAudioBanned() != broadcastTaskVO.isAudioBanned()) {

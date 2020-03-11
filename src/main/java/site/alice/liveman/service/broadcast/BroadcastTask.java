@@ -310,8 +310,8 @@ public class BroadcastTask implements Runnable {
                     }
                     // 终止推流时自动终止创建的低清晰度媒体代理任务
                     deleteLowVideoTask();
-                    if (broadcastAccount.isDisable() && singleTask) {
-                        log.warn("手动推流的直播账号[" + broadcastAccount.getAccountId() + "]不可用，已终止推流任务[videoId=" + videoInfo.getVideoUnionId() + "]。");
+                    if (broadcastAccount.isDisable()) {
+                        log.warn("直播账号[" + broadcastAccount.getAccountId() + "]不可用，已终止推流任务[videoId=" + videoInfo.getVideoUnionId() + "]。");
                         terminate = true;
                         break;
                     }
@@ -331,11 +331,22 @@ public class BroadcastTask implements Runnable {
             }
         } catch (InterruptedException ignore) {
         } finally {
-            log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]的推流任务[roomId=" + (broadcastAccount != null ? broadcastAccount.getRoomId() : "(无)") + "]已停止");
+            log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]的推流任务[roomId=" + (broadcastAccount.getRoomId() != null ? broadcastAccount.getRoomId() : "(无)") + "]已停止");
             if (videoInfo.getBroadcastTask() != null && !videoInfo.removeBroadcastTask(this)) {
                 log.warn("警告：无法移除[videoId=" + videoInfo.getVideoUnionId() + "]的推流任务，CAS操作失败");
             }
             terminate = true;
+            MediaHistory mediaHistory = broadcastServiceManager.getMediaHistoryService().getMediaHistory(videoInfo.getVideoUnionId());
+            // 不需要录像，终止媒体代理服务
+            if (mediaHistory != null && mediaHistory.isNeedRecord()) {
+                log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]的推流任务已终止，但需要录像，保留媒体代理服务！");
+            } else {
+                log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]的推流任务已终止，且不需要录像，终止媒体代理服务！");
+                MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
+                if (mediaProxyTask != null) {
+                    mediaProxyTask.terminate();
+                }
+            }
         }
     }
 
