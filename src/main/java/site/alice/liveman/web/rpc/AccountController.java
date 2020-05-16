@@ -188,7 +188,12 @@ public class AccountController {
             if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
                 return ActionResult.getErrorResult("该账号已被其他子账号绑定，请先解除绑定！");
             }
+        }
+        for (AccountInfo accountInfo : accounts) {
             if (shareCode.equals(accountInfo.getShareCode())) {
+                if (accountInfo.getParentAccountId() != null) {
+                    return ActionResult.getErrorResult("尝试绑定的账号已绑定其他父账号，无法完成绑定操作！");
+                }
                 byAccountId = accountInfo;
             }
         }

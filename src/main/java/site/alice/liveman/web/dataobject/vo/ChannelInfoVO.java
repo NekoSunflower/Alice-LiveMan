@@ -21,9 +21,27 @@ package site.alice.liveman.web.dataobject.vo;
 import site.alice.liveman.model.BroadcastConfig;
 
 public class ChannelInfoVO {
+    private String          accountId;
+    private String          nickName;
     private String          channelUrl;
     private String          channelName;
     private BroadcastConfig defaultBroadcastConfig;
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
 
     public String getChannelUrl() {
         return channelUrl;

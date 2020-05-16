@@ -50,7 +50,7 @@ public class OneDriveUtil {
                     redirectUrl,
                     OneDriveScope.FILES_READWRITE_ALL, OneDriveScope.OFFLINE_ACCESS);
         }
-        if (!sdk.isAuthenticated()) {
+        if (!sdk.isAuthenticated() && StringUtils.isNotEmpty(liveManSetting.getOneDriveToken())) {
             sdk.authenticateWithRefreshToken(liveManSetting.getOneDriveToken());
         }
         return sdk;

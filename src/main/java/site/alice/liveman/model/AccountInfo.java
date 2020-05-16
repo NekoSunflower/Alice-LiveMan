@@ -238,13 +238,18 @@ public class AccountInfo implements Comparable<AccountInfo> {
     }
 
     public long changePoint(long delta, String remark) {
-        BillRecord billRecord = new BillRecord(delta, remark);
+        BillRecord billRecord;
+        if (parentAccountInfo != null) {
+            billRecord = new BillRecord(delta, remark + "(父账号:" + parentAccountInfo.getNickname() + ")");
+        } else {
+            billRecord = new BillRecord(delta, remark);
+        }
         billRecords.add(0, billRecord);
         if (billRecords.size() > 100) {
             billRecords = new CopyOnWriteArrayList<>(billRecords.subList(0, 100));
         }
         if (parentAccountInfo != null) {
-            return parentAccountInfo.changePoint(delta, remark);
+            return parentAccountInfo.changePoint(delta, remark + "(子账号:" + getNickname() + ")");
         } else {
             return this.point.addAndGet(delta);
         }

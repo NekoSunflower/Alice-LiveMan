@@ -20,7 +20,6 @@ package site.alice.liveman.web.rpc;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -37,6 +36,7 @@ import site.alice.liveman.web.dataobject.vo.ChannelInfoVO;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -54,11 +54,24 @@ public class ChannelController {
 
     @RequestMapping("/channelList.json")
     public ActionResult<List<ChannelInfoVO>> channelList() {
+        List<ChannelInfoVO> channelInfoVOList = new LinkedList<>();
         AccountInfo accountInfo = (AccountInfo) session.getAttribute("account");
+        if (accountInfo.isAdmin()) {
+            liveManSetting.getAccounts().forEach((account) -> {
+                warpChannelInfoVO(channelInfoVOList, account);
+            });
+        } else {
+            warpChannelInfoVO(channelInfoVOList, accountInfo);
+        }
+        return ActionResult.getSuccessResult(channelInfoVOList);
+    }
+
+    private void warpChannelInfoVO(List<ChannelInfoVO> channelInfoVOList, AccountInfo accountInfo) {
         Set<ChannelInfo> channels = accountInfo.getChannels();
-        List<ChannelInfoVO> channelInfoVOList = new ArrayList<>();
         for (ChannelInfo channel : channels) {
             ChannelInfoVO channelInfoVO = new ChannelInfoVO();
+            channelInfoVO.setAccountId(accountInfo.getAccountId());
+            channelInfoVO.setNickName(accountInfo.getNickname());
             channelInfoVO.setChannelName(channel.getChannelName());
             channelInfoVO.setChannelUrl(channel.getChannelUrl());
             BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig();
@@ -68,7 +81,6 @@ public class ChannelController {
             channelInfoVO.setDefaultBroadcastConfig(defaultBroadcastConfig);
             channelInfoVOList.add(channelInfoVO);
         }
-        return ActionResult.getSuccessResult(channelInfoVOList);
     }
 
 
