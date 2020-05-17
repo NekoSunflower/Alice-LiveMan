@@ -19,6 +19,7 @@
 package site.alice.liveman.web.dataobject.vo;
 
 public class BroadcastTaskVO {
+    private String  from;
     private String  nickname;
     private String  roomId;
     private String  accountSite;
@@ -32,6 +33,14 @@ public class BroadcastTaskVO {
     private String  roomTitle;
     private float   health;
     private boolean vertical;
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
 
     public String getNickname() {
         return nickname;

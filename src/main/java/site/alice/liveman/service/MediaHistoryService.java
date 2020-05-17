@@ -78,7 +78,7 @@ public class MediaHistoryService {
             public void onProxyStart(MediaProxyEvent e) {
                 MediaProxyTask task = e.getMediaProxyTask();
                 VideoInfo videoInfo = task.getVideoInfo();
-                if (videoInfo != null && !mediaHistoryMap.containsKey(videoInfo.getVideoId())) {
+                if (videoInfo != null && !mediaHistoryMap.containsKey(videoInfo.getVideoUnionId())) {
                     ChannelInfo channelInfo = videoInfo.getChannelInfo();
                     if (channelInfo == null) {
                         return;
@@ -86,14 +86,14 @@ public class MediaHistoryService {
                     MediaHistory mediaHistory = new MediaHistory();
                     BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
                     mediaHistory.setNeedRecord(defaultBroadcastConfig.isNeedRecord());
-                    mediaHistory.setVideoId(videoInfo.getVideoId());
+                    mediaHistory.setVideoId(videoInfo.getVideoUnionId());
                     mediaHistory.setVideoTitle(videoInfo.getTitle());
                     mediaHistory.setChannelName(channelInfo.getChannelName());
                     mediaHistory.setDatetime(new Date());
-                    mediaHistoryMap.put(videoInfo.getVideoId(), mediaHistory);
+                    mediaHistoryMap.put(videoInfo.getVideoUnionId(), mediaHistory);
                     synchronized (this) {
                         try (OutputStream os = new FileOutputStream("history.txt", true)) {
-                            IOUtils.write(String.format("%s||%s||%s||%s\n", videoInfo.getVideoId(), videoInfo.getTitle(), channelInfo.getChannelName(), System.currentTimeMillis()), os, StandardCharsets.UTF_8);
+                            IOUtils.write(String.format("%s||%s||%s||%s\n", videoInfo.getVideoUnionId(), videoInfo.getTitle(), channelInfo.getChannelName(), System.currentTimeMillis()), os, StandardCharsets.UTF_8);
                         } catch (Exception err) {
                             log.error("保存历史记录失败", err);
                         }

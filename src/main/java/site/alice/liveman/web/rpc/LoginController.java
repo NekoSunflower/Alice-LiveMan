@@ -90,9 +90,7 @@ public class LoginController {
             AccountInfo byAccountId;
             if ((byAccountId = liveManSetting.findByRoomId(accountInfo.getRoomId())) != null) {
                 // 更新新的Cookies
-                if (byAccountId.isSaveCookies()) {
-                    byAccountId.setCookies(accountInfo.readCookies());
-                }
+                byAccountId.setCookies(accountInfo.readCookies());
                 byAccountId.setAccountId(accountInfo.getAccountId());
                 byAccountId.setDisable(false);
                 accountInfo = byAccountId;

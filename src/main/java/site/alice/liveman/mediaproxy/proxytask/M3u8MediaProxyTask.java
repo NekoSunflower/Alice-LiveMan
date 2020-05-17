@@ -182,7 +182,7 @@ public class M3u8MediaProxyTask extends MediaProxyTask {
                     downloadDeque.offer(m3u8SeqInfo);
                 }
                 if (readSeqCount == 0) {
-                    if ((retryCount.incrementAndGet() + 2) % 3 == 0) {
+                    if ((retryCount.incrementAndGet() + 2) % 3 == 0 && retryCount.get() > 9) {
                         log.info(getVideoId() + "没有找到可以下载的片段，重试(" + retryCount.get() + "/" + MAX_RETRY_COUNT + ")次");
                     }
                 } else {

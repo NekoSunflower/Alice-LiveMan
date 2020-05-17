@@ -150,7 +150,7 @@ public class BroadcastTask implements Runnable {
                 try {
                     if (!singleTask) {
                         if (broadcastServiceManager.getVideoFilterService().doFilter(videoInfo)) {
-                            MediaHistory mediaHistory = broadcastServiceManager.getMediaHistoryService().getMediaHistory(videoInfo.getVideoId());
+                            MediaHistory mediaHistory = broadcastServiceManager.getMediaHistoryService().getMediaHistory(videoInfo.getVideoUnionId());
                             if (mediaHistory == null || !mediaHistory.isPostDynamic()) {
                                 broadcastServiceManager.getDynamicPostManager().postDynamic(this, broadcastAccount);
                                 if (mediaHistory != null) {
@@ -164,6 +164,10 @@ public class BroadcastTask implements Runnable {
                     while (executedProxyTaskMap.containsKey(videoInfo.getVideoUnionId()) && !terminate && broadcastAccount != null && broadcastAccount.getCurrentVideo() == videoInfo && !broadcastAccount.isDisable()) {
                         try {
                             BroadcastService broadcastService = broadcastServiceManager.getBroadcastService(broadcastAccount.getAccountSite());
+                            if (broadcastAccount.readCookies() == null) {
+                                broadcastAccount.setDisable(true);
+                                throw new RuntimeException("转播启动失败，账户Cookies为空！提示：如果是自动转播请检查【我的账号】中【自动保存Cookies】选项是否已开启，如果是手动认领请尝试重新登录或联系管理员。");
+                            }
                             String broadcastAddress = broadcastService.getBroadcastAddress(broadcastAccount);
                             if (broadcastAccount.isAutoRoomTitle()) {
                                 broadcastService.setBroadcastSetting(broadcastAccount, videoInfo.getTitle(), null);

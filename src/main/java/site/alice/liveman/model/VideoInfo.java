@@ -88,7 +88,7 @@ public class VideoInfo implements Serializable {
     }
 
     public String getVideoUnionId() {
-        return videoId + (part == null ? "" : "." + part) + (accountInfo == null ? "" : "." + SecurityUtils.md5Encode(accountInfo.getAccountId().getBytes(StandardCharsets.UTF_8)) + "." + requiredResolution);
+        return videoId + (accountInfo == null ? "" : "@" + SecurityUtils.md5Encode(accountInfo.getAccountId().getBytes(StandardCharsets.UTF_8)) + "@" + requiredResolution) + (part == null ? "" : "." + part);
     }
 
     public ChannelInfo getChannelInfo() {

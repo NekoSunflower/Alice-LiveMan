@@ -87,11 +87,11 @@ public class BroadcastController {
                 videoInfos.add(videoInfo);
             }
         }
-        Set<ChannelInfo> channels;
+        List<ChannelInfo> channels;
         if (account.isAdmin()) {
-            channels = liveManSetting.getAccounts().stream().flatMap(accountInfo -> accountInfo.getChannels().stream()).collect(Collectors.toSet());
+            channels = liveManSetting.getAccounts().stream().flatMap(accountInfo -> accountInfo.getChannels().stream()).collect(Collectors.toList());
         } else {
-            channels = account.getChannels();
+            channels = new ArrayList<>(account.getChannels());
         }
         for (ChannelInfo channel : channels) {
             if (channel.getVideoInfo() != null) {
@@ -109,6 +109,10 @@ public class BroadcastController {
                     broadcastTaskVO.setNickname(broadcastAccount.getNickname());
                     broadcastTaskVO.setRoomId(broadcastAccount.getRoomId());
                 }
+            }
+            AccountInfo accountInfo = videoInfo.getAccountInfo();
+            if (accountInfo != null) {
+                broadcastTaskVO.setFrom(accountInfo.getAccountId());
             }
             ChannelInfo channelInfo = videoInfo.getChannelInfo();
             if (channelInfo != null) {
@@ -152,6 +156,7 @@ public class BroadcastController {
     @RequestMapping("/adoptTask.json")
     public ActionResult adoptTask(String videoId) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
+        log.info("adoptTask(), videoId=" + videoId + ", accountId=" + account.getAccountId());
         account.setDisable(false);
         VideoInfo videoInfo = findVideoInfoById(videoId);
         if (videoInfo == null) {
@@ -160,6 +165,9 @@ public class BroadcastController {
         }
         if (account.getAccountSite().equals("17live") && videoInfo.getChannelInfo().getChannelName().equals("手动推流")) {
             return ActionResult.getErrorResult("17Live账号不允许手动推流，请联系管理员添加相应频道！");
+        }
+        if (!account.equals(videoInfo.getAccountInfo())) {
+            return ActionResult.getErrorResult("你无权认领此推流任务，请刷新页面或重新登录后重试！");
         }
         log.info(account.getAccountId() + "认领了转播任务[videoId=" + videoId + ", title=" + videoInfo.getTitle() + "]");
         BroadcastTask broadcastTask = videoInfo.getBroadcastTask();
@@ -412,12 +420,14 @@ public class BroadcastController {
         }
         // 不需要录像，且不存在推流任务，终止媒体代理服务
         if (broadcastTask == null && !broadcastConfig.isNeedRecord()) {
+            log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]变更为不需要录像且推流任务不存在，终止媒体代理服务！");
             MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
             if (mediaProxyTask != null) {
                 mediaProxyTask.terminate();
             }
         } else if (broadcastConfig.isNeedRecord()) {
             try {
+                log.info("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]变更为需要录像，启动媒体代理服务！");
                 MediaProxyManager.createProxy(videoInfo);
             } catch (Throwable e) {
                 log.error("启动媒体代理服务失败videoInfo=" + videoInfo, e);
