@@ -58,8 +58,7 @@ public class BrowserLayout extends DrawingLayout {
         ProcessUtil.AliceProcess browserProcess = ProcessUtil.getAliceProcess(pid);
         if (browserProcess == null || !browserProcess.isAlive()) {
             log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]启动Browser...");
-            String[] args = new String[]{new File("phantomjs").getAbsolutePath(), "--web-security=false",
-                                         new File("capture.js").getAbsolutePath(), getUrl().toString(),
+            String[] args = new String[]{"java", "-jar", "alice-webkit.jar", getUrl().toString(),
                                          width + "", height + ""};
             pid = ProcessUtil.createProcess(args);
             final ProcessUtil.AliceProcess _browserProcess = ProcessUtil.getAliceProcess(pid);
