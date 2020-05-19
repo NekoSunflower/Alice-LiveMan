@@ -200,6 +200,7 @@ public class BroadcastTask implements Runnable {
                                     if (_lowVideoInfo == null) {
                                         throw new RuntimeException("获取低清晰度视频源信息失败");
                                     }
+                                    _lowVideoInfo.setLowVideoInfo(true);
                                     _lowVideoInfo.setAccountInfo(videoInfo.getAccountInfo());
                                     if (!_lowVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) {
                                         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(_lowVideoInfo.getVideoUnionId());

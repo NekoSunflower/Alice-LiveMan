@@ -54,8 +54,8 @@ public class DrawingController {
     @Autowired
     private HttpServletResponse response;
 
-    @RequestMapping(method = RequestMethod.GET, value = "/screen/{videoId}/{accountId}")
-    public void screen(@PathVariable("videoId") String videoId, @PathVariable("accountId") String accountId) {
+    @RequestMapping(method = RequestMethod.GET, value = "/screen/{videoId}")
+    public void screen(@PathVariable("videoId") String videoId) {
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
         if (mediaProxyTask == null) {
@@ -79,11 +79,9 @@ public class DrawingController {
                 return;
             }
         }
-        AccountInfo accountInfo = new AccountInfo();
-        accountInfo.setAccountId(accountId);
         BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {
-            log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
+            log.info("找不到请求的推流配置信息[videoId=" + videoId + "]");
             return;
         }
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
@@ -129,8 +127,8 @@ public class DrawingController {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET, value = "/mask/{videoId}/{accountId}")
-    public void mask(@PathVariable("videoId") String videoId, @PathVariable("accountId") String accountId) {
+    @RequestMapping(method = RequestMethod.GET, value = "/mask/{videoId}")
+    public void mask(@PathVariable("videoId") String videoId) {
         Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
         MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
         if (mediaProxyTask == null) {
@@ -155,11 +153,9 @@ public class DrawingController {
                 return;
             }
         }
-        AccountInfo accountInfo = new AccountInfo();
-        accountInfo.setAccountId(accountId);
         BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {
-            log.info("找不到请求的推流配置信息[videoId=" + videoId + ", accountId= " + accountId + "]");
+            log.info("找不到请求的推流配置信息[videoId=" + videoId + "]");
             return;
         }
         int[] sizes = Arrays.stream(resolution.split("x")).mapToInt(Integer::parseInt).toArray();
