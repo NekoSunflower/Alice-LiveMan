@@ -78,12 +78,16 @@ public class MediaHistoryService {
             public void onProxyStart(MediaProxyEvent e) {
                 MediaProxyTask task = e.getMediaProxyTask();
                 VideoInfo videoInfo = task.getVideoInfo();
-                if (videoInfo != null && !mediaHistoryMap.containsKey(videoInfo.getVideoUnionId())) {
+                if (videoInfo.isLowVideoInfo()) {
+                    return;
+                }
+                MediaHistory mediaHistory;
+                if ((mediaHistory = mediaHistoryMap.get(videoInfo.getVideoUnionId())) == null) {
                     ChannelInfo channelInfo = videoInfo.getChannelInfo();
                     if (channelInfo == null) {
                         return;
                     }
-                    MediaHistory mediaHistory = new MediaHistory();
+                    mediaHistory = new MediaHistory();
                     BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
                     mediaHistory.setNeedRecord(defaultBroadcastConfig.isNeedRecord());
                     mediaHistory.setVideoId(videoInfo.getVideoUnionId());
@@ -98,6 +102,8 @@ public class MediaHistoryService {
                             log.error("保存历史记录失败", err);
                         }
                     }
+                } else {
+                    videoInfo.getBroadcastConfig().setNeedRecord(mediaHistory.isNeedRecord());
                 }
             }
         });
