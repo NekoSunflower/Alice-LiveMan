@@ -78,7 +78,7 @@ public class MediaHistoryService {
             public void onProxyStart(MediaProxyEvent e) {
                 MediaProxyTask task = e.getMediaProxyTask();
                 VideoInfo videoInfo = task.getVideoInfo();
-                if (videoInfo.isLowVideoInfo()) {
+                if (videoInfo == null || videoInfo.isLowVideoInfo()) {
                     return;
                 }
                 MediaHistory mediaHistory;

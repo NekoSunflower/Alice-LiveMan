@@ -19,6 +19,7 @@ package site.alice.liveman.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -70,6 +71,15 @@ public class AutoLiveManJob {
                     if (videoInfo != null) {
                         LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]正在直播，媒体地址:" + videoInfo.getVideoInfoUrl());
                         BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
+                        if (videoInfo.getBroadcastConfig() == null && defaultBroadcastConfig != null) {
+                            BroadcastConfig broadcastConfig = new BroadcastConfig();
+                            BeanUtils.copyProperties(defaultBroadcastConfig, broadcastConfig);
+                            videoInfo.setBroadcastConfig(broadcastConfig);
+                        }
+                        if (videoInfo.getBroadcastConfig() == null) {
+                            BroadcastConfig broadcastConfig = new BroadcastConfig();
+                            videoInfo.setBroadcastConfig(broadcastConfig);
+                        }
                         // 开始直播时，判断是否需要启动媒体代理服务器
                         if ((currentVideoInfo == null || !currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) && defaultBroadcastConfig != null && (defaultBroadcastConfig.isAutoBroadcast() || defaultBroadcastConfig.isNeedRecord())) {
                             LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动媒体代理服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
