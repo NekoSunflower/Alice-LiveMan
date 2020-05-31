@@ -43,11 +43,11 @@ public class ProcessUtil {
 
     private static final Map<Long, AliceProcess> processTargetMap = new ConcurrentHashMap<>();
 
-    public static long createProcess(String... args) {
-        return createProcess(args, null);
+    public static long createProcess(String cmdLine, String videoId) {
+        return createProcess(cmdLine, null, videoId);
     }
 
-    public static long createProcess(String cmdLine, String videoId) {
+    public static long createProcess(String cmdLine, String[] envs, String videoId) {
         if (cmdLine == null) {
             return 0;
         }
@@ -57,16 +57,29 @@ public class ProcessUtil {
                 args[i] = args[i].substring(1, args[i].length() - 1);
             }
         }
-        return createProcess(args, videoId);
+        return createProcess(args, envs, videoId);
     }
 
     public static long createProcess(String[] args, String videoId) {
+        return createProcess(args, null, videoId);
+    }
+
+    public static long createProcess(String[] args, String[] envs, String videoId) {
         try {
             if (args == null) {
                 return 0;
             }
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command(args);
+            Map<String, String> environment = processBuilder.environment();
+            if (envs != null) {
+                for (String env : envs) {
+                    String[] split = env.split("=", 2);
+                    if (split.length > 1) {
+                        environment.put(split[0], split[1]);
+                    }
+                }
+            }
             if (videoId != null) {
                 settingStdLog(videoId, processBuilder);
             }

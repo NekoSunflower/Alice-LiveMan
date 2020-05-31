@@ -60,25 +60,23 @@ public class BrowserLayout extends DrawingLayout {
             log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]启动Browser...");
             String[] args = new String[]{"java", "-jar", "alice-webkit.jar", getUrl().toString(),
                                          width + "", height + ""};
-            pid = ProcessUtil.createProcess(args);
+            String display = ":99";
+            String[] envs = new String[]{"DISPLAY=" + display};
+            ProcessUtil.createProcess(new String[]{"Xvfb", display, "-ac"}, null, null);
+            pid = ProcessUtil.createProcess(args, envs, null);
             final ProcessUtil.AliceProcess _browserProcess = ProcessUtil.getAliceProcess(pid);
             if (_browserProcess != null && _browserProcess.isAlive()) {
-                ThreadPoolUtil.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        BufferedInputStream is = (BufferedInputStream) _browserProcess.getInputStream();
-                        Scanner sc = new Scanner(is);
+                ThreadPoolUtil.execute(() -> {
+                    BufferedInputStream is = (BufferedInputStream) _browserProcess.getInputStream();
+                    Scanner sc = new Scanner(is);
+                    try {
                         while (sc.hasNextLine()) {
                             String nextLine = sc.nextLine();
                             if (nextLine.startsWith("capture:")) {
                                 nextLine = nextLine.substring("capture:".length());
                                 byte[] captureData = Base64.getDecoder().decode(nextLine);
                                 ByteArrayInputStream bis = new ByteArrayInputStream(captureData);
-                                try {
-                                    imageRef.set(ImageIO.read(bis));
-                                } catch (IOException e) {
-                                    log.error("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]", e);
-                                }
+                                imageRef.set(ImageIO.read(bis));
                             } else {
                                 log.info("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]:" + nextLine);
                             }
@@ -88,6 +86,10 @@ public class BrowserLayout extends DrawingLayout {
                                 return;
                             }
                         }
+                    } catch (IOException e) {
+                        log.error("BrowserLayout[videoId=" + videoInfo.getVideoUnionId() + "]", e);
+                    } finally {
+                        ProcessUtil.killProcess(ProcessUtil.getProcessHandle(_browserProcess));
                     }
                 });
             }
