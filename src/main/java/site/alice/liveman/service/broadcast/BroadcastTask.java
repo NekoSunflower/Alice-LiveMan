@@ -182,11 +182,6 @@ public class BroadcastTask implements Runnable {
                                     health = -1;
                                     VideoResolutionEnum broadcastResolution = broadcastConfig.getBroadcastResolution();
                                     if (broadcastResolution == null) {
-                                        // 设置账号默认的转播分辨率
-                                        broadcastConfig.setBroadcastResolution(broadcastAccount.getBroadcastResolution());
-                                    }
-                                    if (broadcastResolution == null) {
-                                        // 如果没有设置账户默认转播分辨率，则设置为720P/30FPS
                                         broadcastConfig.setBroadcastResolution(VideoResolutionEnum.R720F30);
                                     }
                                     broadcastResolution = broadcastConfig.getBroadcastResolution();

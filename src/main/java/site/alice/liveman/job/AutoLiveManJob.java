@@ -41,7 +41,7 @@ public class AutoLiveManJob {
     @Autowired
     private              LiveManSetting     liveManSetting;
 
-   @Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
     public void aliceLiveJob() {
         /* 获取频道状态信息 */
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
@@ -60,7 +60,7 @@ public class AutoLiveManJob {
                     } else {
                         BroadcastTask broadcastTask = currentVideoInfo.getBroadcastTask();
                         if (broadcastTask == null || broadcastTask.isTerminate()) {
-                            if (currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) {
+                            if (videoInfo != null && currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) {
                                 videoInfo.setBroadcastConfig(currentVideoInfo.getBroadcastConfig());
                                 videoInfo.setTextLocations(currentVideoInfo.getTextLocations());
                             }

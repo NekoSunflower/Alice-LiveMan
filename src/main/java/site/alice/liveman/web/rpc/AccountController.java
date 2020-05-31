@@ -354,7 +354,6 @@ public class AccountController {
             byAccountId.setDescription(accountInfoVO.getDescription());
             byAccountId.setPostBiliDynamic(accountInfoVO.isPostBiliDynamic());
             byAccountId.setAutoRoomTitle(accountInfoVO.isAutoRoomTitle());
-            byAccountId.setBroadcastResolution(accountInfoVO.getBroadcastResolution());
             byAccountId.setSaveCookies(accountInfoVO.isSaveCookies());
             byAccountId.setRtmpHost(accountInfoVO.getRtmpHost());
             if (!StringUtils.containsOnly(accountInfoVO.getRtmpPasswordReal(), new char[]{'*'})) {

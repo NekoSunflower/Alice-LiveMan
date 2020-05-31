@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.config.SettingConfig;
+import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.ChannelInfo;
@@ -93,6 +94,12 @@ public class ChannelController {
         } catch (IllegalArgumentException e) {
             return ActionResult.getErrorResult(e.getMessage());
         }
+        BroadcastConfig defaultBroadcastConfig = channelInfo.getDefaultBroadcastConfig();
+        if (defaultBroadcastConfig.isAutoBlur()) {
+            defaultBroadcastConfig.setVideoBannedType(VideoBannedTypeEnum.CUSTOM_SCREEN);
+        } else {
+            defaultBroadcastConfig.setVideoBannedType(VideoBannedTypeEnum.NONE);
+        }
         channelInfo.setChannelName(channelInfo.getChannelName().trim());
         channelInfo.setChannelUrl(channelInfo.getChannelUrl().trim());
         if (!accountInfo.getChannels().add(channelInfo)) {
@@ -120,15 +127,19 @@ public class ChannelController {
         Set<ChannelInfo> channels = accountInfo.getChannels();
         for (ChannelInfo channel : channels) {
             if (channel.getChannelUrl().equals(channelInfoVO.getChannelUrl())) {
-                if (accountInfo.isAdmin()) {
-                    channel.setChannelName(channelInfoVO.getChannelName());
-                }
+                channel.setChannelName(channelInfoVO.getChannelName());
                 BroadcastConfig defaultBroadcastConfig = channel.getDefaultBroadcastConfig();
                 if (defaultBroadcastConfig == null) {
                     defaultBroadcastConfig = new BroadcastConfig();
                     channel.setDefaultBroadcastConfig(defaultBroadcastConfig);
                 }
-                BeanUtils.copyProperties(channelInfoVO.getDefaultBroadcastConfig(), defaultBroadcastConfig);
+                BroadcastConfig newDefaultBroadcastConfig = channelInfoVO.getDefaultBroadcastConfig();
+                if (newDefaultBroadcastConfig.isAutoBlur()) {
+                    newDefaultBroadcastConfig.setVideoBannedType(VideoBannedTypeEnum.CUSTOM_SCREEN);
+                } else {
+                    newDefaultBroadcastConfig.setVideoBannedType(VideoBannedTypeEnum.NONE);
+                }
+                BeanUtils.copyProperties(newDefaultBroadcastConfig, defaultBroadcastConfig);
                 try {
                     settingConfig.saveSetting(liveManSetting);
                 } catch (Exception e) {

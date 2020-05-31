@@ -41,7 +41,6 @@ public class AccountInfoVO {
     private boolean                saveCookies;
     private String                 shareCode;
     private HashMap<Integer, Long> billTimeMap;
-    private VideoResolutionEnum    broadcastResolution;
     private int[]                  serverPoints;
     private BroadcastError         broadcastError;
     private long                   timestamp = System.currentTimeMillis();
@@ -184,14 +183,6 @@ public class AccountInfoVO {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public VideoResolutionEnum getBroadcastResolution() {
-        return broadcastResolution;
-    }
-
-    public void setBroadcastResolution(VideoResolutionEnum broadcastResolution) {
-        this.broadcastResolution = broadcastResolution;
     }
 
     public int[] getServerPoints() {

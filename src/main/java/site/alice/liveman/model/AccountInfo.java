@@ -52,7 +52,6 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private CopyOnWriteArrayList<BillRecord> billRecords;
     private List<DynamicPostSetting>         dynamicPostSettings;
     private CopyOnWriteArraySet<ChannelInfo> channels;
-    private VideoResolutionEnum              broadcastResolution;
     private BroadcastError                   broadcastError;
     @JSONField(serialize = false)
     private AtomicReference<VideoInfo>       currentVideo = new AtomicReference<>();
@@ -301,14 +300,6 @@ public class AccountInfo implements Comparable<AccountInfo> {
 
     public void setUid(String uid) {
         this.uid = uid;
-    }
-
-    public VideoResolutionEnum getBroadcastResolution() {
-        return broadcastResolution;
-    }
-
-    public void setBroadcastResolution(VideoResolutionEnum broadcastResolution) {
-        this.broadcastResolution = broadcastResolution;
     }
 
     public Long getRtmpUrlRefreshTime() {
