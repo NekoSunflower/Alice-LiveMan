@@ -24,23 +24,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.*;
+import site.alice.liveman.service.broadcast.BroadcastServiceManager;
 import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.service.live.LiveServiceFactory;
 
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Collectors;
 
 @Component
 public class AutoLiveManJob {
-    private static final Logger             LOGGER = LoggerFactory.getLogger(AutoLiveManJob.class);
+    private static final Logger                  LOGGER = LoggerFactory.getLogger(AutoLiveManJob.class);
     @Autowired
-    private              LiveServiceFactory liveServiceFactory;
+    private              LiveServiceFactory      liveServiceFactory;
     @Autowired
-    private              LiveManSetting     liveManSetting;
+    private              LiveManSetting          liveManSetting;
+    @Autowired
+    private              BroadcastServiceManager broadcastServiceManager;
 
     @Scheduled(cron = "0/5 * * * * ?")
     public void aliceLiveJob() {
@@ -81,16 +81,33 @@ public class AutoLiveManJob {
                             videoInfo.setBroadcastConfig(broadcastConfig);
                         }
                         // 开始直播时，判断是否需要启动媒体代理服务器
-                        if ((currentVideoInfo == null || !currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) && defaultBroadcastConfig != null && (defaultBroadcastConfig.isAutoBroadcast() || defaultBroadcastConfig.isNeedRecord())) {
-                            LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动媒体代理服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
-                            MediaProxyManager.createProxy(videoInfo);
+                        if ((currentVideoInfo == null || !currentVideoInfo.getVideoUnionId().equals(videoInfo.getVideoUnionId())) && defaultBroadcastConfig != null) {
+                            if (defaultBroadcastConfig.isNeedRecord()) {
+                                // 录音只启动媒体代理
+                                LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动媒体代理服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
+                                MediaProxyManager.createProxy(videoInfo);
+                            }
+                            AccountInfo broadcastAccount = broadcastServiceManager.getBroadcastAccount(videoInfo);
+                            if (broadcastAccount != null) {
+                                // 启动转播服务
+                                try {
+                                    LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动转播服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
+                                    broadcastServiceManager.createBroadcastTask(videoInfo, broadcastAccount, false);
+                                } catch (Exception e) {
+                                    LOGGER.error("启动转播服务失败", e);
+                                }
+                            }
                         }
                     } else {
                         LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]没有正在直播的节目");
                     }
-                    Thread.sleep(1000);
                 } catch (Throwable e) {
                     LOGGER.error(accountInfo.getAccountId() + "@" + "获取 " + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "] 频道信息失败", e);
+                } finally {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
         });

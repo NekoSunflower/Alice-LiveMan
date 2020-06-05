@@ -66,25 +66,6 @@ public class BroadcastServiceManager implements ApplicationContextAware {
     @PostConstruct
     public void init() {
         MediaProxyManager.addListener(new MediaProxyEventListener() {
-            @Override
-            public void onProxyStart(MediaProxyEvent e) {
-                MediaProxyTask mediaProxyTask = e.getMediaProxyTask();
-                VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
-                if (videoInfo != null) {
-                    if (videoInfo.isLowVideoInfo()) {
-                        return;
-                    }
-                    AccountInfo broadcastAccount = getBroadcastAccount(videoInfo);
-                    if (broadcastAccount != null) {
-                        // 添加默认推流账号的推流任务
-                        try {
-                            createBroadcastTask(videoInfo, broadcastAccount, false);
-                        } catch (Throwable throwable) {
-                            log.error("启动推流任务时发生异常", throwable);
-                        }
-                    }
-                }
-            }
 
             @Override
             public void onProxyStop(MediaProxyEvent e) {
@@ -174,9 +155,9 @@ public class BroadcastServiceManager implements ApplicationContextAware {
             if (currentVideo != null) {
                 BroadcastTask broadcastTask = currentVideo.getBroadcastTask();
                 if (broadcastTask != null && !broadcastTask.isTerminate()) {
-                    throw new RuntimeException("无法创建转播任务，直播间已被节目[" + currentVideo.getTitle() + "]占用！");
+                    throw new RuntimeException("无法创建转播任务，直播间[" + broadcastAccount.getAccountId() + "]已被节目[" + currentVideo.getTitle() + "]占用！");
                 }
-                log.info("直播间[roomId=" + broadcastAccount.getRoomId() + "]当前正在被占用的节目[" + currentVideo.getVideoUnionId() + "]已不存在，清除CurrentVideo标记！");
+                log.info("直播间[" + broadcastAccount.getAccountId() + "]当前正在被占用的节目[" + currentVideo.getVideoUnionId() + "]已不存在，清除CurrentVideo标记！");
                 broadcastAccount.removeCurrentVideo(currentVideo);
             }
             return createSingleBroadcastTask(videoInfo, broadcastAccount);
