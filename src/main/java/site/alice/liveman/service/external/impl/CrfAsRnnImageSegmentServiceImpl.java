@@ -18,8 +18,6 @@
 
 package site.alice.liveman.service.external.impl;
 
-import com.keypoint.PngEncoder;
-import com.keypoint.PngEncoderB;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,12 +30,9 @@ import site.alice.liveman.service.external.consumer.ImageSegmentConsumer;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;

@@ -17,8 +17,6 @@
  */
 package site.alice.liveman.utils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -287,7 +285,10 @@ public class HttpRequestUtil {
 
         @Override
         public Socket createSocket(final HttpContext context) {
-            Proxy proxy = liveManSetting.getProxy();
+            Proxy proxy = null;
+            if (liveManSetting != null) {
+                proxy = liveManSetting.getProxy();
+            }
             if (proxy == null) {
                 return new Socket();
             } else {

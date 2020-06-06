@@ -34,9 +34,8 @@ import site.alice.liveman.customlayout.impl.RectangleBlurLayout;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.KeyFrame;
-import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BroadcastConfig;
+import site.alice.liveman.model.KeyFrame;
 import site.alice.liveman.model.VideoInfo;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,28 +55,14 @@ public class DrawingController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/screen/{videoId}")
     public void screen(@PathVariable("videoId") String videoId) {
-        Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
-        MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
-        if (mediaProxyTask == null) {
-            log.info("找不到请求的媒体代理任务信息[videoId=" + videoId + "]");
-            return;
-        }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId);
         if (videoInfo == null) {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;
         }
         String resolution = videoInfo.getRealResolution();
         if (resolution == null) {
-            KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
-            if (keyFrame != null) {
-                resolution = keyFrame.getWidth() + "x" + keyFrame.getHeight();
-                videoInfo.setRealResolution(resolution);
-                log.info("媒体分辨率[videoId=" + videoId + "]获取成功！[" + resolution + "]");
-            } else {
-                log.warn("媒体分辨率[videoId=" + videoId + "]获取失败！");
-                return;
-            }
+            return;
         }
         BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {
@@ -129,29 +114,14 @@ public class DrawingController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/mask/{videoId}")
     public void mask(@PathVariable("videoId") String videoId) {
-        Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
-        MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
-        if (mediaProxyTask == null) {
-            log.info("找不到请求的媒体代理任务信息[videoId=" + videoId + "]");
-            return;
-        }
-        VideoInfo videoInfo = mediaProxyTask.getVideoInfo();
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId);
         if (videoInfo == null) {
             log.info("找不到请求的媒体信息[videoId=" + videoId + "]");
             return;
         }
         String resolution = videoInfo.getRealResolution();
         if (resolution == null) {
-            log.info("未知媒体分辨率[videoId=" + videoId + "]，尝试获取...");
-            KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
-            if (keyFrame != null) {
-                resolution = keyFrame.getWidth() + "x" + keyFrame.getHeight();
-                videoInfo.setRealResolution(resolution);
-                log.info("媒体分辨率[videoId=" + videoId + "]获取成功！[" + resolution + "]");
-            } else {
-                log.warn("媒体分辨率[videoId=" + videoId + "]获取失败！");
-                return;
-            }
+            return;
         }
         BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
         if (cropConf == null) {

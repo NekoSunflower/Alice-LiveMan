@@ -23,8 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.service.dynamic.post.DynamicPostService;
 import site.alice.liveman.service.broadcast.BroadcastServiceManager;
+import site.alice.liveman.service.dynamic.post.DynamicPostService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.net.URI;

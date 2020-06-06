@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import site.alice.liveman.dataobject.ExternalAppSecretDO;
 import site.alice.liveman.model.LiveManSetting;
 
 import javax.crypto.Cipher;
@@ -39,10 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Configuration

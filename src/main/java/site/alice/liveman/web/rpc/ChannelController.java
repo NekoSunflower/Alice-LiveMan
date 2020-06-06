@@ -36,7 +36,6 @@ import site.alice.liveman.web.dataobject.ActionResult;
 import site.alice.liveman.web.dataobject.vo.ChannelInfoVO;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;

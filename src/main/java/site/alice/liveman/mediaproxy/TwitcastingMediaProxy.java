@@ -24,7 +24,6 @@ import site.alice.liveman.mediaproxy.proxytask.TwitcastingMediaProxyTask;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.net.Proxy;
 import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

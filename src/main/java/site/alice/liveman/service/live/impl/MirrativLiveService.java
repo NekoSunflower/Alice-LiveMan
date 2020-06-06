@@ -28,7 +28,6 @@ import site.alice.liveman.service.live.LiveService;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 

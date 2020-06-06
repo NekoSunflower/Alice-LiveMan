@@ -19,7 +19,6 @@
 package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.web.dataobject.DynamicPostSetting;
 
 import java.util.List;

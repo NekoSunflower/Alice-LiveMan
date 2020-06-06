@@ -109,10 +109,7 @@ public class BroadcastTask implements Runnable {
                 public void run() {
                     try {
                         if (broadcastAccount != null && videoInfo.getBroadcastConfig().getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig().isAutoBlur()) {
-                            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
-                            if (mediaProxyTask != null) {
-                                broadcastServiceManager.getTextLocationService().requireTextLocation(mediaProxyTask.getKeyFrame().getFrameImage(), new TextLocationConsumerImpl(BroadcastTask.this));
-                            }
+                            broadcastServiceManager.getTextLocationService().requireTextLocation(videoInfo.getKeyFrame().getFrameImage(), new TextLocationConsumerImpl(BroadcastTask.this));
                         }
                     } catch (Throwable e) {
                         log.error("requireTextLocation failed", e);
@@ -127,10 +124,7 @@ public class BroadcastTask implements Runnable {
                 public void run() {
                     try {
                         if (broadcastAccount != null && videoInfo.getBroadcastConfig().getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN && videoInfo.getBroadcastConfig().isAutoImageSegment()) {
-                            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
-                            if (mediaProxyTask != null) {
-                                broadcastServiceManager.getImageSegmentService().imageSegment(mediaProxyTask.getKeyFrame().getFrameImage(), new ImageSegmentConsumerImpl(BroadcastTask.this));
-                            }
+                            broadcastServiceManager.getImageSegmentService().imageSegment(videoInfo.getKeyFrame().getFrameImage(), new ImageSegmentConsumerImpl(BroadcastTask.this));
                         } else {
                             CopyOnWriteArrayList<CustomLayout> layouts = videoInfo.getBroadcastConfig().getLayouts();
                             if (layouts != null) {

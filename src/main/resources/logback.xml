@@ -19,7 +19,7 @@
 <!-- Logback configuration. See http://logback.qos.ch/manual/index.html -->
 <configuration scan="true" scanPeriod="10 seconds">
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <property name="LOG_HOME" value="./logs" />
+    <property name="LOG_HOME" value="./logs"/>
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/%d{yyyyMMdd}/info-%d{yyyyMMdd}.%i.log</fileNamePattern>

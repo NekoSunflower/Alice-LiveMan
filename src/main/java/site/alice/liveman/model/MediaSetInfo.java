@@ -23,10 +23,9 @@ import java.awt.*;
 public class MediaSetInfo {
 
 
-    private boolean singleTrack;
-    private Integer frameRate;
+    private boolean   singleTrack;
+    private Integer   frameRate;
     private Dimension outputSize;
-
 
 
 }

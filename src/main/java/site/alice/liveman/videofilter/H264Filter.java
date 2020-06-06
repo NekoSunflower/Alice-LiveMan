@@ -26,11 +26,11 @@ import site.alice.liveman.videofilter.h264.NALUStruct;
 import site.alice.liveman.videofilter.h264.ReferenceIdc;
 import site.alice.liveman.videofilter.h264.UnitType;
 
-import java.io.*;
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.BufferUnderflowException;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;

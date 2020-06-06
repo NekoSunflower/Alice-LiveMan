@@ -39,8 +39,8 @@ import java.util.Map;
 @Service
 public class SeventeenBroadcastService implements BroadcastService {
 
-    private static final String API_RTMP                = "https://api-dsa.17app.co/api/v1/rtmp";
-    private static final String API_17APP_GATEWAY       = "https://api-dsa.17app.co/apiGateWay";
+    private static final String API_RTMP          = "https://api-dsa.17app.co/api/v1/rtmp";
+    private static final String API_17APP_GATEWAY = "https://api-dsa.17app.co/apiGateWay";
 
     @Override
     public boolean isMatch(String accountSite) {

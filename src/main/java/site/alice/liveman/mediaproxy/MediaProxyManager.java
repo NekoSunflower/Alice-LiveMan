@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import site.alice.liveman.event.MediaProxyEvent;
 import site.alice.liveman.event.MediaProxyEventListener;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
+import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
@@ -39,6 +40,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 public class MediaProxyManager implements ApplicationContextAware {
@@ -164,5 +166,27 @@ public class MediaProxyManager implements ApplicationContextAware {
         }
         return "127.0.0.1";
     }
+
+    public static VideoInfo findVideoInfoById(String videoId, AccountInfo account) {
+        MediaProxyTask mediaProxyTask = getExecutedProxyTaskMap().get(videoId);
+        if (mediaProxyTask != null) {
+            return mediaProxyTask.getVideoInfo();
+        } else if (account != null) {
+            // 媒体代理尚未运行，从频道中找
+            CopyOnWriteArraySet<ChannelInfo> channels = account.getChannels();
+            for (ChannelInfo channel : channels) {
+                VideoInfo channelVideoInfo = channel.getVideoInfo();
+                if (channelVideoInfo != null && channelVideoInfo.getVideoUnionId().equals(videoId)) {
+                    return channelVideoInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static VideoInfo findVideoInfoById(String videoId) {
+        return findVideoInfoById(videoId, null);
+    }
+
 
 }

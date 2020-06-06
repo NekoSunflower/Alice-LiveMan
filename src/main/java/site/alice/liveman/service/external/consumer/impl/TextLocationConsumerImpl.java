@@ -21,8 +21,6 @@ package site.alice.liveman.service.external.consumer.impl;
 import lombok.extern.slf4j.Slf4j;
 import site.alice.liveman.customlayout.CustomLayout;
 import site.alice.liveman.customlayout.impl.RectangleBlurLayout;
-import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BroadcastConfig;
 import site.alice.liveman.model.VideoInfo;
@@ -40,7 +38,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j

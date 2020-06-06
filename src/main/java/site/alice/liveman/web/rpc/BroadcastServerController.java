@@ -27,7 +27,6 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.ServerInfo;
-import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.BroadcastServerService;
 import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.web.dataobject.ActionResult;

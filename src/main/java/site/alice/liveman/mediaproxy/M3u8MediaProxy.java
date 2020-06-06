@@ -25,7 +25,6 @@ import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 

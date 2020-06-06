@@ -24,7 +24,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 @Component

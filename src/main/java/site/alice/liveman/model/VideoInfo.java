@@ -17,19 +17,32 @@
  */
 package site.alice.liveman.model;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.service.external.TextLocation;
+import site.alice.liveman.utils.FfmpegUtil;
+import site.alice.liveman.utils.ProcessUtil;
 import site.alice.liveman.utils.SecurityUtils;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+@Slf4j
 public class VideoInfo implements Serializable {
+    private static final Pattern FPS_PATTERN = Pattern.compile(", ([0-9]+) fps");
 
     private ChannelInfo                    channelInfo;
     private String                         videoId;
@@ -51,6 +64,8 @@ public class VideoInfo implements Serializable {
     private String                         realResolution;
     private List<TextLocation>             textLocations;
     private boolean                        isLowVideoInfo;
+    private long                           lastKeyFrameTime;
+    private KeyFrame                       cachedKeyFrame;
 
     public VideoInfo(ChannelInfo channelInfo, AccountInfo accountInfo, String videoId, String title, URI videoInfoUrl, URI mediaUrl, String mediaFormat) {
         this.channelInfo = channelInfo;
@@ -209,6 +224,15 @@ public class VideoInfo implements Serializable {
     }
 
     public String getRealResolution() {
+        if (realResolution == null) {
+            KeyFrame keyFrame = getKeyFrame();
+            if (keyFrame != null) {
+                realResolution = keyFrame.getWidth() + "x" + keyFrame.getHeight();
+                log.info("媒体分辨率[videoId=" + getVideoUnionId() + "]获取成功！[" + realResolution + "]");
+            } else {
+                log.warn("媒体分辨率[videoId=" + getVideoUnionId() + "]获取失败！");
+            }
+        }
         return realResolution;
     }
 
@@ -230,6 +254,43 @@ public class VideoInfo implements Serializable {
 
     public void setLowVideoInfo(boolean lowVideoInfo) {
         isLowVideoInfo = lowVideoInfo;
+    }
+
+    public KeyFrame getKeyFrame() {
+        if (System.currentTimeMillis() - lastKeyFrameTime < 5000) {
+            return cachedKeyFrame;
+        }
+        String fileName = UUID.randomUUID() + ".png";
+        String keyFrameCmdLine;
+        if (MediaProxyManager.getExecutedProxyTaskMap().containsKey(getVideoUnionId())) {
+            keyFrameCmdLine = FfmpegUtil.buildKeyFrameCmdLine(mediaProxyUrl.toString(), fileName);
+        } else {
+            keyFrameCmdLine = FfmpegUtil.buildKeyFrameCmdLine(mediaUrl.toString(), fileName);
+        }
+        long process = ProcessUtil.createProcess(keyFrameCmdLine, getVideoUnionId() + "_KeyFrame");
+        try {
+            ProcessUtil.AliceProcess aliceProcess = ProcessUtil.getAliceProcess(process);
+            if (ProcessUtil.waitProcess(process, 10000)) {
+                Integer fps = null;
+                File logFile = aliceProcess.getProcessBuilder().redirectOutput().file();
+                String logData = IOUtils.toString(new FileInputStream(logFile));
+                Matcher matcher = FPS_PATTERN.matcher(logData);
+                if (matcher.find()) {
+                    fps = Integer.parseInt(matcher.group(1));
+                }
+                cachedKeyFrame = new KeyFrame(fps, ImageIO.read(new File(fileName)));
+                lastKeyFrameTime = System.currentTimeMillis();
+                return cachedKeyFrame;
+            } else {
+                ProcessUtil.killProcess(process);
+                log.error("获取[" + mediaUrl.toString() + "]关键帧超时");
+            }
+        } catch (Throwable t) {
+            log.error("获取[" + mediaUrl.toString() + "]关键帧失败", t);
+        } finally {
+            new File(fileName).delete();
+        }
+        return null;
     }
 
     @Override

@@ -21,8 +21,6 @@ package site.alice.liveman.service.external;
 import site.alice.liveman.service.external.consumer.TextLocationConsumer;
 
 import java.awt.image.BufferedImage;
-import java.util.List;
-import java.util.function.BiConsumer;
 
 public interface TextLocationService {
 

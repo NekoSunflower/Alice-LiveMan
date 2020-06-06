@@ -21,7 +21,6 @@ package site.alice.liveman.mediaproxy.proxytask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpGet;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.utils.HttpRequestUtil;
 
 import java.io.File;

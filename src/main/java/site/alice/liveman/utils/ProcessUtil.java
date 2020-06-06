@@ -17,17 +17,16 @@
  */
 package site.alice.liveman.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.sun.jna.Platform;
 import com.sun.jna.platform.win32.Kernel32;
-import com.sun.jna.platform.win32.WinBase;
-import com.sun.jna.ptr.IntByReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import site.alice.liveman.model.ServerInfo;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +35,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.sun.jna.platform.win32.WinNT.*;
+import static com.sun.jna.platform.win32.WinNT.HANDLE;
+import static com.sun.jna.platform.win32.WinNT.PROCESS_ALL_ACCESS;
 
 @Slf4j
 public class ProcessUtil {

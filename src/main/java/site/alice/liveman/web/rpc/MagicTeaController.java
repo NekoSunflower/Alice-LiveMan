@@ -27,6 +27,7 @@ import site.alice.liveman.mediaproxy.MediaProxyManager;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.ChannelInfo;
+import site.alice.liveman.model.KeyFrame;
 import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.web.dataobject.vo.LiveNowVO;
@@ -37,7 +38,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @CrossOrigin
@@ -78,10 +78,9 @@ public class MagicTeaController {
     @RequestMapping("/{videoId}/thumbnail.jpg")
     public void thumbnail(@PathVariable String videoId, HttpServletResponse response) {
         try {
-            Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
-            MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
-            if (mediaProxyTask != null) {
-                MediaProxyTask.KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
+            VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId);
+            if (videoInfo != null) {
+                KeyFrame keyFrame = videoInfo.getKeyFrame();
                 if (keyFrame != null) {
                     BufferedImage scaledKeyFrame = new BufferedImage((int) (keyFrame.getWidth() * (160.0 / keyFrame.getHeight())), 160, BufferedImage.TYPE_INT_RGB);
                     scaledKeyFrame.createGraphics().drawImage(keyFrame.getFrameImage(), 0, 0, scaledKeyFrame.getWidth(), scaledKeyFrame.getHeight(), null);

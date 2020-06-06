@@ -24,7 +24,6 @@ import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.jenum.VideoResolutionEnum;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BroadcastConfig implements Serializable {

@@ -18,13 +18,10 @@
 
 package site.alice.liveman.mediaproxy;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
 import site.alice.liveman.mediaproxy.proxytask.NicoLiveMediaProxyTask;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.URI;
 
 

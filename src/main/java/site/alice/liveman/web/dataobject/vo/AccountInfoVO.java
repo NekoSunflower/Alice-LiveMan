@@ -19,7 +19,6 @@
 package site.alice.liveman.web.dataobject.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.model.BroadcastError;
 
 import java.util.HashMap;

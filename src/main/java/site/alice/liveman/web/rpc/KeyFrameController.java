@@ -26,15 +26,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.KeyFrame;
+import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.KeyFrame;
+import site.alice.liveman.model.VideoInfo;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
+import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -44,14 +43,16 @@ public class KeyFrameController {
     private static final Logger              logger = LoggerFactory.getLogger(MediaProxyController.class);
     @Autowired
     private              HttpServletResponse response;
+    @Autowired
+    private              HttpSession         session;
 
     @RequestMapping("/{videoId}")
     public void keyframe(@PathVariable String videoId) {
         try {
-            Map<String, MediaProxyTask> executedProxyTaskMap = MediaProxyManager.getExecutedProxyTaskMap();
-            MediaProxyTask mediaProxyTask = executedProxyTaskMap.get(videoId);
-            if (mediaProxyTask != null) {
-                KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
+            AccountInfo account = (AccountInfo) session.getAttribute("account");
+            VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId, account);
+            if (videoInfo != null) {
+                KeyFrame keyFrame = videoInfo.getKeyFrame();
                 if (keyFrame != null) {
                     BufferedImage scaledKeyFrame = new BufferedImage((int) (keyFrame.getWidth() * (720.0 / keyFrame.getHeight())), 720, BufferedImage.TYPE_INT_RGB);
                     scaledKeyFrame.createGraphics().drawImage(keyFrame.getFrameImage(), 0, 0, scaledKeyFrame.getWidth(), scaledKeyFrame.getHeight(), null);

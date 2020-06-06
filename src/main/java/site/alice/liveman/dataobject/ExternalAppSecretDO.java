@@ -19,7 +19,6 @@
 package site.alice.liveman.dataobject;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Date;
 import java.util.Objects;

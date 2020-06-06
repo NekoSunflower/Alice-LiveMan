@@ -24,14 +24,12 @@ import org.springframework.stereotype.Component;
 import site.alice.liveman.jenum.VideoBannedTypeEnum;
 import site.alice.liveman.jenum.VideoResolutionEnum;
 import site.alice.liveman.mediaproxy.MediaProxyManager;
-import site.alice.liveman.mediaproxy.proxytask.MediaProxyTask;
-import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.BroadcastConfig;
+import site.alice.liveman.model.KeyFrame;
+import site.alice.liveman.model.LiveManSetting;
 import site.alice.liveman.model.VideoInfo;
 
 import java.io.File;
-
-import static site.alice.liveman.mediaproxy.proxytask.MediaProxyTask.*;
 
 @Slf4j
 @Component
@@ -60,8 +58,7 @@ public class FfmpegUtil {
             cmdLine += "\t-vf\t\"[in]scale=32:-1[out]\"";
             cmdLine += "\t-vcodec\th264";
         } else if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.CUSTOM_SCREEN) {
-            MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoInfo.getVideoUnionId());
-            KeyFrame keyFrame = mediaProxyTask.getKeyFrame();
+            KeyFrame keyFrame = videoInfo.getKeyFrame();
             if (keyFrame != null) {
                 VideoResolutionEnum broadcastResolution = broadcastConfig.getBroadcastResolution();
                 double scale = (double) broadcastResolution.getResolution() / Math.min(keyFrame.getHeight(), keyFrame.getWidth());

@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -158,7 +157,7 @@ public class BroadcastController {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         log.info("adoptTask(), videoId=" + videoId + ", accountId=" + account.getAccountId());
         account.setDisable(false);
-        VideoInfo videoInfo = findVideoInfoById(videoId);
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId, account);
         if (videoInfo == null) {
             log.info("此转播任务尚未运行，或已停止[VideoInfo不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -207,7 +206,8 @@ public class BroadcastController {
 
     @RequestMapping("/getCropConf.json")
     public ActionResult<BroadcastConfig> getCropConf(String videoId) {
-        VideoInfo videoInfo = findVideoInfoById(videoId);
+        AccountInfo account = (AccountInfo) session.getAttribute("account");
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId, account);
         if (videoInfo == null) {
             log.info("此转播任务尚未运行，或已停止[VideoInfo不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -221,7 +221,7 @@ public class BroadcastController {
     public ActionResult cropConfSave(String videoId, @RequestBody BroadcastConfig cropConf) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         log.info("cropConfSave()[videoId=" + videoId + "][accountRoomId=" + account.getRoomId() + "]");
-        VideoInfo videoInfo = findVideoInfoById(videoId);
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId, account);
         if (videoInfo == null) {
             log.info("此转播任务尚未运行，或已停止[VideoInfo不存在][videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -387,7 +387,7 @@ public class BroadcastController {
         String videoId = broadcastTaskVO.getVideoId();
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         log.info("editTask()[videoId=" + videoId + "][accountRoomId=" + account.getRoomId() + "]");
-        VideoInfo videoInfo = findVideoInfoById(videoId);
+        VideoInfo videoInfo = MediaProxyManager.findVideoInfoById(videoId, account);
         if (videoInfo == null) {
             log.info("此转播任务尚未运行，或已停止[videoId=" + videoId + "]");
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
@@ -448,22 +448,5 @@ public class BroadcastController {
         return JSON.parseObject(areaList);
     }
 
-    private VideoInfo findVideoInfoById(String videoId) {
-        AccountInfo account = (AccountInfo) session.getAttribute("account");
-        MediaProxyTask mediaProxyTask = MediaProxyManager.getExecutedProxyTaskMap().get(videoId);
-        if (mediaProxyTask != null) {
-            return mediaProxyTask.getVideoInfo();
-        } else {
-            // 媒体代理尚未运行，从频道中找
-            CopyOnWriteArraySet<ChannelInfo> channels = account.getChannels();
-            for (ChannelInfo channel : channels) {
-                VideoInfo channelVideoInfo = channel.getVideoInfo();
-                if (channelVideoInfo != null && channelVideoInfo.getVideoUnionId().equals(videoId)) {
-                    return channelVideoInfo;
-                }
-            }
-        }
-        return null;
-    }
 }
 
