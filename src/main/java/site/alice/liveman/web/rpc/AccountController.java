@@ -357,7 +357,7 @@ public class AccountController {
             byAccountId.setSaveCookies(accountInfoVO.isSaveCookies());
             byAccountId.setRtmpHost(accountInfoVO.getRtmpHost());
             if (!StringUtils.containsOnly(accountInfoVO.getRtmpPasswordReal(), new char[]{'*'})) {
-                byAccountId.setRtmpPassword(accountInfoVO.getRtmpPassword());
+                byAccountId.setRtmpPassword(accountInfoVO.getRtmpPasswordReal());
             }
             if (byAccountId.isSaveCookies()) {
                 byAccountId.setCookies(account.readCookies());
