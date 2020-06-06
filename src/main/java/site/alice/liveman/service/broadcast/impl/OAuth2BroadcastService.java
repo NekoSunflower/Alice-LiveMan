@@ -45,9 +45,9 @@ public class OAuth2BroadcastService implements BroadcastService {
         String code = accountInfo.getRtmpPassword();
         if (StringUtils.isEmpty(addr)) {
             accountInfo.setDisable(true);
-            throw new RuntimeException(accountInfo.getAccountId() + ":串流地址不完整，请先前往【我的账号】设置串流信息！");
+            throw new RuntimeException("串流地址不完整，请先前往【我的账号】设置串流信息！");
         }
-        if (code != null && !addr.endsWith("/") && !code.startsWith("/")) {
+        if (StringUtils.isNotEmpty(code) && !addr.endsWith("/") && !code.startsWith("/")) {
             return addr + "/" + code;
         } else {
             return addr + code;

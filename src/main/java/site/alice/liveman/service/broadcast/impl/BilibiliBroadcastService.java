@@ -88,6 +88,10 @@ public class BilibiliBroadcastService implements BroadcastService {
         if (matcher.find()) {
             csrfToken = matcher.group(1);
         }
+        if (accountInfo.readCookies() == null) {
+            accountInfo.setDisable(true);
+            throw new RuntimeException("账户Cookies为空！提示：如果是自动转播请检查【我的账号】中【自动保存Cookies】选项是否已开启，如果是手动认领请尝试重新登录或联系管理员。");
+        }
         String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;

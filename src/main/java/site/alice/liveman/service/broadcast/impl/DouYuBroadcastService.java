@@ -81,6 +81,10 @@ public class DouYuBroadcastService implements BroadcastService {
                 return accountInfo.getRtmpUrl();
             }
         }
+        if (accountInfo.readCookies() == null) {
+            accountInfo.setDisable(true);
+            throw new RuntimeException("账户Cookies为空！提示：如果是自动转播请检查【我的账号】中【自动保存Cookies】选项是否已开启，如果是手动认领请尝试重新登录或联系管理员。");
+        }
         Map<String, String> requestProperties = new HashMap<>();
         requestProperties.put("referer", "https://www.douyu.com/" + accountInfo.getRoomId());
         requestProperties.put("x-requested-with", "XMLHttpRequest");
