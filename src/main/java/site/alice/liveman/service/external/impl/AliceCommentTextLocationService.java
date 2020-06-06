@@ -53,6 +53,9 @@ public class AliceCommentTextLocationService implements TextLocationService {
     public void requireTextLocation(BufferedImage image, TextLocationConsumer consumer) {
         try {
             ExternalAppSecretDO ocrAppSecret = externalAppSecretBO.getAppSecret(ExternalServiceType.BAIDU_API);
+            if (ocrAppSecret == null) {
+                return;
+            }
             EDLAliceAipClient client = new EDLAliceAipClient(ocrAppSecret.getAppId(), ocrAppSecret.getAppKey(), ocrAppSecret.getSecretKey());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(image, "jpg", bos);

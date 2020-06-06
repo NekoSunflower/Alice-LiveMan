@@ -213,6 +213,7 @@ public class BroadcastController {
             return ActionResult.getErrorResult("此转播任务尚未运行或已停止");
         }
         BroadcastConfig cropConf = videoInfo.getBroadcastConfig();
+        cropConf.getLayouts().removeIf(Objects::isNull);
         return ActionResult.getSuccessResult(cropConf);
     }
 
@@ -253,6 +254,7 @@ public class BroadcastController {
                     return ActionResult.getErrorResult("账户积分不足[当前可用余额：" + broadcastAccount.getPoint() + ", 需要积分(" + cropConf.getBroadcastResolution() + ")：" + serverPoint + "]");
                 }
                 int blurLayoutCount = 0;
+                cropConf.getLayouts().removeIf(Objects::isNull);
                 Collections.sort(cropConf.getLayouts());
                 for (CustomLayout layout : cropConf.getLayouts()) {
                     layout.setVideoInfo(videoInfo);

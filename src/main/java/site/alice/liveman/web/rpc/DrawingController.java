@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Controller
@@ -79,7 +80,11 @@ public class DrawingController {
                 graphics.setBackground(new Color(0, 0, 0, 0));
                 List<CustomLayout> customLayoutList = cropConf.getLayouts();
                 if (CollectionUtils.isNotEmpty(customLayoutList)) {
+                    cropConf.getLayouts().removeIf(Objects::isNull);
                     for (CustomLayout customLayout : customLayoutList) {
+                        if (customLayout == null) {
+                            continue;
+                        }
                         if (customLayout instanceof BlurLayout) {
                             continue;
                         }
