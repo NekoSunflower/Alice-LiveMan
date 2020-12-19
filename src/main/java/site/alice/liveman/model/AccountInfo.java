@@ -127,7 +127,11 @@ public class AccountInfo implements Comparable<AccountInfo> {
     }
 
     public String readCookies() {
-        return cookies;
+        if (parentAccountInfo != null) {
+            return parentAccountInfo.readCookies();
+        } else {
+            return cookies;
+        }
     }
 
     public void setCookies(String cookies) {

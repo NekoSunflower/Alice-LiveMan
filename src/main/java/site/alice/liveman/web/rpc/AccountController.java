@@ -30,6 +30,7 @@ import site.alice.liveman.config.SettingConfig;
 import site.alice.liveman.model.AccountInfo;
 import site.alice.liveman.model.BillRecord;
 import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.model.VideoInfo;
 import site.alice.liveman.service.broadcast.BroadcastTask;
 import site.alice.liveman.utils.SecurityUtils;
 import site.alice.liveman.web.dataobject.ActionResult;
@@ -242,6 +243,13 @@ public class AccountController {
             log.info(account.getAccountId() + "解除了与账号[" + accountId + "]的共享关系");
             byAccountId.setParentAccountId(null);
             byAccountId.setParentAccountInfo(null);
+            VideoInfo currentVideo = byAccountId.getCurrentVideo();
+            if (currentVideo != null) {
+                BroadcastTask broadcastTask = currentVideo.getBroadcastTask();
+                if (broadcastTask != null) {
+                    broadcastTask.terminateTask();
+                }
+            }
             try {
                 settingConfig.saveSetting(liveManSetting);
             } catch (Exception e) {
