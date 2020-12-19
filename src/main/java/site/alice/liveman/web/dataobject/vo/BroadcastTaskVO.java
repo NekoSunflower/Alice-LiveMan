@@ -115,7 +115,7 @@ public class BroadcastTaskVO {
     }
 
     public boolean isNeedRecord() {
-        return needRecord;
+        return false;
     }
 
     public void setNeedRecord(boolean needRecord) {

@@ -145,7 +145,7 @@ public class BroadcastConfig implements Serializable {
     }
 
     public boolean isNeedRecord() {
-        return needRecord;
+        return false;
     }
 
     public void setNeedRecord(boolean needRecord) {
