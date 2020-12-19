@@ -23,10 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.model.BroadcastConfig;
-import site.alice.liveman.model.ChannelInfo;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.model.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -60,17 +57,24 @@ public class SettingConfig {
             if (liveManSetting.getExternalAppSecretDOS() == null) {
                 liveManSetting.setExternalAppSecretDOS(new CopyOnWriteArraySet<>());
             }
-            CopyOnWriteArraySet<ChannelInfo> channels = liveManSetting.getChannels();
+            CopyOnWriteArraySet<OldChannelInfo> channels = liveManSetting.getChannels();
             CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
             if(channels != null){
-                for (ChannelInfo channel : channels) {
-                    if(channel.getDefaultAccountId() != null){
+                for (OldChannelInfo oldChannel : channels) {
+                    if(oldChannel.getDefaultAccountId() != null){
                         for (AccountInfo account : accounts) {
-                            if(account.getAccountId().equals(channel.getDefaultAccountId())){
+                            if(account.getAccountId().equals(oldChannel.getDefaultAccountId())){
+                                ChannelInfo channelInfo = new ChannelInfo();
+                                channelInfo.setCookies(oldChannel.getCookies());
+                                channelInfo.setChannelUrl(oldChannel.getChannelUrl());
+                                channelInfo.setChannelName(oldChannel.getChannelName());
+                                channelInfo.setEndAt(oldChannel.getEndAt());
+                                channelInfo.setStartAt(oldChannel.getStartAt());
                                 BroadcastConfig broadcastConfig = new BroadcastConfig();
                                 broadcastConfig.setAutoBroadcast(true);
-                                channel.setDefaultBroadcastConfig(broadcastConfig);
-                                account.getChannels().add(channel);
+                                broadcastConfig.setArea(oldChannel.getDefaultArea());
+                                channelInfo.setDefaultBroadcastConfig(broadcastConfig);
+                                account.getChannels().add(channelInfo);
                             }
                         }
                     }

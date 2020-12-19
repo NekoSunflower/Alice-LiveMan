@@ -37,7 +37,7 @@ public class LiveManSetting {
     private String                                   oneDriveClientSecret;
     private String                                   oneDriveToken;
     @Deprecated
-    private CopyOnWriteArraySet<ChannelInfo>         channels;
+    private CopyOnWriteArraySet<OldChannelInfo>         channels;
     private CopyOnWriteArraySet<AccountInfo>         accounts;
     private CopyOnWriteArraySet<ServerInfo>          servers;
     private CopyOnWriteArraySet<ExternalAppSecretDO> externalAppSecretDOS;
@@ -184,11 +184,11 @@ public class LiveManSetting {
         return null;
     }
 
-    public CopyOnWriteArraySet<ChannelInfo> getChannels() {
+    public CopyOnWriteArraySet<OldChannelInfo> getChannels() {
         return channels;
     }
 
-    public void setChannels(CopyOnWriteArraySet<ChannelInfo> channels) {
+    public void setChannels(CopyOnWriteArraySet<OldChannelInfo> channels) {
         this.channels = channels;
     }
 
