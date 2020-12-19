@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import site.alice.liveman.config.SettingConfig;
-import site.alice.liveman.model.AccountInfo;
-import site.alice.liveman.model.LiveManSetting;
+import site.alice.liveman.model.*;
 import site.alice.liveman.utils.SecurityUtils;
 import site.alice.liveman.web.dataobject.ActionResult;
 import site.alice.liveman.web.dataobject.vo.SettingVO;
 
 import javax.servlet.http.HttpSession;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @Controller
@@ -104,6 +104,43 @@ public class SystemController {
             sb.append(SecurityUtils.aesEncrypt(point + "|" + System.currentTimeMillis() + "|" + i)).append("\n");
         }
         return ActionResult.getSuccessResult(sb.toString());
+    }
+
+    @ResponseBody
+    @RequestMapping("/importOldChannel.json")
+    public ActionResult importOldChannel() {
+        CopyOnWriteArraySet<OldChannelInfo> channels = liveManSetting.getChannels();
+        CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+        if (channels != null) {
+            for (OldChannelInfo oldChannel : channels) {
+                if (oldChannel.getDefaultAccountId() != null) {
+                    for (AccountInfo account : accounts) {
+                        if (account.getAccountId().equals(oldChannel.getDefaultAccountId())) {
+                            ChannelInfo channelInfo = new ChannelInfo();
+                            channelInfo.setCookies(oldChannel.getCookies());
+                            channelInfo.setChannelUrl(oldChannel.getChannelUrl());
+                            channelInfo.setChannelName(oldChannel.getChannelName());
+                            channelInfo.setEndAt(oldChannel.getEndAt());
+                            channelInfo.setStartAt(oldChannel.getStartAt());
+                            BroadcastConfig broadcastConfig = new BroadcastConfig();
+                            broadcastConfig.setAutoBroadcast(true);
+                            broadcastConfig.setArea(oldChannel.getDefaultArea());
+                            broadcastConfig.setVideoBannedType(oldChannel.getDefaultCropConf().getVideoBannedType());
+                            broadcastConfig.setAutoBlur(oldChannel.getDefaultCropConf().isAutoBlur());
+                            channelInfo.setDefaultBroadcastConfig(broadcastConfig);
+                            account.getChannels().add(channelInfo);
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            settingConfig.saveSetting(liveManSetting);
+        } catch (Exception e) {
+            log.error("保存系统配置信息失败", e);
+            return ActionResult.getErrorResult("系统内部错误，请联系管理员");
+        }
+        return ActionResult.getSuccessResult(null);
     }
 
     @RequestMapping("/apShop")

@@ -34,19 +34,20 @@ public class OldChannelInfo implements Serializable {
     private String               cookies;
     private int[]                defaultArea;
     private boolean              needRecord;
-    private VideoCropConf videoCropConf;
+    private VideoCropConf        defaultCropConf;
     @JSONField(serialize = false)
     private Long                 startAt;
     @JSONField(serialize = false)
     private Long                 endAt;
 
     public OldChannelInfo() {
-
+        this.defaultCropConf = new VideoCropConf();
     }
 
     public OldChannelInfo(String channelName, String channelUrl) {
         this.channelName = channelName;
         this.channelUrl = channelUrl;
+        this.defaultCropConf = new VideoCropConf();
     }
 
     public String getDefaultAccountId() {
@@ -131,6 +132,14 @@ public class OldChannelInfo implements Serializable {
 
     public void setNeedRecord(boolean needRecord) {
         this.needRecord = needRecord;
+    }
+
+    public VideoCropConf getDefaultCropConf() {
+        return defaultCropConf;
+    }
+
+    public void setDefaultCropConf(VideoCropConf defaultCropConf) {
+        this.defaultCropConf = defaultCropConf;
     }
 
     @Override

@@ -57,29 +57,6 @@ public class SettingConfig {
             if (liveManSetting.getExternalAppSecretDOS() == null) {
                 liveManSetting.setExternalAppSecretDOS(new CopyOnWriteArraySet<>());
             }
-            CopyOnWriteArraySet<OldChannelInfo> channels = liveManSetting.getChannels();
-            CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
-            if(channels != null){
-                for (OldChannelInfo oldChannel : channels) {
-                    if(oldChannel.getDefaultAccountId() != null){
-                        for (AccountInfo account : accounts) {
-                            if(account.getAccountId().equals(oldChannel.getDefaultAccountId())){
-                                ChannelInfo channelInfo = new ChannelInfo();
-                                channelInfo.setCookies(oldChannel.getCookies());
-                                channelInfo.setChannelUrl(oldChannel.getChannelUrl());
-                                channelInfo.setChannelName(oldChannel.getChannelName());
-                                channelInfo.setEndAt(oldChannel.getEndAt());
-                                channelInfo.setStartAt(oldChannel.getStartAt());
-                                BroadcastConfig broadcastConfig = new BroadcastConfig();
-                                broadcastConfig.setAutoBroadcast(true);
-                                broadcastConfig.setArea(oldChannel.getDefaultArea());
-                                channelInfo.setDefaultBroadcastConfig(broadcastConfig);
-                                account.getChannels().add(channelInfo);
-                            }
-                        }
-                    }
-                }
-            }
         } else {
             liveManSetting = new LiveManSetting();
             liveManSetting.setAccounts(new CopyOnWriteArraySet<>());
