@@ -30,7 +30,6 @@ public class AccountInfoVO {
     private String                 nickname;
     private String                 description;
     private String                 roomId;
-    private boolean                joinAutoBalance;
     private boolean                admin;
     private boolean                saved;
     private boolean                disable;
@@ -110,14 +109,6 @@ public class AccountInfoVO {
 
     public void setRoomId(String roomId) {
         this.roomId = roomId;
-    }
-
-    public boolean isJoinAutoBalance() {
-        return joinAutoBalance;
-    }
-
-    public void setJoinAutoBalance(boolean joinAutoBalance) {
-        this.joinAutoBalance = joinAutoBalance;
     }
 
     public boolean isAdmin() {

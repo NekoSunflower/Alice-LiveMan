@@ -66,14 +66,10 @@ public class AccountController {
         for (AccountInfo account : accounts) {
             AccountInfoVO accountInfoVO = new AccountInfoVO();
             BeanUtils.copyProperties(account, accountInfoVO);
-            // 如果不是管理员，不展示其他账号的AP点数
-            if (!currentAccount.isAdmin()) {
-                accountInfoVO.setPoint(-1);
-            }
             // 查找该账号下的所有共享号
             List<AccountInfoVO> shardAccounts = new ArrayList<>();
             for (AccountInfo shardAccountInfo : accounts) {
-                if (account.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
+                if (account.getAccountId().equals(shardAccountInfo.getParentAccountId()) && account.getAccountSite().equals(shardAccountInfo.getParentAccountSite())) {
                     AccountInfoVO accountVO = new AccountInfoVO();
                     accountVO.setAccountId(shardAccountInfo.getAccountId());
                     accountVO.setNickname(shardAccountInfo.getNickname());
@@ -82,17 +78,21 @@ public class AccountController {
                 }
             }
             accountInfoVO.setShardAccounts(shardAccounts);
+            AccountInfo parentAccountInfo = account.getParentAccountInfo();
+            if (parentAccountInfo != null) {
+                accountInfoVO.setParentAccountName(parentAccountInfo.getNickname());
+            }
             accountInfoVOList.add(accountInfoVO);
         }
         return ActionResult.getSuccessResult(accountInfoVOList);
     }
 
     @RequestMapping("/billList.json")
-    public ActionResult<List<BillRecord>> billList(String accountId) {
+    public ActionResult<List<BillRecord>> billList(String accountId, String accountSite) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         if (account.isAdmin()) {
             if (StringUtils.isNotEmpty(accountId)) {
-                AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
+                AccountInfo byAccountId = liveManSetting.findByAccountId(accountId, accountSite);
                 if (byAccountId != null) {
                     return ActionResult.getSuccessResult(byAccountId.getBillRecords());
                 } else {
@@ -108,7 +108,7 @@ public class AccountController {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         AccountInfoVO accountInfoVO = new AccountInfoVO();
         BeanUtils.copyProperties(account, accountInfoVO);
-        if (liveManSetting.findByAccountId(account.getAccountId()) != null) {
+        if (liveManSetting.findByAccountId(account.getAccountId(), account.getAccountSite()) != null) {
             accountInfoVO.setSaved(true);
         }
         accountInfoVO.setBillTimeMap(new HashMap<>(account.getBillTimeMap()));
@@ -117,7 +117,7 @@ public class AccountController {
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
         List<AccountInfoVO> shardAccounts = new ArrayList<>();
         for (AccountInfo shardAccountInfo : accounts) {
-            if (account.getAccountId().equals(shardAccountInfo.getParentAccountId())) {
+            if (account.getAccountId().equals(shardAccountInfo.getParentAccountId()) && account.getAccountSite().equals(shardAccountInfo.getParentAccountSite())) {
                 AccountInfoVO accountVO = new AccountInfoVO();
                 accountVO.setAccountId(shardAccountInfo.getAccountId());
                 accountVO.setNickname(shardAccountInfo.getNickname());
@@ -130,6 +130,7 @@ public class AccountController {
         if (parentAccountInfo != null) {
             accountInfoVO.setParentAccountName(parentAccountInfo.getNickname());
         }
+        accountInfoVO.setPoint(account.readPoint());
         return ActionResult.getSuccessResult(accountInfoVO);
     }
 
@@ -139,7 +140,7 @@ public class AccountController {
         if (account.getAccountSite().equals("17live")) {
             return ActionResult.getErrorResult("暂不支持保存17Live账号，敬请谅解！");
         }
-        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId());
+        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId(), account.getAccountSite());
         if (byAccountId != null) {
             return ActionResult.getErrorResult("此账号已存在，如要更新账号信息请删除后重新添加");
         }
@@ -160,7 +161,7 @@ public class AccountController {
     @RequestMapping("/createShareCode.json")
     public ActionResult createShareCode() {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId());
+        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId(), account.getAccountSite());
         byAccountId.setShareCode(UUID.randomUUID().toString());
         try {
             settingConfig.saveSetting(liveManSetting);
@@ -174,10 +175,10 @@ public class AccountController {
     @RequestMapping("/bindShareCode.json")
     public ActionResult bindShareCode(String shareCode) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (account.getParentAccountId() != null) {
+        if (account.getParentAccountInfo() != null) {
             return ActionResult.getErrorResult("该账号已绑定其他父账号，请先解除绑定！");
         }
-        if (account.getPoint() != 0) {
+        if (account.readPoint() != 0) {
             return ActionResult.getErrorResult("账户剩余AP点数不为0，无法绑定父账号！");
         }
         if (account.getCurrentVideo() != null) {
@@ -189,7 +190,7 @@ public class AccountController {
         CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
         AccountInfo byAccountId = null;
         for (AccountInfo accountInfo : accounts) {
-            if (account.getAccountId().equals(accountInfo.getParentAccountId())) {
+            if (account.getAccountId().equals(accountInfo.getParentAccountId()) && account.getAccountSite().equals(accountInfo.getParentAccountSite())) {
                 return ActionResult.getErrorResult("该账号已被其他子账号绑定，请先解除绑定！");
             }
         }
@@ -209,13 +210,13 @@ public class AccountController {
         }
         log.info("账号[" + account.getAccountId() + "]与父账号[" + byAccountId.getAccountId() + "]建立绑定关系");
         account.setParentAccountId(byAccountId.getAccountId());
-        account.setParentAccountInfo(byAccountId);
+        account.setParentAccountSite(byAccountId.getAccountSite());
         try {
             settingConfig.saveSetting(liveManSetting);
         } catch (Exception e) {
             log.error("保存系统配置信息失败", e);
             account.setParentAccountId(null);
-            account.setParentAccountInfo(null);
+            account.setParentAccountSite(null);
             return ActionResult.getErrorResult("系统内部错误，请联系管理员");
         }
         return ActionResult.getSuccessResult(null);
@@ -230,7 +231,7 @@ public class AccountController {
         if (account.getParentAccountId() != null) {
             log.info(account.getAccountId() + "解除了与账号[" + account.getParentAccountId() + "]的共享关系");
             account.setParentAccountId(null);
-            account.setParentAccountInfo(null);
+            account.setParentAccountSite(null);
             try {
                 settingConfig.saveSetting(liveManSetting);
             } catch (Exception e) {
@@ -242,13 +243,13 @@ public class AccountController {
     }
 
     @RequestMapping("/unbindSubAccount.json")
-    public ActionResult unbindSubAccount(String accountId) {
+    public ActionResult unbindSubAccount(String accountId, String accountSite) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
+        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId, accountSite);
         if (byAccountId != null && account.getAccountId().equals(byAccountId.getParentAccountId())) {
             log.info(account.getAccountId() + "解除了与账号[" + accountId + "]的共享关系");
             byAccountId.setParentAccountId(null);
-            byAccountId.setParentAccountInfo(null);
+            byAccountId.setParentAccountSite(null);
             VideoInfo currentVideo = byAccountId.getCurrentVideo();
             if (currentVideo != null) {
                 BroadcastTask broadcastTask = currentVideo.getBroadcastTask();
@@ -267,12 +268,12 @@ public class AccountController {
     }
 
     @RequestMapping("/removeAccount.json")
-    public ActionResult removeAccount(String accountId) {
+    public ActionResult removeAccount(String accountId, String accountSite) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
+        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId, accountSite);
         if (byAccountId != null) {
             if (byAccountId.getAccountId().equals(account.getAccountId()) || account.isAdmin()) {
-                if (byAccountId.getPoint() != 0) {
+                if (byAccountId.readPoint() != 0) {
                     return ActionResult.getErrorResult("账户AP点数非零，无法删除！");
                 }
                 if (byAccountId.getCurrentVideo() != null) {
@@ -303,7 +304,7 @@ public class AccountController {
     @RequestMapping("/useCard.json")
     public synchronized ActionResult<Integer> useCard(String cards) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        if (liveManSetting.findByAccountId(account.getAccountId()) == null) {
+        if (liveManSetting.findByAccountId(account.getAccountId(), account.getAccountSite()) == null) {
             return ActionResult.getErrorResult("请先前往[我的账户]菜单保存账号!");
         }
         if (account.getParentAccountId() != null) {
@@ -331,11 +332,11 @@ public class AccountController {
                         int point = Integer.parseInt(cardInfo[0]);
                         account.changePoint(point, "卡号充值");
                         totalPoint += point;
-                        log.info("账户[roomId=" + account.getRoomId() + "]卡号[" + cardLine + "]充值[" + decodeCardLine + "]");
+                        log.info("账户[account=" + account + "]卡号[" + cardLine + "]充值[" + decodeCardLine + "]");
                         IOUtils.write(cardLine + "\n", new FileOutputStream(usedcardFile, true), "utf-8");
                         settingConfig.saveSetting(liveManSetting);
                     } catch (Throwable e) {
-                        log.error("账户充值发生错误[roomId=" + account.getRoomId() + ", cardLine=" + cardLine + "]", e);
+                        log.error("账户充值发生错误[account=" + account + ", cardLine=" + cardLine + "]", e);
                         return ActionResult.getErrorResult("处理卡号[" + cardLine + "]时出现错误，请检查卡号是否正确。");
                     }
                 }
@@ -348,13 +349,13 @@ public class AccountController {
     }
 
     @RequestMapping("/apPointChange.json")
-    public ActionResult apPointChange(String accountId, int point) {
+    public ActionResult apPointChange(String accountId, String accountSite, int point) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
         if (!account.isAdmin()) {
             return ActionResult.getErrorResult("权限不足");
         }
         log.info("apPointChange() operator=" + account.getAccountId() + ", accountId=" + accountId + ", point=" + point);
-        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
+        AccountInfo byAccountId = liveManSetting.findByAccountId(accountId, accountSite);
         long result = byAccountId.changePoint(point, "管理员操作");
         settingConfig.saveSetting(liveManSetting);
         return ActionResult.getSuccessResult("账户[" + byAccountId.getAccountId() + "]当前AP点数为:" + result);
@@ -363,7 +364,7 @@ public class AccountController {
     @RequestMapping("/editAccount.json")
     public ActionResult editAccount(@RequestBody AccountInfoVO accountInfoVO) {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
-        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId());
+        AccountInfo byAccountId = liveManSetting.findByAccountId(account.getAccountId(), account.getAccountSite());
         if (byAccountId != null) {
             byAccountId.setDescription(accountInfoVO.getDescription());
             byAccountId.setPostBiliDynamic(accountInfoVO.isPostBiliDynamic());

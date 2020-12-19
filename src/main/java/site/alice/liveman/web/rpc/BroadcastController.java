@@ -104,9 +104,15 @@ public class BroadcastController {
                 broadcastTaskVO.setHealth(broadcastTask.getHealth());
                 AccountInfo broadcastAccount = broadcastTask.getBroadcastAccount();
                 if (broadcastAccount != null) {
-                    broadcastTaskVO.setAccountSite(broadcastAccount.getAccountSite());
                     broadcastTaskVO.setNickname(broadcastAccount.getNickname());
-                    broadcastTaskVO.setRoomId(broadcastAccount.getRoomId());
+                    AccountInfo parentAccountInfo = broadcastAccount.getParentAccountInfo();
+                    if (parentAccountInfo == null) {
+                        broadcastTaskVO.setAccountSite(broadcastAccount.getAccountSite());
+                        broadcastTaskVO.setRoomId(broadcastAccount.getRoomId());
+                    } else {
+                        broadcastTaskVO.setAccountSite(parentAccountInfo.getAccountSite());
+                        broadcastTaskVO.setRoomId(parentAccountInfo.getRoomId());
+                    }
                 }
             }
             AccountInfo accountInfo = videoInfo.getAccountInfo();
@@ -188,8 +194,8 @@ public class BroadcastController {
                     }
                     int performance = cropConf.getBroadcastResolution().getPerformance();
                     int serverPoint = liveManSetting.getServerPoints()[performance];
-                    if (account.getPoint() < serverPoint && account.getBillTimeMap().get(performance) == null) {
-                        return ActionResult.getErrorResult("账户积分不足[当前可用余额：" + account.getPoint() + ", 需要积分(" + cropConf.getBroadcastResolution() + ")：" + serverPoint + "]");
+                    if (account.readPoint() < serverPoint && account.getBillTimeMap().get(performance) == null) {
+                        return ActionResult.getErrorResult("账户积分不足[当前可用余额：" + account.readPoint() + ", 需要积分(" + cropConf.getBroadcastResolution() + ")：" + serverPoint + "]");
                     }
                 }
             }
@@ -250,8 +256,8 @@ public class BroadcastController {
                 }
                 int performance = cropConf.getBroadcastResolution().getPerformance();
                 int serverPoint = liveManSetting.getServerPoints()[performance];
-                if (broadcastAccount != null && broadcastAccount.getPoint() < serverPoint && broadcastAccount.getBillTimeMap().get(performance) == null) {
-                    return ActionResult.getErrorResult("账户积分不足[当前可用余额：" + broadcastAccount.getPoint() + ", 需要积分(" + cropConf.getBroadcastResolution() + ")：" + serverPoint + "]");
+                if (broadcastAccount != null && broadcastAccount.readPoint() < serverPoint && broadcastAccount.getBillTimeMap().get(performance) == null) {
+                    return ActionResult.getErrorResult("账户积分不足[当前可用余额：" + broadcastAccount.readPoint() + ", 需要积分(" + cropConf.getBroadcastResolution() + ")：" + serverPoint + "]");
                 }
                 int blurLayoutCount = 0;
                 cropConf.getLayouts().removeIf(Objects::isNull);
@@ -408,9 +414,9 @@ public class BroadcastController {
                     areaId = broadcastTaskVO.getArea()[1];
                 }
                 if (broadcastTaskVO.isVertical() != broadcastConfig.isVertical()) {
-                    broadcastServiceManager.getBroadcastService(account).stopBroadcast(broadcastAccount, false);
+                    broadcastServiceManager.getBroadcastService(broadcastAccount).stopBroadcast(broadcastAccount, false);
                 }
-                broadcastServiceManager.getBroadcastService(account).setBroadcastSetting(broadcastAccount, broadcastTaskVO.getRoomTitle(), areaId);
+                broadcastServiceManager.getBroadcastService(broadcastAccount).setBroadcastSetting(broadcastAccount, broadcastTaskVO.getRoomTitle(), areaId);
             }
         }
         broadcastConfig.setVertical(broadcastTaskVO.isVertical());

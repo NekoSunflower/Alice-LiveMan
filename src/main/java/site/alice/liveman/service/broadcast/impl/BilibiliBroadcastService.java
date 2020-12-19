@@ -92,17 +92,19 @@ public class BilibiliBroadcastService implements BroadcastService {
             accountInfo.setDisable(true);
             throw new RuntimeException("账户Cookies为空！提示：如果是自动转播请检查【我的账号】中【自动保存Cookies】选项是否已开启，如果是手动认领请尝试重新登录或联系管理员。");
         }
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
+        String roomId = accountInfo.getParentAccountInfo() == null ? accountInfo.getRoomId() : accountInfo.getParentAccountInfo().getRoomId();
+        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + roomId + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("code") == 0) {
             rtmpObject = startLiveObject.getJSONObject("data").getJSONObject("rtmp");
         } else {
-            if (startLiveJson.contains("系统升级维护中")) {
-
-            }
             accountInfo.setDisable(true);
-            throw new RuntimeException("开启B站直播间失败" + startLiveObject);
+            if (startLiveJson.contains("系统升级维护中")) {
+                throw new RuntimeException("您的账号尚未开通海外推流权限，请联系B站管理员进行报备（报备群：787921193）");
+            } else {
+                throw new RuntimeException("开启B站直播间失败" + startLiveObject);
+            }
         }
         String addr = rtmpObject.getString("addr");
         String code = rtmpObject.getString("code");
@@ -126,7 +128,8 @@ public class BilibiliBroadcastService implements BroadcastService {
                 csrfToken = matcher.group(1);
             }
             title = title != null && title.length() > 20 ? title.substring(0, 20) : title;
-            postData = "room_id=" + getBroadcastRoomId(accountInfo) + (StringUtils.isNotBlank(title) ? "&title=" + title : "") + (areaId != null ? "&area_id=" + areaId : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken;
+            String roomId = accountInfo.getParentAccountInfo() == null ? accountInfo.getRoomId() : accountInfo.getParentAccountInfo().getRoomId();
+            postData = "room_id=" + roomId + (StringUtils.isNotBlank(title) ? "&title=" + title : "") + (areaId != null ? "&area_id=" + areaId : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken;
             String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_UPDATE_URL), accountInfo.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject resObject = JSON.parseObject(resJson);
             if (resObject.getInteger("code") != 0) {
@@ -163,9 +166,9 @@ public class BilibiliBroadcastService implements BroadcastService {
     @Override
     public void stopBroadcast(AccountInfo accountInfo, boolean stopOnPadding) {
         try {
+            String roomId = accountInfo.getParentAccountInfo() == null ? accountInfo.getRoomId() : accountInfo.getParentAccountInfo().getRoomId();
             if (stopOnPadding) {
                 // 仅当直播间没有视频数据时才关闭
-                String roomId = getBroadcastRoomId(accountInfo);
                 log.info("检查直播间[roomId=" + roomId + "]视频流状态...");
                 for (int i = 1; i <= 3; i++) {
                     try {
@@ -205,7 +208,7 @@ public class BilibiliBroadcastService implements BroadcastService {
             if (matcher.find()) {
                 csrfToken = matcher.group(1);
             }
-            String postData = "room_id=" + getBroadcastRoomId(accountInfo) + "&platform=pc&csrf_token=" + csrfToken;
+            String postData = "room_id=" + roomId + "&platform=pc&csrf=" + csrfToken + "&csrf_token=" + csrfToken;
             String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_STOP_LIVE_URL), accountInfo.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject resObject = JSON.parseObject(resJson);
             if (resObject.getInteger("code") != 0) {

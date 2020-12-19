@@ -88,7 +88,7 @@ public class LoginController {
             broadcastService.getBroadcastRoomId(accountInfo);
             AccountInfoVO accountInfoVO = new AccountInfoVO();
             AccountInfo byAccountId;
-            if ((byAccountId = liveManSetting.findByRoomId(accountInfo.getRoomId())) != null) {
+            if ((byAccountId = liveManSetting.findByAccountId(accountInfo.getAccountId(), accountInfo.getAccountSite())) != null) {
                 // 更新新的Cookies
                 byAccountId.setCookies(accountInfo.readCookies());
                 byAccountId.setAccountId(accountInfo.getAccountId());
@@ -102,7 +102,6 @@ public class LoginController {
             settingConfig.saveSetting(liveManSetting);
             log.info("adminRoomId = '" + adminRoomId + "'");
             accountInfo.setAdmin(accountInfo.getRoomId().equals(adminRoomId));
-            accountInfo.setParentAccountInfo(liveManSetting.findByAccountId(accountInfo.getParentAccountId()));
             session.setAttribute("account", accountInfo);
             BeanUtils.copyProperties(accountInfo, accountInfoVO);
             accountInfoVO.setBillTimeMap(new HashMap<>(accountInfo.getBillTimeMap()));
@@ -217,12 +216,12 @@ public class LoginController {
                         break;
                     }
                 }
-                AccountInfo byAccountId = liveManSetting.findByAccountId(accountId);
-                if (byAccountId != null) {
-                    byAccountId.setDisable(false);
-                    session.setAttribute("account", byAccountId);
+                AccountInfo accountInfo = liveManSetting.findByAccountId(accountId, oauth2Type);
+                if (accountInfo != null) {
+                    accountInfo.setDisable(false);
+                    session.setAttribute("account", accountInfo);
                 } else {
-                    AccountInfo accountInfo = new AccountInfo();
+                    accountInfo = new AccountInfo();
                     accountInfo.setAccountId(accountId);
                     accountInfo.setNickname(nickname);
                     accountInfo.setAccountSite(oauth2Type);
@@ -230,6 +229,7 @@ public class LoginController {
                     liveManSetting.getAccounts().add(accountInfo);
                     session.setAttribute("account", accountInfo);
                 }
+                accountInfo.setAdmin(accountInfo.getRoomId().equals(adminRoomId));
                 settingConfig.saveSetting(liveManSetting);
                 return "redirect:" + liveManSetting.getBaseUrl() + "/main/broadcast";
             } else {

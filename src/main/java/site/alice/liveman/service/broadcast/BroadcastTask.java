@@ -177,9 +177,9 @@ public class BroadcastTask implements Runnable {
                                     broadcastResolution = broadcastConfig.getBroadcastResolution();
                                     int performance = broadcastResolution.getPerformance();
                                     int serverPoint = broadcastServiceManager.getLiveManSetting().getServerPoints()[performance];
-                                    if (broadcastAccount.getPoint() < serverPoint && broadcastAccount.getBillTimeMap().get(performance) == null) {
+                                    if (broadcastAccount.readPoint() < serverPoint && broadcastAccount.getBillTimeMap().get(performance) == null) {
                                         terminateTask();
-                                        throw new RuntimeException("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.getPoint() + ", need=" + serverPoint + "]");
+                                        throw new RuntimeException("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.readPoint() + ", need=" + serverPoint + "]");
                                     }
                                     VideoInfo _lowVideoInfo = broadcastServiceManager.getLiveServiceFactory().getLiveService(videoInfo.getVideoInfoUrl().toString()).getLiveVideoInfo(videoInfo.getVideoInfoUrl(), videoInfo.getChannelInfo(), broadcastAccount, broadcastResolution.getResolution() + "");
                                     if (_lowVideoInfo == null) {

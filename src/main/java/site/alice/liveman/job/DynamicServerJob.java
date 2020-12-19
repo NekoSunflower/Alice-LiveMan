@@ -120,8 +120,8 @@ public class DynamicServerJob {
                 int serverPoint = liveManSetting.getServerPoints()[broadcastResolution.getPerformance()];
                 ConcurrentHashMap<Integer, Long> billTimeMap = broadcastAccount.getBillTimeMap();
                 if (!billTimeMap.containsKey(broadcastResolution.getPerformance())) {
-                    if (broadcastAccount.getPoint() < serverPoint) {
-                        log.info("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.getPoint() + ", need=" + serverPoint + "]");
+                    if (broadcastAccount.readPoint() < serverPoint) {
+                        log.info("账户积分不足[roomId=" + broadcastAccount.getRoomId() + ", point=" + broadcastAccount.readPoint() + ", need=" + serverPoint + "]");
                         broadcastTask.terminateTask();
                     } else {
                         String remark = dateFormat.format(new Date()) + " - " + dateFormat.format(new Date(System.currentTimeMillis() + 59 * 60 * 1000)) + " 转播节目[" + videoInfo.getTitle() + "]@" + videoInfo.getBroadcastConfig().getBroadcastResolution();

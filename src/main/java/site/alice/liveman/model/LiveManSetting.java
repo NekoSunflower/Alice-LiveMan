@@ -23,6 +23,7 @@ import site.alice.liveman.dataobject.ExternalAppSecretDO;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class LiveManSetting {
@@ -169,24 +170,12 @@ public class LiveManSetting {
         this.proxy = new Proxy(proxyInfo.getType(), new InetSocketAddress(proxyInfo.getHost(), proxyInfo.getPort()));
     }
 
-    public AccountInfo findByAccountId(String accountId) {
+    public AccountInfo findByAccountId(String accountId, String accountSite) {
         if (accountId == null) {
             return null;
         }
         for (AccountInfo account : accounts) {
-            if (account.getAccountId().equals(accountId)) {
-                return account;
-            }
-        }
-        return null;
-    }
-
-    public AccountInfo findByRoomId(String roomId) {
-        if (roomId == null) {
-            return null;
-        }
-        for (AccountInfo account : accounts) {
-            if (roomId.equals(account.getRoomId())) {
+            if (Objects.equals(account.getAccountId(), accountId) && Objects.equals(account.getAccountSite(), accountSite)) {
                 return account;
             }
         }

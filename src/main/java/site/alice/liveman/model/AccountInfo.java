@@ -19,6 +19,7 @@
 package site.alice.liveman.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import site.alice.liveman.utils.SpringBeanUtils;
 import site.alice.liveman.web.dataobject.DynamicPostSetting;
 
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AccountInfo implements Comparable<AccountInfo> {
 
     private String                           parentAccountId;
+    private String                           parentAccountSite;
     private String                           accountId;
     private String                           accountSite;
     private String                           cookies;
@@ -62,8 +64,6 @@ public class AccountInfo implements Comparable<AccountInfo> {
     private String                           rtmpHost;
     @JSONField(serialize = false)
     private String                           rtmpPassword;
-    @JSONField(serialize = false)
-    private AccountInfo                      parentAccountInfo;
 
     public AccountInfo() {
         point = new AtomicLong();
@@ -81,12 +81,18 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.parentAccountId = parentAccountId;
     }
 
-    public AccountInfo getParentAccountInfo() {
-        return parentAccountInfo;
+    public String getParentAccountSite() {
+        return parentAccountSite;
     }
 
-    public void setParentAccountInfo(AccountInfo parentAccountInfo) {
-        this.parentAccountInfo = parentAccountInfo;
+    public void setParentAccountSite(String parentAccountSite) {
+        this.parentAccountSite = parentAccountSite;
+    }
+
+    @JSONField(serialize = false)
+    public AccountInfo getParentAccountInfo() {
+        LiveManSetting liveManSetting = SpringBeanUtils.findByType(LiveManSetting.class);
+        return liveManSetting.findByAccountId(getParentAccountId(), getParentAccountSite());
     }
 
     public String getAccountId() {
@@ -127,8 +133,8 @@ public class AccountInfo implements Comparable<AccountInfo> {
     }
 
     public String readCookies() {
-        if (parentAccountInfo != null) {
-            return parentAccountInfo.readCookies();
+        if (getParentAccountInfo() != null) {
+            return getParentAccountInfo().readCookies();
         } else {
             return cookies;
         }
@@ -222,12 +228,19 @@ public class AccountInfo implements Comparable<AccountInfo> {
         this.disable = disable;
     }
 
-    public long getPoint() {
-        if (parentAccountInfo != null) {
-            return parentAccountInfo.getPoint();
+    public long readPoint() {
+        if (getParentAccountInfo() != null) {
+            return getParentAccountInfo().readPoint();
         } else {
             return point.get();
         }
+    }
+
+    /**
+     * 序列化时候要用
+     */
+    public long getPoint() {
+        return point.get();
     }
 
     /**
@@ -241,8 +254,8 @@ public class AccountInfo implements Comparable<AccountInfo> {
 
     public long changePoint(long delta, String remark) {
         BillRecord billRecord;
-        if (parentAccountInfo != null) {
-            billRecord = new BillRecord(delta, remark + "(父账号:" + parentAccountInfo.getNickname() + ")");
+        if (getParentAccountInfo() != null) {
+            billRecord = new BillRecord(delta, remark + "(父账号:" + getParentAccountInfo().getNickname() + ")");
         } else {
             billRecord = new BillRecord(delta, remark);
         }
@@ -250,8 +263,8 @@ public class AccountInfo implements Comparable<AccountInfo> {
         if (billRecords.size() > 100) {
             billRecords = new CopyOnWriteArrayList<>(billRecords.subList(0, 100));
         }
-        if (parentAccountInfo != null) {
-            return parentAccountInfo.changePoint(delta, remark + "(子账号:" + getNickname() + ")");
+        if (getParentAccountInfo() != null) {
+            return getParentAccountInfo().changePoint(delta, remark + "(子账号:" + getNickname() + ")");
         } else {
             return this.point.addAndGet(delta);
         }
@@ -354,5 +367,15 @@ public class AccountInfo implements Comparable<AccountInfo> {
     @Override
     public int compareTo(AccountInfo o) {
         return this.getAccountId().compareTo(o.getAccountId());
+    }
+
+    @Override
+    public String toString() {
+        return "AccountInfo{" +
+                "parentAccountId='" + parentAccountId + '\'' +
+                ", parentAccountSite='" + parentAccountSite + '\'' +
+                ", accountId='" + accountId + '\'' +
+                ", accountSite='" + accountSite + '\'' +
+                '}';
     }
 }
