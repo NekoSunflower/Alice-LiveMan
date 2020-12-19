@@ -23,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import site.alice.liveman.model.AccountInfo;
+import site.alice.liveman.model.BroadcastConfig;
+import site.alice.liveman.model.ChannelInfo;
 import site.alice.liveman.model.LiveManSetting;
 
 import javax.crypto.Cipher;
@@ -56,6 +59,22 @@ public class SettingConfig {
             }
             if (liveManSetting.getExternalAppSecretDOS() == null) {
                 liveManSetting.setExternalAppSecretDOS(new CopyOnWriteArraySet<>());
+            }
+            CopyOnWriteArraySet<ChannelInfo> channels = liveManSetting.getChannels();
+            CopyOnWriteArraySet<AccountInfo> accounts = liveManSetting.getAccounts();
+            if(channels != null){
+                for (ChannelInfo channel : channels) {
+                    if(channel.getDefaultAccountId() != null){
+                        for (AccountInfo account : accounts) {
+                            if(account.getAccountId().equals(channel.getDefaultAccountId())){
+                                BroadcastConfig broadcastConfig = new BroadcastConfig();
+                                broadcastConfig.setAutoBroadcast(true);
+                                channel.setDefaultBroadcastConfig(broadcastConfig);
+                                account.getChannels().add(channel);
+                            }
+                        }
+                    }
+                }
             }
         } else {
             liveManSetting = new LiveManSetting();

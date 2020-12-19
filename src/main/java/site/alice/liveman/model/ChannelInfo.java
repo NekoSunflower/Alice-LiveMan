@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class ChannelInfo implements Serializable {
+    @Deprecated
+    private String          defaultAccountId;
     private String          channelUrl;
     private String          channelName;
     private String          cookies;
@@ -42,6 +44,14 @@ public class ChannelInfo implements Serializable {
         this.channelName = channelName;
         this.channelUrl = channelUrl;
         this.defaultBroadcastConfig = new BroadcastConfig();
+    }
+
+    public String getDefaultAccountId() {
+        return defaultAccountId;
+    }
+
+    public void setDefaultAccountId(String defaultAccountId) {
+        this.defaultAccountId = defaultAccountId;
     }
 
     public String getChannelName() {
