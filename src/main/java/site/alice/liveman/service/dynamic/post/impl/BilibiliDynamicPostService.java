@@ -52,7 +52,7 @@ public class BilibiliDynamicPostService implements DynamicPostService {
         String postData = null;
         try {
             broadcastServiceManager.getBroadcastService(postAccount.getAccountSite()).getBroadcastRoomId(postAccount);
-            postData = String.format(DYNAMIC_POST_PARAM, content) + csrfToken;
+            postData = String.format(DYNAMIC_POST_PARAM, content, csrfToken, csrfToken);
             String res = HttpRequestUtil.downloadUrl(new URI(DYNAMIC_POST_API), postAccount.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject jsonObject = JSONObject.parseObject(res);
             if (jsonObject.getInteger("code") != 0) {
