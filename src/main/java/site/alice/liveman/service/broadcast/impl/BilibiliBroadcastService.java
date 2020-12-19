@@ -76,7 +76,7 @@ public class BilibiliBroadcastService implements BroadcastService {
     @Override
     public String getBroadcastAddress(AccountInfo accountInfo) throws Exception {
         VideoInfo videoInfo = accountInfo.getCurrentVideo();
-        int area = 199;
+        int area = 371;
         BroadcastConfig broadcastConfig = videoInfo.getBroadcastConfig();
         if (broadcastConfig.getVideoBannedType() == VideoBannedTypeEnum.FULL_SCREEN) {
             area = 33;
@@ -92,13 +92,13 @@ public class BilibiliBroadcastService implements BroadcastService {
             accountInfo.setDisable(true);
             throw new RuntimeException("账户Cookies为空！提示：如果是自动转播请检查【我的账号】中【自动保存Cookies】选项是否已开启，如果是手动认领请尝试重新登录或联系管理员。");
         }
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken, StandardCharsets.UTF_8);
+        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + accountInfo.getRoomId() + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("code") == 0) {
             rtmpObject = startLiveObject.getJSONObject("data").getJSONObject("rtmp");
         } else {
-            if(startLiveJson.contains("系统升级维护中")){
+            if (startLiveJson.contains("系统升级维护中")) {
 
             }
             accountInfo.setDisable(true);
@@ -126,7 +126,7 @@ public class BilibiliBroadcastService implements BroadcastService {
                 csrfToken = matcher.group(1);
             }
             title = title != null && title.length() > 20 ? title.substring(0, 20) : title;
-            postData = "room_id=" + getBroadcastRoomId(accountInfo) + (StringUtils.isNotBlank(title) ? "&title=" + title : "") + (areaId != null ? "&area_id=" + areaId : "") + "&csrf_token=" + csrfToken;
+            postData = "room_id=" + getBroadcastRoomId(accountInfo) + (StringUtils.isNotBlank(title) ? "&title=" + title : "") + (areaId != null ? "&area_id=" + areaId : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken;
             String resJson = HttpRequestUtil.downloadUrl(new URI(BILI_LIVE_UPDATE_URL), accountInfo.readCookies(), postData, StandardCharsets.UTF_8);
             JSONObject resObject = JSON.parseObject(resJson);
             if (resObject.getInteger("code") != 0) {

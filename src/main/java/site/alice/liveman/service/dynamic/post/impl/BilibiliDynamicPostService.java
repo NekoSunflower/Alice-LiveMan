@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 public class BilibiliDynamicPostService implements DynamicPostService {
 
     private static final String DYNAMIC_POST_API   = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create";
-    private static final String DYNAMIC_POST_PARAM = "dynamic_id=0&type=4&rid=0&content=%s&at_uids=&ctrl=[]&csrf_token=";
+    private static final String DYNAMIC_POST_PARAM = "dynamic_id=0&type=4&rid=0&content=%s&at_uids=&ctrl=[]&csrf_token=%s&csrf=%s";
 
     @Autowired
     private BroadcastServiceManager broadcastServiceManager;
