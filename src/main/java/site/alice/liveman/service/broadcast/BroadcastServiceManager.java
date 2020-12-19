@@ -185,6 +185,23 @@ public class BroadcastServiceManager implements ApplicationContextAware {
         broadcastServiceMap = applicationContext.getBeansOfType(BroadcastService.class);
     }
 
+    /**
+     * 获取指定账号的推流服务（如果绑定了父账号获取父账号的推流服务）
+     *
+     * @param accountInfo
+     * @return
+     */
+    public BroadcastService getBroadcastService(AccountInfo accountInfo) {
+        AccountInfo parentAccountInfo = accountInfo.getParentAccountInfo();
+        return getBroadcastService(parentAccountInfo == null ? accountInfo.getAccountSite() : parentAccountInfo.getAccountSite());
+    }
+
+    /**
+     * 获取指定站点的推流服务
+     *
+     * @param accountSite
+     * @return
+     */
     public BroadcastService getBroadcastService(String accountSite) {
         for (BroadcastService broadcastService : broadcastServiceMap.values()) {
             if (broadcastService.isMatch(accountSite)) {

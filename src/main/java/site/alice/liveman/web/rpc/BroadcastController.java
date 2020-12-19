@@ -408,9 +408,9 @@ public class BroadcastController {
                     areaId = broadcastTaskVO.getArea()[1];
                 }
                 if (broadcastTaskVO.isVertical() != broadcastConfig.isVertical()) {
-                    broadcastServiceManager.getBroadcastService(account.getAccountSite()).stopBroadcast(broadcastAccount, false);
+                    broadcastServiceManager.getBroadcastService(account).stopBroadcast(broadcastAccount, false);
                 }
-                broadcastServiceManager.getBroadcastService(account.getAccountSite()).setBroadcastSetting(broadcastAccount, broadcastTaskVO.getRoomTitle(), areaId);
+                broadcastServiceManager.getBroadcastService(account).setBroadcastSetting(broadcastAccount, broadcastTaskVO.getRoomTitle(), areaId);
             }
         }
         broadcastConfig.setVertical(broadcastTaskVO.isVertical());

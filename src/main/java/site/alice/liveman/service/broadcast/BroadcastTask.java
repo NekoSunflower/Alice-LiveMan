@@ -157,7 +157,7 @@ public class BroadcastTask implements Runnable {
                     }
                     while (executedProxyTaskMap.containsKey(videoInfo.getVideoUnionId()) && !terminate && broadcastAccount != null && broadcastAccount.getCurrentVideo() == videoInfo && !broadcastAccount.isDisable()) {
                         try {
-                            BroadcastService broadcastService = broadcastServiceManager.getBroadcastService(broadcastAccount.getAccountSite());
+                            BroadcastService broadcastService = broadcastServiceManager.getBroadcastService(broadcastAccount);
                             String broadcastAddress = broadcastService.getBroadcastAddress(broadcastAccount);
                             if (broadcastAccount.isAutoRoomTitle()) {
                                 broadcastService.setBroadcastSetting(broadcastAccount, videoInfo.getTitle(), null);
@@ -375,7 +375,7 @@ public class BroadcastTask implements Runnable {
         if (broadcastAccount != null) {
             ThreadPoolUtil.schedule(() -> {
                 if (broadcastAccount.getCurrentVideo() == null) {
-                    broadcastServiceManager.getBroadcastService(broadcastAccount.getAccountSite()).stopBroadcast(broadcastAccount, true);
+                    broadcastServiceManager.getBroadcastService(broadcastAccount).stopBroadcast(broadcastAccount, true);
                 }
             }, 2, TimeUnit.MINUTES);
             if (!broadcastAccount.removeCurrentVideo(videoInfo)) {

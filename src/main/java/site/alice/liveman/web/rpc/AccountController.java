@@ -180,6 +180,9 @@ public class AccountController {
         if (account.getPoint() != 0) {
             return ActionResult.getErrorResult("账户剩余AP点数不为0，无法绑定父账号！");
         }
+        if (account.getCurrentVideo() != null) {
+            return ActionResult.getErrorResult("请先停止转播任务后再绑定父账号");
+        }
         if (shareCode == null) {
             return ActionResult.getErrorResult("共享码不存在！");
         }
@@ -221,6 +224,9 @@ public class AccountController {
     @RequestMapping("/unbindParent.json")
     public ActionResult unbind() {
         AccountInfo account = (AccountInfo) session.getAttribute("account");
+        if (account.getCurrentVideo() != null) {
+            return ActionResult.getErrorResult("请先停止转播任务后解除绑定关系");
+        }
         if (account.getParentAccountId() != null) {
             log.info(account.getAccountId() + "解除了与账号[" + account.getParentAccountId() + "]的共享关系");
             account.setParentAccountId(null);
