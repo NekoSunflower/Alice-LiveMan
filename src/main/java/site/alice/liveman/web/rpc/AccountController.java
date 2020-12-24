@@ -374,11 +374,6 @@ public class AccountController {
             if (!StringUtils.containsOnly(accountInfoVO.getRtmpPasswordReal(), new char[]{'*'})) {
                 byAccountId.setRtmpPassword(accountInfoVO.getRtmpPasswordReal());
             }
-            if (byAccountId.isSaveCookies()) {
-                byAccountId.setCookies(account.readCookies());
-            } else {
-                byAccountId.setCookies(null);
-            }
         } else {
             return ActionResult.getErrorResult("尝试编辑的账户不存在，请刷新页面后重试");
         }
