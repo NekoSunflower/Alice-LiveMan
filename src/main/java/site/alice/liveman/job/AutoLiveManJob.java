@@ -92,7 +92,7 @@ public class AutoLiveManJob {
                                 // 启动转播服务
                                 try {
                                     LOGGER.info(accountInfo.getAccountId() + "@" + channelInfo.getChannelName() + "[" + channelInfo.getChannelUrl() + "]自动启动转播服务，defaultBroadcastConfig=" + defaultBroadcastConfig);
-                                    // broadcastServiceManager.createBroadcastTask(videoInfo, broadcastAccount, false);
+                                    broadcastServiceManager.createBroadcastTask(videoInfo, broadcastAccount, false);
                                 } catch (Exception e) {
                                     LOGGER.error("启动转播服务失败", e);
                                 }
