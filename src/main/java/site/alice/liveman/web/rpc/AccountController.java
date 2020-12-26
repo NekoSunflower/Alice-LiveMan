@@ -371,6 +371,7 @@ public class AccountController {
             byAccountId.setAutoRoomTitle(accountInfoVO.isAutoRoomTitle());
             byAccountId.setSaveCookies(accountInfoVO.isSaveCookies());
             byAccountId.setRtmpHost(accountInfoVO.getRtmpHost());
+            byAccountId.setCookies(account.getCookies());
             if (!StringUtils.containsOnly(accountInfoVO.getRtmpPasswordReal(), new char[]{'*'})) {
                 byAccountId.setRtmpPassword(accountInfoVO.getRtmpPasswordReal());
             }

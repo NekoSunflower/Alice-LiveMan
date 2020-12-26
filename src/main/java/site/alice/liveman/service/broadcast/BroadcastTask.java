@@ -282,7 +282,7 @@ public class BroadcastTask implements Runnable {
                                 }
                             }
                         } catch (Throwable e) {
-                            log.error("startBroadcast failed", e);
+                            log.error("节目[" + videoInfo.getTitle() + "][videoId=" + videoInfo.getVideoUnionId() + "]启动推流任务失败", e);
                             if (broadcastAccount != null && (broadcastAccount.isDisable() || terminate)) {
                                 broadcastAccount.setBroadcastError(new BroadcastError(e.getMessage()));
                             }
