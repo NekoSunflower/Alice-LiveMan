@@ -210,7 +210,8 @@ public class HttpRequestUtil {
         }
         try (CloseableHttpResponse httpResponse = client.execute(httpPost, context)) {
             HttpEntity responseEntity = httpResponse.getEntity();
-            if (httpResponse.getStatusLine().getStatusCode() != 200) {
+            // {"code":-412,"message":"请求被拦截","ttl":1,"data":null}
+            if (httpResponse.getStatusLine().getStatusCode() != 200 && httpResponse.getStatusLine().getStatusCode() != 412) {
                 throw new IOException(httpResponse.getStatusLine().getStatusCode() + " " + httpResponse.getStatusLine().getReasonPhrase() + "\n Headers:" + Arrays.toString(httpResponse.getAllHeaders()) + "\n" + EntityUtils.toString(responseEntity));
             }
             return EntityUtils.toString(responseEntity, charset);

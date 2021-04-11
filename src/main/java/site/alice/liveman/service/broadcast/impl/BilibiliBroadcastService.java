@@ -56,16 +56,19 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class BilibiliBroadcastService implements BroadcastService {
-    private static final String BILI_LIVE_UPDATE_URL = "https://api.live.bilibili.com/room/v1/Room/update";
-    private static final String BILI_START_LIVE_URL  = "https://api.live.bilibili.com/room/v1/Room/startLive";
-    private static final String BILI_STOP_LIVE_URL   = "https://api.live.bilibili.com/room/v1/Room/stopLive";
-    private static final String BILI_LIVE_INFO_URL   = "https://api.live.bilibili.com/live_user/v1/UserInfo/live_info";
+    private static final String                   BILI_LIVE_UPDATE_URL  = "https://api.live.bilibili.com/room/v1/Room/update";
+    private static final String                   BILI_START_LIVE_URL   = "https://api.live.bilibili.com/room/v1/Room/startLive";
+    private static final String                   BILI_STOP_LIVE_URL    = "https://api.live.bilibili.com/room/v1/Room/stopLive";
+    private static final String                   BILI_LIVE_INFO_URL    = "https://api.live.bilibili.com/live_user/v1/UserInfo/live_info";
+    private              Map<AccountInfo, String> broadcastAddressCache = new ConcurrentHashMap<>();
 
     @Autowired
     private HttpSession session;
@@ -95,7 +98,14 @@ public class BilibiliBroadcastService implements BroadcastService {
             csrfToken = matcher.group(1);
         }
         String roomId = accountInfo.getParentAccountInfo() == null ? accountInfo.getRoomId() : accountInfo.getParentAccountInfo().getRoomId();
-        String startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + roomId + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
+        String startLiveJson;
+        if (broadcastAddressCache.containsKey(accountInfo) && accountInfo.getRtmpUrlRefreshTime() != null && System.currentTimeMillis() - accountInfo.getRtmpUrlRefreshTime() < 5000) {
+            startLiveJson = broadcastAddressCache.get(accountInfo);
+        } else {
+            startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + roomId + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
+            accountInfo.setRtmpUrlRefreshTime(System.currentTimeMillis());
+            broadcastAddressCache.put(accountInfo, startLiveJson);
+        }
         JSONObject startLiveObject = JSON.parseObject(startLiveJson);
         JSONObject rtmpObject;
         if (startLiveObject.getInteger("code") == 0) {
@@ -108,13 +118,16 @@ public class BilibiliBroadcastService implements BroadcastService {
                 throw new RuntimeException("开启B站直播间失败" + startLiveObject);
             }
         }
+        String rtmpUrl;
         String addr = rtmpObject.getString("addr");
         String code = rtmpObject.getString("code");
         if (!addr.endsWith("/") && !code.startsWith("/")) {
-            return addr + "/" + code;
+            rtmpUrl = addr + "/" + code;
         } else {
-            return addr + code;
+            rtmpUrl = addr + code;
         }
+        accountInfo.setRtmpUrl(rtmpUrl);
+        return rtmpUrl;
     }
 
     @Override
