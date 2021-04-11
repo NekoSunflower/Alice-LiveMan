@@ -101,6 +101,7 @@ public class BilibiliBroadcastService implements BroadcastService {
         String startLiveJson;
         if (broadcastAddressCache.containsKey(accountInfo) && accountInfo.getRtmpUrlRefreshTime() != null && System.currentTimeMillis() - accountInfo.getRtmpUrlRefreshTime() < 5000) {
             startLiveJson = broadcastAddressCache.get(accountInfo);
+            log.info("getBroadcastAddress()缓存命中[accountId=" + accountInfo.getAccountId() + ", rtmpUrlRefreshTime=" + accountInfo.getRtmpUrlRefreshTime() + "] => " + startLiveJson);
         } else {
             startLiveJson = HttpRequestUtil.downloadUrl(new URI(BILI_START_LIVE_URL), accountInfo.readCookies(), "room_id=" + roomId + "&platform=pc&area_v2=" + area + (broadcastConfig.isVertical() ? "&type=1" : "") + "&csrf_token=" + csrfToken + "&csrf=" + csrfToken, StandardCharsets.UTF_8);
             accountInfo.setRtmpUrlRefreshTime(System.currentTimeMillis());
@@ -111,7 +112,9 @@ public class BilibiliBroadcastService implements BroadcastService {
         if (startLiveObject.getInteger("code") == 0) {
             rtmpObject = startLiveObject.getJSONObject("data").getJSONObject("rtmp");
         } else {
-            accountInfo.setDisable(true);
+            if (startLiveObject.getInteger("code") != -412) {
+                accountInfo.setDisable(true);
+            }
             if (startLiveJson.contains("系统升级维护中")) {
                 throw new RuntimeException("您的账号尚未开通海外推流权限，请联系B站管理员进行报备（报备群：787921193）");
             } else {
