@@ -295,7 +295,7 @@ public class BroadcastTask implements Runnable {
                             }
                         }
                         if (!terminate) {
-                            Thread.sleep(1000);
+                            Thread.sleep(5000);
                         }
                     }
                     // 终止推流时自动终止创建的低清晰度媒体代理任务
@@ -316,7 +316,7 @@ public class BroadcastTask implements Runnable {
                     }
                 }
                 if (!terminate) {
-                    Thread.sleep(1000);
+                    Thread.sleep(5000);
                 }
             }
         } catch (InterruptedException ignore) {
