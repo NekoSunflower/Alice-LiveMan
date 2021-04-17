@@ -17,17 +17,21 @@
  */
 package site.alice.liveman;
 
+import org.apache.commons.io.IOUtils;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}, scanBasePackages = {"site.alice.liveman"})
 @Configuration
@@ -36,38 +40,22 @@ import java.io.IOException;
 public class Application {
 
     public static void main(String[] args) throws IOException {
-        int round = 0;
-        int x = 500;
-        int y = 500;
-        JWindow window = new JWindow();
-        window.setVisible(true);
-        window.setBounds(20, 20, 1000, 1000);
-        Graphics2D graphics = (Graphics2D) window.getGraphics();
-        int[] pixel = new int[]{255, 255, 255};
-        BufferedImage bufferedImage = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
-        for (; round < 500; round += 2) {
-            System.out.println("第" + (round / 2) + "回合");
-            WritableRaster raster = bufferedImage.getRaster();
-            int _x = round / 2, _y = round / 2;
-            for (int i = 0; i < (x + y - 2 * round) * 2; i++) {
-                System.out.println(String.format("x=%s, y=%s", _x, _y));
-                raster.setPixel(_x, _y, pixel);
-                graphics.drawImage(bufferedImage, 0, 0, window.getWidth(), window.getHeight(), null);
-                if (i < (x - round)) {
-                    _x++;
-                    _x = Math.min(_x, x - round / 2 - 1);
-                } else if (i < (x - round + (y - round))) {
-                    _y++;
-                    _y = Math.min(_y, y - round / 2 - 1);
-                } else if (i < (2 * (x - round) + (y - round))) {
-                    _x--;
-                    _x = Math.max(_x, round / 2);
-                } else {
-                    _y--;
-                    _y = Math.max(_y, round / 2);
-                }
-            }
+        Map<String, String> env = System.getenv();
+        for (String envName : env.keySet()) {
+            System.out.format("%s=%s%n", envName, env.get(envName));
         }
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources("resources/*");
+        for (Resource resource : resources) {
+            File resourceFile = new File(resource.getFilename());
+            try (FileOutputStream fos = new FileOutputStream(resourceFile)) {
+                IOUtils.copyLarge(resource.getInputStream(), fos);
+            }
+            resourceFile.setExecutable(true);
+            resourceFile.setReadable(true);
+            resourceFile.setWritable(true);
+        }
+        SpringApplication.run(Application.class, args);
     }
 
 }
